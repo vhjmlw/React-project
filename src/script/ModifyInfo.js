@@ -6,7 +6,7 @@ const FormItem = Form.Item;
 const Option = Select.Option;
 
 function callback(key) {
-  console.log(key);
+	console.log(key);
 }
 
 const products = [{
@@ -97,426 +97,27 @@ const filterBrands = [{
 }];
 
 /*const totalInfo = {
-	phoneNumber: '15226374837',
-	name: '中德联信',
-	plateNumber: '苏NYR808',
-	captcha: '1234',
-	product: ['到店维修'],
-	cardChannel: ['超市赠送'],
-	customComment: '客户信息的备注',
-	brand: ['丰田'],
-	cartype: ['A型车'],
-	displacement: ['5.0L'],
-	purchaseDate: moment("2017-03-29", "YYYY-MM-DD"),
-	oilBrand: ["柴油","83#"],
-	filterBrand: ["机滤品牌第二个"],
-	carComment: '车辆信息的备注',
-	address: ["高新区","马涧路"],
-	detailAddress: '这里是详细的地址',
-	serviceDate: moment("2017-03-29", "YYYY-MM-DD"),
-	serviceComment: '服务信息的备注',
-};*/
+ phoneNumber: '15226374837',
+ name: '中德联信',
+ plateNumber: '苏NYR808',
+ captcha: '1234',
+ product: ['到店维修'],
+ cardChannel: ['超市赠送'],
+ customComment: '客户信息的备注',
+ brand: ['丰田'],
+ cartype: ['A型车'],
+ displacement: ['5.0L'],
+ purchaseDate: moment("2017-03-29", "YYYY-MM-DD"),
+ oilBrand: ["柴油","83#"],
+ filterBrand: ["机滤品牌第二个"],
+ carComment: '车辆信息的备注',
+ address: ["高新区","马涧路"],
+ detailAddress: '这里是详细的地址',
+ serviceDate: moment("2017-03-29", "YYYY-MM-DD"),
+ serviceComment: '服务信息的备注',
+ };*/
 
-
-class CustomInfoForm extends React.Component {
-	state = {
-		confirmDirty: false,
-	};
-
-	handleSubmit = (e) => {
-		e.preventDefault();
-		this.props.form.validateFieldsAndScroll((err, values) => {
-			if (!err) {
-				console.log('Received values of form: ', values);
-				window.localStorage.setItem("customInfo",JSON.stringify(values));
-			}
-		});
-	}
-
-	handleConfirmBlur = (e) => {
-		const value = e.target.value;
-		this.setState({ confirmDirty: this.state.confirmDirty || !!value });
-	}
-
-	checkConfirm = (rule, value, callback) => {
-		const form = this.props.form;
-		if (value && this.state.confirmDirty) {
-			form.validateFields(['confirm'], { force: true });
-		}
-		callback();
-	}
-
-	render() {
-		const { getFieldDecorator } = this.props.form;
-		const formItemLayout = {
-			labelCol: { span: 6 },
-			wrapperCol: { span: 14 },
-		};
-		const tailFormItemLayout = {
-			wrapperCol: {
-				span: 14,
-				offset: 6,
-			},
-		};
-
-		return (
-			<div>
-				<Form onSubmit={this.handleSubmit}>
-					<FormItem
-						{...formItemLayout}
-						label="电话"
-						hasFeedback
-					>
-						{getFieldDecorator('phoneNumber', {
-							rules: [{
-								pattern: /^1(3|4|5|7|8)[0-9]\d{8}$/, message: '电话号码格式不正确',
-							}, {
-								required: true, message: '请输入电话号码',
-							}],
-							initialValue: this.props.customInfo.phoneNumber,
-						})(
-							<Input />
-						)}
-					</FormItem>
-					<FormItem
-						{...formItemLayout}
-						label="姓名"
-						hasFeedback
-					>
-						{getFieldDecorator('name', {
-							rules: [{
-								required: true, message: '请输入姓名',
-							},{
-								pattern: /^([a-zA-Z\u4e00-\u9fa5\·]{1,10})$/, message: '姓名格式不正确',
-							}],
-							initialValue: this.props.customInfo.name,
-						})(
-							<Input />
-						)}
-					</FormItem>
-					<FormItem
-						{...formItemLayout}
-						label="车牌"
-						hasFeedback
-					>
-						{getFieldDecorator('plateNumber', {
-							rules: [{
-								required: true, message: '请输入车牌号',
-							},{/*{
-							 pattern: /^[京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤青藏川宁琼使领A-Z]{1}\s*[A-Z]{1}[A-Z0-9]{4}[A-Z0-9挂学警港澳]{1}$/, message: '车牌号格式不正确',
-							 }*/}],
-							initialValue: this.props.customInfo.plateNumber,
-						})(
-							<Input />
-						)}
-					</FormItem>
-					<FormItem
-						{...formItemLayout}
-						label="验证码"
-						extra="We must make sure that your are a human."
-					>
-						<Row gutter={8}>
-							<Col span={12}>
-								{getFieldDecorator('captcha', {
-									rules: [{ required: true, message: 'Please input the captcha you got!' }],
-									initialValue: this.props.customInfo.captcha,
-								})(
-									<Input size="large" />
-								)}
-							</Col>
-							<Col span={12}>
-								<Button size="large">Get captcha</Button>
-							</Col>
-						</Row>
-					</FormItem>
-
-					<FormItem
-						{...formItemLayout}
-						label="产品类型"
-					>
-						{getFieldDecorator('product', {
-							rules: [{ required: true, message: '请选择产品类型' }],
-							initialValue: this.props.customInfo.product,
-						})(
-							<Cascader options={products} size="large" style={{width:"110px"}} placeholder="请选择产品类型"/>
-						)}
-					</FormItem>
-					<FormItem
-						{...formItemLayout}
-						label="发卡渠道"
-					>
-						{getFieldDecorator('cardChannel', {
-							rules: [{ required: true, message: '请选择发卡渠道' }],
-							initialValue: this.props.customInfo.cardChannel,
-						})(
-							<Cascader options={cardChannels} size="large" style={{width:"110px"}} placeholder="请选择发卡渠道"/>
-						)}
-					</FormItem>
-					<FormItem
-						{...formItemLayout}
-						label="备注"
-						hasFeedback
-					>
-						{getFieldDecorator('customComment', {
-							initialValue: this.props.customInfo.customComment,
-						})(
-							<Input type="textarea" autosize={{minRows:3}}/>
-						)}
-					</FormItem>
-					<FormItem {...tailFormItemLayout}>
-						<Button type="primary" htmlType="submit" size="large">保存</Button>
-					</FormItem>
-				</Form>
-			</div>
-		);
-	}
-}
-
-const CustomInfo = Form.create()(CustomInfoForm);
-
-class CarInfoForm extends React.Component {
-	state = {
-		confirmDirty: false,
-	};
-	handleSubmit = (e) => {
-		e.preventDefault();
-		this.props.form.validateFieldsAndScroll((err, values) => {
-			if (!err) {
-				console.log('Received values of form: ', values);
-				window.localStorage.setItem("carInfo",JSON.stringify(values));
-			}
-		});
-	}
-
-	handleConfirmBlur = (e) => {
-		const value = e.target.value;
-		this.setState({ confirmDirty: this.state.confirmDirty || !!value });
-	}
-	checkConfirm = (rule, value, callback) => {
-		const form = this.props.form;
-		if (value && this.state.confirmDirty) {
-			form.validateFields(['confirm'], { force: true });
-		}
-		callback();
-	}
-	render() {
-		const { getFieldDecorator } = this.props.form;
-		const formItemLayout = {
-			labelCol: { span: 6 },
-			wrapperCol: { span: 14 },
-		};
-		const tailFormItemLayout = {
-			wrapperCol: {
-				span: 14,
-				offset: 6,
-			},
-		};
-
-		return (
-			<div>
-				<Form onSubmit={this.handleSubmit}>
-					<FormItem
-						{...formItemLayout}
-						label="品牌"
-					>
-						{getFieldDecorator('brand', {
-							rules: [{ required: true, message: '请选择品牌' }],
-							initialValue: this.props.carInfo.brand,
-						})(
-							<Cascader options={brands} size="large" style={{width:"110px"}} placeholder="请选择品牌"/>
-						)}
-					</FormItem>
-					<FormItem
-						{...formItemLayout}
-						label="车型"
-					>
-						{getFieldDecorator('cartype', {
-							rules: [{ required: true, message: '请选择车型' }],
-							initialValue: this.props.carInfo.cartype,
-						})(
-							<Cascader options={cartypes} size="large" style={{width:"110px"}} placeholder="请选择车型"/>
-						)}
-					</FormItem>
-					<FormItem
-						{...formItemLayout}
-						label="排量"
-					>
-						{getFieldDecorator('displacement', {
-							rules: [{ required: true, message: '请选择排量' }],
-							initialValue: this.props.carInfo.displacement,
-						})(
-							<Cascader options={displacements} size="large" style={{width:"110px"}} placeholder="请选择排量"/>
-						)}
-					</FormItem>
-					<FormItem
-						{...formItemLayout}
-						label="年份"
-					>
-						{getFieldDecorator('purchaseDate', {
-							rules: [{ type: 'object', required: true, message: '请选择购买日期' }],
-							initialValue: this.props.carInfo.purchaseDate,
-						})(
-							<DatePicker />
-						)}
-					</FormItem>
-					<FormItem
-						{...formItemLayout}
-						label="机油品牌"
-					>
-						{getFieldDecorator('oilBrand', {
-							rules: [{type: 'array', required: true, message: '请选择机油品牌'}],
-							initialValue: this.props.carInfo.oilBrand,
-						})(
-							<Cascader options={oilBrands} size="large" style={{width:"110px"}} placeholder="请选择机油品牌"/>
-						)}
-					</FormItem>
-					<FormItem
-						{...formItemLayout}
-						label="机滤品牌"
-					>
-						{getFieldDecorator('filterBrand', {
-							rules: [{ required: true, message: '请选择机滤品牌' }],
-							initialValue: this.props.carInfo.filterBrand,
-						})(
-							<Cascader options={filterBrands} size="large" style={{width:"110px"}} placeholder="请选择机滤品牌"/>
-						)}
-					</FormItem>
-					<FormItem
-						{...formItemLayout}
-						label="备注"
-						hasFeedback
-					>
-						{getFieldDecorator('carComment', {
-							initialValue: this.props.carInfo.carComment,
-						})(
-							<Input type="textarea" autosize={{minRows:3}}/>
-						)}
-					</FormItem>
-					<FormItem {...tailFormItemLayout}>
-						<Button type="primary" htmlType="submit" size="large">保存</Button>
-					</FormItem>
-				</Form>
-			</div>
-		);
-	}
-}
-
-const CarInfo = Form.create()(CarInfoForm);
-
-class ServiceInfoForm extends React.Component {
-	state = {
-		confirmDirty: false,
-	};
-	handleSubmit = (e) => {
-		e.preventDefault();
-		this.props.form.validateFieldsAndScroll((err, values) => {
-			if (!err) {
-				console.log('Received values of form: ', values);
-				window.localStorage.setItem("serviceInfo",JSON.stringify(values));
-				const orderInfo = {};
-				const customInfo = JSON.parse(window.localStorage.getItem("customInfo"));
-				const carInfo = JSON.parse(window.localStorage.getItem("carInfo"));
-				const serviceInfo = JSON.parse(window.localStorage.getItem("serviceInfo"));
-				Object.assign(orderInfo,customInfo,carInfo,serviceInfo);
-				orderInfo.purchaseDate = new Date(orderInfo.purchaseDate).toLocaleDateString();
-				orderInfo.serviceDate = new Date(orderInfo.serviceDate).toLocaleDateString();
-				orderInfo.area = orderInfo.address[0];
-				orderInfo.state = "已服务";
-				orderInfo.key = new Date().getTime();
-				// window.localStorage.setItem("orderInfo",JSON.stringify(orderInfo));
-				const tableList = window.localStorage.getItem("tableList");
-				if(tableList){
-					const newTabList = JSON.parse(tableList);
-					newTabList.push(orderInfo);
-					window.localStorage.setItem("tableList",JSON.stringify(newTabList));
-				} else {
-					const array = [];
-					array.push(orderInfo);
-					window.localStorage.setItem("tableList", JSON.stringify(array));
-				}
-				console.log(window.localStorage);
-				message.success('提交成功',1.5,()=>{this.props.changeRoute(null, "/App");});
-
-			}
-		});
-	}
-	handleConfirmBlur = (e) => {
-		const value = e.target.value;
-		this.setState({ confirmDirty: this.state.confirmDirty || !!value });
-	}
-	render() {
-		const { getFieldDecorator } = this.props.form;
-		const formItemLayout = {
-			labelCol: { span: 6 },
-			wrapperCol: { span: 14 },
-		};
-		const tailFormItemLayout = {
-			wrapperCol: {
-				span: 14,
-				offset: 6,
-			},
-		};
-
-		return (
-			<div>
-				<Form onSubmit={this.handleSubmit}>
-					<FormItem
-						{...formItemLayout}
-						label="服务地址"
-					>
-						{getFieldDecorator('address', {
-							rules: [{type: 'array', required: true, message: '请选择服务地址'}],
-							initialValue: this.props.serviceInfo.address,
-						})(
-							<Cascader options={Addresses} size="large" placeholder="请选择服务地址" />
-						)}
-					</FormItem>
-					<FormItem
-						{...formItemLayout}
-						label="详细地址"
-						hasFeedback
-					>
-						{getFieldDecorator('detailAddress', {
-							rules: [{required: true, message: '请输入详细地址'}],
-							initialValue: this.props.serviceInfo.detailAddress,
-						})(
-							<Input />
-						)}
-					</FormItem>
-					<FormItem
-						{...formItemLayout}
-						label="服务时间"
-					>
-						{getFieldDecorator('serviceDate', {
-							rules: [{ type: 'object', required: true, message: '请选择服务时间' }],
-							initialValue: this.props.serviceInfo.serviceDate,
-						})(
-							<DatePicker />
-						)}
-					</FormItem>
-					<FormItem
-						{...formItemLayout}
-						label="备注"
-						hasFeedback
-					>
-						{getFieldDecorator('serviceComment', {
-							initialValue: this.props.serviceInfo.serviceComment,
-						})(
-							<Input type="textarea" autosize={{minRows:3}}/>
-						)}
-					</FormItem>
-					<FormItem {...tailFormItemLayout}>
-						<Button type="primary" htmlType="submit" size="large">保存</Button>
-					</FormItem>
-				</Form>
-			</div>
-		);
-	}
-}
-
-const ServiceInfo = Form.create()(ServiceInfoForm);
-
-class ModifyInfo extends React.Component {
+class ModifyInfoForm extends React.Component {
 
 	componentWillMount(){
 		let totalInfo = window.localStorage.getItem("totalInfo");
@@ -526,6 +127,8 @@ class ModifyInfo extends React.Component {
 			totalInfo.serviceDate = moment(totalInfo.serviceDate, "YYYY-MM-DD");
 
 			this.setState({
+				confirmDirty: false,
+				key: totalInfo.key,
 				customInfo: {
 					phoneNumber: totalInfo.phoneNumber || '',
 					name: totalInfo.name || '',
@@ -554,25 +157,294 @@ class ModifyInfo extends React.Component {
 		}
 	}
 
+	handleSubmit = (e) => {
+		e.preventDefault();
+		this.props.form.validateFieldsAndScroll((err, values) => {
+			if (!err) {
+				values.key = this.state.key;
+				values.purchaseDate = new Date(values.purchaseDate).toISOString().substr(0,10);
+				values.serviceDate = new Date(values.serviceDate).toISOString().substr(0,10);
+				console.log('Received values of form: ', values);
+				let tableList = JSON.parse(window.localStorage.tableList);
+				for(let item of tableList){
+					if(item.key === this.state.key){
+						Object.assign(item,values);
+						break;
+					}
+				}
+				window.localStorage.setItem('tableList',JSON.stringify(tableList));
+				message.success('保存成功',1.5,()=>{this.props.history.pushState(null, "/App")});
+			}
+		});
+	}
+
+	handleBack(){
+		this.props.history.pushState(null,'App');
+	}
+
+	handleConfirmBlur = (e) => {
+		const value = e.target.value;
+		this.setState({ confirmDirty: this.state.confirmDirty || !!value });
+	}
+
+	checkConfirm = (rule, value, callback) => {
+		const form = this.props.form;
+		if (value && this.state.confirmDirty) {
+			form.validateFields(['confirm'], { force: true });
+		}
+		callback();
+	}
+
 	render(){
-		const back = <Button type="primary">返回</Button>
+
+		const { getFieldDecorator } = this.props.form;
+		const formItemLayout = {
+			labelCol: { span: 6 },
+			wrapperCol: { span: 14 },
+		};
+		const tailFormItemLayout = {
+			wrapperCol: {
+				span: 14,
+				offset: 6,
+			},
+		};
+
 		return (
-			<Tabs onChange={callback}
-				  animated={false}
-				  tabBarExtraContent={back}
-			>
-		    <TabPane tab="客户信息" key="1">
-				<CustomInfo customInfo={this.state.customInfo}/>
-			</TabPane>
-		    <TabPane tab="车辆信息" key="2">
-				<CarInfo carInfo={this.state.carInfo}/>
-			</TabPane>
-		    <TabPane tab="服务信息" key="3">
-				<ServiceInfo serviceInfo={this.state.serviceInfo}/>
-			</TabPane>
-		  </Tabs>
+			<div>
+				<Form onSubmit={this.handleSubmit.bind(this)}>
+					<h3>用户信息：</h3>
+					<FormItem
+						{...formItemLayout}
+						label="电话"
+						hasFeedback
+					>
+						{getFieldDecorator('phoneNumber', {
+							rules: [{
+								pattern: /^1(3|4|5|7|8)[0-9]\d{8}$/, message: '电话号码格式不正确',
+							}, {
+								required: true, message: '请输入电话号码',
+							}],
+							initialValue: this.state.customInfo.phoneNumber,
+						})(
+							<Input />
+						)}
+					</FormItem>
+					<FormItem
+						{...formItemLayout}
+						label="姓名"
+						hasFeedback
+					>
+						{getFieldDecorator('name', {
+							rules: [{
+								required: true, message: '请输入姓名',
+							},{
+								pattern: /^([a-zA-Z\u4e00-\u9fa5\·]{1,10})$/, message: '姓名格式不正确',
+							}],
+							initialValue: this.state.customInfo.name,
+						})(
+							<Input />
+						)}
+					</FormItem>
+					<FormItem
+						{...formItemLayout}
+						label="车牌"
+						hasFeedback
+					>
+						{getFieldDecorator('plateNumber', {
+							rules: [{
+								required: true, message: '请输入车牌号',
+							}],
+							initialValue: this.state.customInfo.plateNumber,
+						})(
+							<Input />
+						)}
+					</FormItem>
+					<FormItem
+						{...formItemLayout}
+						label="验证码"
+						extra="We must make sure that your are a human."
+					>
+						<Row gutter={8}>
+							<Col span={12}>
+								{getFieldDecorator('captcha', {
+									rules: [{ required: true, message: 'Please input the captcha you got!' }],
+									initialValue: this.state.customInfo.captcha,
+								})(
+									<Input size="large" />
+								)}
+							</Col>
+							<Col span={12}>
+								<Button size="large">Get captcha</Button>
+							</Col>
+						</Row>
+					</FormItem>
+
+					<FormItem
+						{...formItemLayout}
+						label="产品类型"
+					>
+						{getFieldDecorator('product', {
+							rules: [{ required: true, message: '请选择产品类型' }],
+							initialValue: this.state.customInfo.product,
+						})(
+							<Cascader options={products} size="large" style={{width:"110px"}} placeholder="请选择产品类型"/>
+						)}
+					</FormItem>
+					<FormItem
+						{...formItemLayout}
+						label="发卡渠道"
+					>
+						{getFieldDecorator('cardChannel', {
+							rules: [{ required: true, message: '请选择发卡渠道' }],
+							initialValue: this.state.customInfo.cardChannel,
+						})(
+							<Cascader options={cardChannels} size="large" style={{width:"110px"}} placeholder="请选择发卡渠道"/>
+						)}
+					</FormItem>
+					<FormItem
+						{...formItemLayout}
+						label="备注"
+						hasFeedback
+					>
+						{getFieldDecorator('customComment', {
+							initialValue: this.state.customInfo.customComment,
+						})(
+							<Input type="textarea" autosize={{minRows:3}}/>
+						)}
+					</FormItem>
+					<h3>车辆信息：</h3>
+					<FormItem
+						{...formItemLayout}
+						label="品牌"
+					>
+						{getFieldDecorator('brand', {
+							rules: [{ required: true, message: '请选择品牌' }],
+							initialValue: this.state.carInfo.brand,
+						})(
+							<Cascader options={brands} size="large" style={{width:"110px"}} placeholder="请选择品牌"/>
+						)}
+					</FormItem>
+					<FormItem
+						{...formItemLayout}
+						label="车型"
+					>
+						{getFieldDecorator('cartype', {
+							rules: [{ required: true, message: '请选择车型' }],
+							initialValue: this.state.carInfo.cartype,
+						})(
+							<Cascader options={cartypes} size="large" style={{width:"110px"}} placeholder="请选择车型"/>
+						)}
+					</FormItem>
+					<FormItem
+						{...formItemLayout}
+						label="排量"
+					>
+						{getFieldDecorator('displacement', {
+							rules: [{ required: true, message: '请选择排量' }],
+							initialValue: this.state.carInfo.displacement,
+						})(
+							<Cascader options={displacements} size="large" style={{width:"110px"}} placeholder="请选择排量"/>
+						)}
+					</FormItem>
+					<FormItem
+						{...formItemLayout}
+						label="年份"
+					>
+						{getFieldDecorator('purchaseDate', {
+							rules: [{ type: 'object', required: true, message: '请选择购买日期' }],
+							initialValue: this.state.carInfo.purchaseDate,
+						})(
+							<DatePicker />
+						)}
+					</FormItem>
+					<FormItem
+						{...formItemLayout}
+						label="机油品牌"
+					>
+						{getFieldDecorator('oilBrand', {
+							rules: [{type: 'array', required: true, message: '请选择机油品牌'}],
+							initialValue: this.state.carInfo.oilBrand,
+						})(
+							<Cascader options={oilBrands} size="large" style={{width:"110px"}} placeholder="请选择机油品牌"/>
+						)}
+					</FormItem>
+					<FormItem
+						{...formItemLayout}
+						label="机滤品牌"
+					>
+						{getFieldDecorator('filterBrand', {
+							rules: [{ required: true, message: '请选择机滤品牌' }],
+							initialValue: this.state.carInfo.filterBrand,
+						})(
+							<Cascader options={filterBrands} size="large" style={{width:"110px"}} placeholder="请选择机滤品牌"/>
+						)}
+					</FormItem>
+					<FormItem
+						{...formItemLayout}
+						label="备注"
+						hasFeedback
+					>
+						{getFieldDecorator('carComment', {
+							initialValue: this.state.carInfo.carComment,
+						})(
+							<Input type="textarea" autosize={{minRows:3}}/>
+						)}
+					</FormItem>
+					<h3>服务信息：</h3>
+					<FormItem
+						{...formItemLayout}
+						label="服务地址"
+					>
+						{getFieldDecorator('address', {
+							rules: [{type: 'array', required: true, message: '请选择服务地址'}],
+							initialValue: this.state.serviceInfo.address,
+						})(
+							<Cascader options={Addresses} size="large" placeholder="请选择服务地址" />
+						)}
+					</FormItem>
+					<FormItem
+						{...formItemLayout}
+						label="详细地址"
+						hasFeedback
+					>
+						{getFieldDecorator('detailAddress', {
+							rules: [{required: true, message: '请输入详细地址'}],
+							initialValue: this.state.serviceInfo.detailAddress,
+						})(
+							<Input />
+						)}
+					</FormItem>
+					<FormItem
+						{...formItemLayout}
+						label="服务时间"
+					>
+						{getFieldDecorator('serviceDate', {
+							rules: [{ type: 'object', required: true, message: '请选择服务时间' }],
+							initialValue: this.state.serviceInfo.serviceDate,
+						})(
+							<DatePicker />
+						)}
+					</FormItem>
+					<FormItem
+						{...formItemLayout}
+						label="备注"
+						hasFeedback
+					>
+						{getFieldDecorator('serviceComment', {
+							initialValue: this.state.serviceInfo.serviceComment,
+						})(
+							<Input type="textarea" autosize={{minRows:3}}/>
+						)}
+					</FormItem>
+					<FormItem {...tailFormItemLayout}>
+						<Button type="primary" size="large" onClick={this.handleBack.bind(this)}>返回</Button>
+						<Button type="primary" htmlType="submit" size="large">保存</Button>
+					</FormItem>
+				</Form>
+			</div>
 		);
 	}
 }
 
+const ModifyInfo = Form.create()(ModifyInfoForm);
 export default ModifyInfo;

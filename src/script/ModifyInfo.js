@@ -96,7 +96,7 @@ const filterBrands = [{
 	label: '机滤品牌第二个',
 }];
 
-const orderInfo = {
+/*const totalInfo = {
 	phoneNumber: '15226374837',
 	name: '中德联信',
 	plateNumber: '苏NYR808',
@@ -115,14 +115,14 @@ const orderInfo = {
 	detailAddress: '这里是详细的地址',
 	serviceDate: moment("2017-03-29", "YYYY-MM-DD"),
 	serviceComment: '服务信息的备注',
-};
-let {phoneNumber,name,plateNumber,captcha,product,cardChannel,customComment,brand,cartype,
-		displacement,purchaseDate,oilBrand,filterBrand,carComment,address,detailAddress,serviceDate,serviceComment} = orderInfo;
+};*/
+
 
 class CustomInfoForm extends React.Component {
 	state = {
 		confirmDirty: false,
 	};
+
 	handleSubmit = (e) => {
 		e.preventDefault();
 		this.props.form.validateFieldsAndScroll((err, values) => {
@@ -132,6 +132,7 @@ class CustomInfoForm extends React.Component {
 			}
 		});
 	}
+
 	handleConfirmBlur = (e) => {
 		const value = e.target.value;
 		this.setState({ confirmDirty: this.state.confirmDirty || !!value });
@@ -144,6 +145,7 @@ class CustomInfoForm extends React.Component {
 		}
 		callback();
 	}
+
 	render() {
 		const { getFieldDecorator } = this.props.form;
 		const formItemLayout = {
@@ -171,7 +173,7 @@ class CustomInfoForm extends React.Component {
 							}, {
 								required: true, message: '请输入电话号码',
 							}],
-							initialValue: phoneNumber,
+							initialValue: this.props.customInfo.phoneNumber,
 						})(
 							<Input />
 						)}
@@ -187,7 +189,7 @@ class CustomInfoForm extends React.Component {
 							},{
 								pattern: /^([a-zA-Z\u4e00-\u9fa5\·]{1,10})$/, message: '姓名格式不正确',
 							}],
-							initialValue: name,
+							initialValue: this.props.customInfo.name,
 						})(
 							<Input />
 						)}
@@ -203,7 +205,7 @@ class CustomInfoForm extends React.Component {
 							},{/*{
 							 pattern: /^[京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤青藏川宁琼使领A-Z]{1}\s*[A-Z]{1}[A-Z0-9]{4}[A-Z0-9挂学警港澳]{1}$/, message: '车牌号格式不正确',
 							 }*/}],
-							initialValue: plateNumber,
+							initialValue: this.props.customInfo.plateNumber,
 						})(
 							<Input />
 						)}
@@ -217,7 +219,7 @@ class CustomInfoForm extends React.Component {
 							<Col span={12}>
 								{getFieldDecorator('captcha', {
 									rules: [{ required: true, message: 'Please input the captcha you got!' }],
-									initialValue: captcha,
+									initialValue: this.props.customInfo.captcha,
 								})(
 									<Input size="large" />
 								)}
@@ -234,7 +236,7 @@ class CustomInfoForm extends React.Component {
 					>
 						{getFieldDecorator('product', {
 							rules: [{ required: true, message: '请选择产品类型' }],
-							initialValue: product,
+							initialValue: this.props.customInfo.product,
 						})(
 							<Cascader options={products} size="large" style={{width:"110px"}} placeholder="请选择产品类型"/>
 						)}
@@ -245,7 +247,7 @@ class CustomInfoForm extends React.Component {
 					>
 						{getFieldDecorator('cardChannel', {
 							rules: [{ required: true, message: '请选择发卡渠道' }],
-							initialValue: cardChannel,
+							initialValue: this.props.customInfo.cardChannel,
 						})(
 							<Cascader options={cardChannels} size="large" style={{width:"110px"}} placeholder="请选择发卡渠道"/>
 						)}
@@ -256,9 +258,9 @@ class CustomInfoForm extends React.Component {
 						hasFeedback
 					>
 						{getFieldDecorator('customComment', {
-							initialValue: customComment,
+							initialValue: this.props.customInfo.customComment,
 						})(
-							<Input />
+							<Input type="textarea" autosize={{minRows:3}}/>
 						)}
 					</FormItem>
 					<FormItem {...tailFormItemLayout}>
@@ -319,7 +321,7 @@ class CarInfoForm extends React.Component {
 					>
 						{getFieldDecorator('brand', {
 							rules: [{ required: true, message: '请选择品牌' }],
-							initialValue: brand,
+							initialValue: this.props.carInfo.brand,
 						})(
 							<Cascader options={brands} size="large" style={{width:"110px"}} placeholder="请选择品牌"/>
 						)}
@@ -330,7 +332,7 @@ class CarInfoForm extends React.Component {
 					>
 						{getFieldDecorator('cartype', {
 							rules: [{ required: true, message: '请选择车型' }],
-							initialValue: cartype,
+							initialValue: this.props.carInfo.cartype,
 						})(
 							<Cascader options={cartypes} size="large" style={{width:"110px"}} placeholder="请选择车型"/>
 						)}
@@ -341,7 +343,7 @@ class CarInfoForm extends React.Component {
 					>
 						{getFieldDecorator('displacement', {
 							rules: [{ required: true, message: '请选择排量' }],
-							initialValue: displacement,
+							initialValue: this.props.carInfo.displacement,
 						})(
 							<Cascader options={displacements} size="large" style={{width:"110px"}} placeholder="请选择排量"/>
 						)}
@@ -352,7 +354,7 @@ class CarInfoForm extends React.Component {
 					>
 						{getFieldDecorator('purchaseDate', {
 							rules: [{ type: 'object', required: true, message: '请选择购买日期' }],
-							initialValue: purchaseDate,
+							initialValue: this.props.carInfo.purchaseDate,
 						})(
 							<DatePicker />
 						)}
@@ -363,7 +365,7 @@ class CarInfoForm extends React.Component {
 					>
 						{getFieldDecorator('oilBrand', {
 							rules: [{type: 'array', required: true, message: '请选择机油品牌'}],
-							initialValue: oilBrand,
+							initialValue: this.props.carInfo.oilBrand,
 						})(
 							<Cascader options={oilBrands} size="large" style={{width:"110px"}} placeholder="请选择机油品牌"/>
 						)}
@@ -374,7 +376,7 @@ class CarInfoForm extends React.Component {
 					>
 						{getFieldDecorator('filterBrand', {
 							rules: [{ required: true, message: '请选择机滤品牌' }],
-							initialValue: filterBrand,
+							initialValue: this.props.carInfo.filterBrand,
 						})(
 							<Cascader options={filterBrands} size="large" style={{width:"110px"}} placeholder="请选择机滤品牌"/>
 						)}
@@ -385,9 +387,9 @@ class CarInfoForm extends React.Component {
 						hasFeedback
 					>
 						{getFieldDecorator('carComment', {
-							initialValue: carComment,
+							initialValue: this.props.carInfo.carComment,
 						})(
-							<Input />
+							<Input type="textarea" autosize={{minRows:3}}/>
 						)}
 					</FormItem>
 					<FormItem {...tailFormItemLayout}>
@@ -464,7 +466,7 @@ class ServiceInfoForm extends React.Component {
 					>
 						{getFieldDecorator('address', {
 							rules: [{type: 'array', required: true, message: '请选择服务地址'}],
-							initialValue: address,
+							initialValue: this.props.serviceInfo.address,
 						})(
 							<Cascader options={Addresses} size="large" placeholder="请选择服务地址" />
 						)}
@@ -476,7 +478,7 @@ class ServiceInfoForm extends React.Component {
 					>
 						{getFieldDecorator('detailAddress', {
 							rules: [{required: true, message: '请输入详细地址'}],
-							initialValue: detailAddress,
+							initialValue: this.props.serviceInfo.detailAddress,
 						})(
 							<Input />
 						)}
@@ -487,7 +489,7 @@ class ServiceInfoForm extends React.Component {
 					>
 						{getFieldDecorator('serviceDate', {
 							rules: [{ type: 'object', required: true, message: '请选择服务时间' }],
-							initialValue: serviceDate,
+							initialValue: this.props.serviceInfo.serviceDate,
 						})(
 							<DatePicker />
 						)}
@@ -498,9 +500,9 @@ class ServiceInfoForm extends React.Component {
 						hasFeedback
 					>
 						{getFieldDecorator('serviceComment', {
-							initialValue: serviceComment,
+							initialValue: this.props.serviceInfo.serviceComment,
 						})(
-							<Input />
+							<Input type="textarea" autosize={{minRows:3}}/>
 						)}
 					</FormItem>
 					<FormItem {...tailFormItemLayout}>
@@ -515,6 +517,43 @@ class ServiceInfoForm extends React.Component {
 const ServiceInfo = Form.create()(ServiceInfoForm);
 
 class ModifyInfo extends React.Component {
+
+	componentWillMount(){
+		let totalInfo = window.localStorage.getItem("totalInfo");
+		if(totalInfo){
+			totalInfo = JSON.parse(totalInfo);
+			totalInfo.purchaseDate = moment(totalInfo.purchaseDate, "YYYY-MM-DD");
+			totalInfo.serviceDate = moment(totalInfo.serviceDate, "YYYY-MM-DD");
+
+			this.setState({
+				customInfo: {
+					phoneNumber: totalInfo.phoneNumber || '',
+					name: totalInfo.name || '',
+					plateNumber: totalInfo.plateNumber || '',
+					captcha: totalInfo.captcha || '',
+					product: totalInfo.product || [],
+					cardChannel: totalInfo.cardChannel || [],
+					customComment: totalInfo.customComment || '',
+				},
+				carInfo: {
+					brand: totalInfo.brand || [],
+					cartype: totalInfo.cartype || [],
+					displacement: totalInfo.displacement || [],
+					purchaseDate: totalInfo.purchaseDate || null,
+					oilBrand: totalInfo.oilBrand || [],
+					filterBrand: totalInfo.filterBrand || [],
+					carComment: totalInfo.carComment || '',
+				},
+				serviceInfo: {
+					address: totalInfo.address || [],
+					detailAddress: totalInfo.detailAddress || '',
+					serviceDate: totalInfo.serviceDate || null,
+					serviceComment: totalInfo.serviceComment || '',
+				}
+			});
+		}
+	}
+
 	render(){
 		const back = <Button type="primary">返回</Button>
 		return (
@@ -523,13 +562,13 @@ class ModifyInfo extends React.Component {
 				  tabBarExtraContent={back}
 			>
 		    <TabPane tab="客户信息" key="1">
-				<CustomInfo />
+				<CustomInfo customInfo={this.state.customInfo}/>
 			</TabPane>
 		    <TabPane tab="车辆信息" key="2">
-				<CarInfo />
+				<CarInfo carInfo={this.state.carInfo}/>
 			</TabPane>
 		    <TabPane tab="服务信息" key="3">
-				<ServiceInfo />
+				<ServiceInfo serviceInfo={this.state.serviceInfo}/>
 			</TabPane>
 		  </Tabs>
 		);

@@ -2,10 +2,56 @@ import {Table,Button,Modal} from "antd";
 import React from "react";
 import {browserHistory,Link} from "react-router";
 
+class TableList extends React.Component{
+    state = {
+        columns: [{
+            title: '客户姓名',
+            dataIndex: 'name',
+            key: 'name',
+        }, {
+            title: '车牌',
+            dataIndex: 'plateNumber',
+            key: 'plateNumber',
+        }, {
+            title: '电话',
+            dataIndex: 'phoneNumber',
+            key: 'phoneNumber',
+        }, {
+            title: '服务产品',
+            dataIndex: 'product',
+            key: 'product',
+        }, {
+            title: '发卡渠道',
+            dataIndex: 'cardChannel',
+            key: 'cardChannel',
+        }, {
+            title: '服务区域',
+            dataIndex: 'area',
+            key: 'area',
+        }, {
+            title: '服务时间',
+            dataIndex: 'serviceDate',
+            key: 'serviceDate',
+        }, {
+            title: '状态',
+            dataIndex: 'state',
+            key: 'state',
+        },{
+            title: '操作',
+            key: 'action',
+            render: (text, record) => {
+                return (<span>
+                    <a onClick={this.handleInfo(record).bind(this)}>详情</a>&nbsp;&nbsp;&nbsp;
+                    <a onClick={this.handleModify(record).bind(this)} >编辑</a>&nbsp;&nbsp;&nbsp;
+                    <a href="javascript:alert('打印页面');">打印</a>
+                </span>)
+            },
+        }]
+    };
 
-const info = function (record) {
-    return function () {
-        Modal.info({
+    handleInfo(record) {
+        return function () {
+            Modal.info({
             title: '',
             okText: '确定',
             // width: '50%',
@@ -52,57 +98,17 @@ const info = function (record) {
                 </div>
             ),
         });
-    }
-};
-
-const columns = [{
-    title: '客户姓名',
-    dataIndex: 'name',
-    key: 'name',
-}, {
-    title: '车牌',
-    dataIndex: 'plateNumber',
-    key: 'plateNumber',
-}, {
-    title: '电话',
-    dataIndex: 'phoneNumber',
-    key: 'phoneNumber',
-}, {
-    title: '服务产品',
-    dataIndex: 'product',
-    key: 'product',
-}, {
-    title: '发卡渠道',
-    dataIndex: 'cardChannel',
-    key: 'cardChannel',
-}, {
-    title: '服务区域',
-    dataIndex: 'area',
-    key: 'area',
-}, {
-    title: '服务时间',
-    dataIndex: 'serviceDate',
-    key: 'serviceDate',
-}, {
-    title: '状态',
-    dataIndex: 'state',
-    key: 'state',
-},{
-    title: '操作',
-    key: 'action',
-    render: (text, record) => {
-        return (<span>
-            <a href="javascript:;" onClick={info(record)}>详情</a>&nbsp;&nbsp;&nbsp;
-            <a href="#App/ModifyInfo" >编辑</a>&nbsp;&nbsp;&nbsp;
-            <a href="javascript:alert('打印页面');">打印</a>
-        </span>)
-    },
-}];
-
-class TableList extends React.Component{
-    state = {
-        columns: columns,
+        }
     };
+
+    handleModify(record) {
+        return function () {
+            this.props.history.pushState(null,"/App/ModifyInfo");
+            window.localStorage.setItem('totalInfo',JSON.stringify(record));
+            console.log(window.localStorage);
+        }
+    }
+
     //点击新增按钮的执行逻辑，<Button><Link to='App/OrderInfo'>新增</Link></Button>会有浏览器兼容性问题
     //火狐 IE浏览器下点击新增无效，页面无法跳转，所以使用onClick点击事件的方式
     handleClick (event) {

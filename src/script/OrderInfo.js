@@ -240,7 +240,7 @@ class CustomInfoForm extends React.Component {
                         hasFeedback
                     >
                         {getFieldDecorator('customComment')(
-                            <Input />
+                            <Input type="textarea" autosize={{minRows:3}}/>
                         )}
                     </FormItem>
                     <FormItem {...tailFormItemLayout}>
@@ -387,7 +387,7 @@ class CarInfoForm extends React.Component {
                         hasFeedback
                     >
                         {getFieldDecorator('carComment')(
-                            <Input />
+                            <Input type="textarea" autosize={{minRows:3}}/>
                         )}
                     </FormItem>
                     <FormItem {...tailFormItemLayout}>
@@ -417,8 +417,8 @@ class ServiceInfoForm extends React.Component {
                 const carInfo = JSON.parse(window.localStorage.getItem("carInfo"));
                 const serviceInfo = JSON.parse(window.localStorage.getItem("serviceInfo"));
                 Object.assign(orderInfo,customInfo,carInfo,serviceInfo);
-                orderInfo.purchaseDate = new Date(orderInfo.purchaseDate).toLocaleDateString();
-                orderInfo.serviceDate = new Date(orderInfo.serviceDate).toLocaleDateString();
+                orderInfo.purchaseDate = new Date(orderInfo.purchaseDate).toISOString().substr(0,10);
+                orderInfo.serviceDate = new Date(orderInfo.serviceDate).toISOString().substr(0,10);
                 orderInfo.area = orderInfo.address[0];
                 orderInfo.state = "已服务";
                 orderInfo.key = new Date().getTime();
@@ -516,7 +516,7 @@ class ServiceInfoForm extends React.Component {
                         hasFeedback
                     >
                         {getFieldDecorator('serviceComment')(
-                            <Input />
+                            <Input type="textarea" autosize={{minRows:3}}/>
                         )}
                     </FormItem>
                     <FormItem {...tailFormItemLayout}>

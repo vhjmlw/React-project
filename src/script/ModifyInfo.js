@@ -165,14 +165,14 @@ class ModifyInfoForm extends React.Component {
 				values.purchaseDate = new Date(values.purchaseDate).toISOString().substr(0,10);
 				values.serviceDate = new Date(values.serviceDate).toISOString().substr(0,10);
 				console.log('Received values of form: ', values);
-				let tableList = JSON.parse(window.localStorage.tableList);
-				for(let item of tableList){
+				let orderList = JSON.parse(window.localStorage.orderList);
+				for(let item of orderList){
 					if(item.key === this.state.key){
 						Object.assign(item,values);
 						break;
 					}
 				}
-				window.localStorage.setItem('tableList',JSON.stringify(tableList));
+				window.localStorage.setItem('orderList',JSON.stringify(orderList));
 				message.success('保存成功',1.5,()=>{this.props.history.pushState(null, "/App")});
 			}
 		});

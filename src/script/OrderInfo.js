@@ -423,15 +423,15 @@ class ServiceInfoForm extends React.Component {
                 orderInfo.state = "已服务";
                 orderInfo.key = new Date().getTime();
                 // window.localStorage.setItem("orderInfo",JSON.stringify(orderInfo));
-                const tableList = window.localStorage.getItem("tableList");
-                if(tableList){
-                    const newTabList = JSON.parse(tableList);
-                    newTabList.push(orderInfo);
-                    window.localStorage.setItem("tableList",JSON.stringify(newTabList));
+                const orderList = window.localStorage.getItem("orderList");
+                if(orderList){
+                    const newOrderList = JSON.parse(orderList);
+                    newOrderList.push(orderInfo);
+                    window.localStorage.setItem("orderList",JSON.stringify(newOrderList));
                 } else {
                     const array = [];
                     array.push(orderInfo);
-                    window.localStorage.setItem("tableList", JSON.stringify(array));
+                    window.localStorage.setItem("orderList", JSON.stringify(array));
                 }
                 console.log(window.localStorage);
                 message.success('提交成功',1.5,()=>{this.props.changeRoute(null, "/App");});

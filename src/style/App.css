@@ -53,7 +53,7 @@
 }
 
 /*content中表格的样式*/
-/*.ant-layout .ant-layout-content .antd-layout-TableList{
+/*.ant-layout .ant-layout-content .antd-layout-OrderList{
   margin-top: -20px;
 }*/
 .ant-layout .ant-layout-content .ant-btn-primary {
@@ -131,7 +131,6 @@
   margin: 0 auto;
 }
 .ant-layout .ant-layout-content .ant-form {
-  width: 40%;
   margin: 0 auto;
 }
 

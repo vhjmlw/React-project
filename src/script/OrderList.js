@@ -2,7 +2,7 @@ import {Table,Button,Modal} from "antd";
 import React from "react";
 import {browserHistory,Link} from "react-router";
 
-class TableList extends React.Component{
+class OrderList extends React.Component{
     state = {
         columns: [{
             title: '客户姓名',
@@ -117,17 +117,17 @@ class TableList extends React.Component{
         this.props.history.pushState(null, "/App/OrderInfo");//API已经过时了，但是暂时想不出其他的解决办法
     }
     render(){
-        console.log(JSON.parse(window.localStorage.getItem("tableList")));
+        console.log(JSON.parse(window.localStorage.getItem("orderList")));
         return (
-            <div className="antd-layout-TableList">
+            <div className="antd-layout-OrderList">
                 <div className="clearfix">
                     <Button type="primary">打印工单</Button>
                     <Button type="primary" onClick={this.handleClick.bind(this)}>新增</Button>
                 </div>
-                <Table columns={this.state.columns} dataSource={JSON.parse(window.localStorage.getItem("tableList"))} />
+                <Table columns={this.state.columns} dataSource={JSON.parse(window.localStorage.getItem("orderList"))} />
             </div>
         );
     }
 }
 
-export default TableList;
+export default OrderList;

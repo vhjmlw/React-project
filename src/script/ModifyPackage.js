@@ -26,29 +26,37 @@ class PackageInfoForm extends React.Component {
         unitValue: '个',
     };
 
+    componentWillMount(){
+        let modifyPackage = window.localStorage.getItem("modifyPackage");
+        modifyPackage = JSON.parse(modifyPackage);
+        this.setState({
+            packageName: modifyPackage.packageName,
+            packagePrice: modifyPackage.packagePrice,
+            packageItem: modifyPackage.packageItem,
+            tags: modifyPackage.packageAccessory,
+            key: modifyPackage.key,
+        });
+    }
+
     handleSubmit = (e) => {
         e.preventDefault();
         this.props.form.validateFieldsAndScroll((err, values) => {
             if (!err) {
                 console.log('Received values of form: ', values);
                 if(this.state.tags.length === 0){
-                    message.error('请选择配件');
+                    message.error("请选择配件");
                     return;
                 } else {
-                    const packageInfo = {packageAccessory: this.state.tags, ...values};
-                    packageInfo.key = new Date().getTime();
-                    window.localStorage.setItem('packageInfo',JSON.stringify(packageInfo));
-                    let packageList = window.localStorage.packageList;
-                    if(packageList){
-                        packageList = JSON.parse(packageList);
-                        packageList.push(packageInfo);
-                        window.localStorage.setItem("packageList",JSON.stringify(packageList));
-                    } else {
-                        packageList = [];
-                        packageList.push(packageInfo);
-                        window.localStorage.setItem("packageList",JSON.stringify(packageList));
+                    let packageList = window.localStorage.getItem("packageList");
+                    packageList = JSON.parse(packageList);
+                    for(let item of packageList){
+                        if(item.key === this.state.key){
+                            Object.assign(item,{packageAccessory:this.state.tags, ...values});
+                            break;
+                        }
                     }
-                    message.success('提交成功', 1.5, ()=>{this.props.changeRoute(null, "/App/PackageList")});
+                    window.localStorage.setItem('packageList',JSON.stringify(packageList));
+                    message.success('修改成功', 1.5, ()=>{this.props.changeRoute(null,'/App/PackageList')});
                 }
             }
         });
@@ -100,7 +108,7 @@ class PackageInfoForm extends React.Component {
         console.log(newTag);
         let tags = this.state.tags;
         if(tags.indexOf(newTag) === -1){
-           tags = [...tags,newTag];
+            tags = [...tags,newTag];
         }
         this.setState({
             tags,
@@ -142,8 +150,8 @@ class PackageInfoForm extends React.Component {
         const confirmDOM = (
             <Form>
                 <FormItem
-                label="类别"
-                {...formItemLayout}
+                    label="类别"
+                    {...formItemLayout}
                 >
                     <Select
                         value={this.state.categoryValue}
@@ -154,8 +162,8 @@ class PackageInfoForm extends React.Component {
                     </Select>
                 </FormItem>
                 <FormItem
-                label="品牌"
-                {...formItemLayout}
+                    label="品牌"
+                    {...formItemLayout}
                 >
                     <Select
                         value={this.state.brandValue}
@@ -166,8 +174,8 @@ class PackageInfoForm extends React.Component {
                     </Select>
                 </FormItem>
                 <FormItem
-                label="数量"
-                {...formItemLayout}
+                    label="数量"
+                    {...formItemLayout}
                 >
                     <span>
                         <Input
@@ -202,6 +210,7 @@ class PackageInfoForm extends React.Component {
                         rules: [{
                             required: true, message: '请输入名称',
                         }],
+                        initialValue: this.state.packageName,
                     })(
                         <Input placeholder="请输入名称"/>
                     )}
@@ -215,6 +224,7 @@ class PackageInfoForm extends React.Component {
                         rules: [{
                             required: true, message: '请输入价格',
                         }],
+                        initialValue: this.state.packagePrice,
                     })(
                         <Input placeholder="请输入价格"/>
                     )}
@@ -227,6 +237,7 @@ class PackageInfoForm extends React.Component {
                         rules: [{
                             required: true, message: '请选择服务项目'
                         }],
+                        initialValue: this.state.packageItem,
                     })(
                         <Select
                             multiple
@@ -269,25 +280,25 @@ class PackageInfoForm extends React.Component {
                     </div>
                 </FormItem>
                 <FormItem {...tailFormItemLayout}>
-                    <Button type="primary" htmlType="submit" size="large">提交</Button>
+                    <Button type="primary" htmlType="submit" size="large">修改</Button>
                 </FormItem>
             </Form>
         );
     }
 }
 
-const PackageInfoComp = Form.create()(PackageInfoForm);
+const PackageInfo = Form.create()(PackageInfoForm);
 
-class PackageInfo extends React.Component {
+class ModifyPackage extends React.Component {
     render(){
         return (
             <Tabs defaultActiveKey="1">
-                <TabPane tab="添加" key="1">
-                    <PackageInfoComp changeRoute={this.props.history.pushState} />
+                <TabPane tab="修改" key="1">
+                    <PackageInfo changeRoute={this.props.history.pushState} />
                 </TabPane>
             </Tabs>
         );
     }
 }
 
-export default PackageInfo;
+export default ModifyPackage;

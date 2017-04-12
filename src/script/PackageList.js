@@ -1,7 +1,7 @@
 import {Table,Button} from "antd";
 import React from "react";
 
-const packageList = [
+/*const packageList = [
     {
         packageName: '保养套餐1',
         packagePrice: '666',
@@ -9,7 +9,7 @@ const packageList = [
         packageAccessory: '东风机滤一个',
         key: new Date().getTime(),
     },
-];
+];*/
 
 class PackageList extends React.Component{
     state = {
@@ -42,9 +42,10 @@ class PackageList extends React.Component{
 
     handleModify(record) {
         return function () {
-            this.props.history.pushState(null,"/App/ModifyInfo");
-            window.localStorage.setItem('totalInfo',JSON.stringify(record));
-            console.log(window.localStorage);
+            record.packageItem = record.packageItem.split(" - ");
+            record.packageAccessory = record.packageAccessory.split(" - ");
+            window.localStorage.setItem('modifyPackage',JSON.stringify(record));
+            this.props.history.pushState(null,"/App/ModifyPackage");
         }
     }
 

@@ -165,7 +165,7 @@ class ModifyInfoForm extends React.Component {
 				values.purchaseDate = new Date(values.purchaseDate).toISOString().substr(0,10);
 				values.serviceDate = new Date(values.serviceDate).toISOString().substr(0,10);
 				console.log('Received values of form: ', values);
-				let orderList = JSON.parse(window.localStorage.orderList);
+				let orderList = JSON.parse(window.localStorage.getItem("orderList"));
 				for(let item of orderList){
 					if(item.key === this.state.key){
 						Object.assign(item,values);

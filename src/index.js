@@ -6,6 +6,7 @@ import OrderInfo from './script/OrderInfo';
 import ModifyInfo from './script/ModifyInfo';
 import PackageList from './script/PackageList';
 import PackageInfo from './script/PackageInfo';
+import ModifyPackage from './script/ModifyPackage';
 import './style/common.css';
 import './index.css';
 import "./style/App.css";
@@ -21,6 +22,7 @@ ReactDOM.render(
               <Route path="ModifyInfo" component={ModifyInfo}/>
               <Route path="PackageList" component={PackageList}/>
               <Route path="PackageInfo" component={PackageInfo}/>
+              <Route path="ModifyPackage" component={ModifyPackage}/>
           </Route>
       </Route>
   </Router>),

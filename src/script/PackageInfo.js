@@ -1,5 +1,6 @@
-import { Tabs, Form, Icon, Input, Button, Select } from 'antd';
+import { Tabs, Form, Icon, Input, Button, Select, Tag, Popconfirm, message } from 'antd';
 import React from 'react';
+import ReactDOM from 'react-dom';
 const TabPane = Tabs.TabPane;
 const FormItem = Form.Item;
 const Option = Select.Option;
@@ -16,9 +17,22 @@ function handleChange(value) {
     console.log(`selected ${value}`);
 }
 
+const categoryDate = ['机油', '机滤'];
+const brandData = {
+    '机油': ['潍柴动力', '金龙鱼', '双龙鱼'],
+    '机滤': ['机滤品牌1', '机滤品牌2', '机滤品牌3'],
+};
+
 class PackageInfoForm extends React.Component {
     state = {
         confirmDirty: false,
+        tags: [],
+        brands: brandData[categoryDate[0]],
+        brandValue: brandData[categoryDate[0]][0],
+        visible: false,
+        categoryValue: categoryDate[0],
+        numberValue: '0',
+        unitValue: '个',
     };
 
     handleSubmit = (e) => {
@@ -26,10 +40,97 @@ class PackageInfoForm extends React.Component {
         this.props.form.validateFieldsAndScroll((err, values) => {
             if (!err) {
                 console.log('Received values of form: ', values);
+                if(this.state.tags.length === 0){
+                    message.error('请选择配件');
+                    return;
+                } else {
+                    const packageInfo = {packageAccessory: this.state.tags, ...values};
+                    window.localStorage.setItem('packageInfo',JSON.stringify(packageInfo));
+                    let packageList = window.localStorage.packageList;
+                    if(packageList){
+                        packageList = JSON.parse(packageList);
+                        packageList.push(packageInfo);
+                        window.localStorage.setItem("packageList",JSON.stringify(packageList));
+                    } else {
+                        packageList = [];
+                        packageList.push(packageInfo);
+                        window.localStorage.setItem("packageList",JSON.stringify(packageList));
+                    }
+                    message.success('提交成功', 1.5, ()=>{this.props.changeRoute(null, "/App/PackageList")});
+                }
             }
         });
     }
 
+    handleTagClose = (removedTag) => {
+        const tags = this.state.tags.filter(tag => tag !== removedTag);
+        console.log(tags);
+        this.setState({ tags });
+    }
+
+    handleCategoryChange = (value) => {
+        this.setState({
+            brands: brandData[value],
+            brandValue: brandData[value][0],
+            categoryValue: value,
+        });
+    }
+
+    handleBrandChange = (value) => {
+        this.setState({
+            brandValue: value,
+        });
+    }
+
+    handleNumberChange(e){
+        this.setState({
+            numberValue: e.target.value,
+        });
+    }
+
+    handleUnitChange(value){
+        this.setState({
+            unitValue: value,
+        });
+    }
+
+    handleOK(){
+        const numberValue = Number(this.state.numberValue);
+        if(isNaN(numberValue)){
+            message.error('数量输入的格式有误');
+            return;
+        } else if (numberValue === 0){
+            message.error('请输入数量');
+            return;
+        }
+        const {categoryValue, brandValue, unitValue} = this.state;
+        const newTag = brandValue + categoryValue + numberValue + unitValue;
+        console.log(newTag);
+        let tags = this.state.tags;
+        if(tags.indexOf(newTag) === -1){
+           tags = [...tags,newTag];
+        }
+        this.setState({
+            tags,
+            visible: false,
+            categoryValue: categoryDate[0],
+            brandValue: brandData[categoryDate[0]][0],
+            numberValue: '0',
+            unitValue: '个',
+            brands: brandData[categoryDate[0]],
+        });
+    }
+
+    handleCancel(){
+        this.setState({
+            visible: false,
+            categoryValue: categoryDate[0],
+            brandValue: brandData[categoryDate[0]][0],
+            numberValue: '0',
+            unitValue: '个',
+            brands: brandData[categoryDate[0]],
+        });
+    }
 
     render() {
         const { getFieldDecorator } = this.props.form;
@@ -43,6 +144,60 @@ class PackageInfoForm extends React.Component {
                 offset: 6,
             },
         };
+
+        const categoryOptions = categoryDate.map(category => <Option key={category}>{category}</Option>);
+        const brandOptions = this.state.brands.map(brand => <Option key={brand}>{brand}</Option>);
+        const confirmDOM = (
+            <Form>
+                <FormItem
+                label="类别"
+                {...formItemLayout}
+                >
+                    <Select
+                        value={this.state.categoryValue}
+                        style={{ width: 90 }}
+                        onChange={this.handleCategoryChange}
+                    >
+                        {categoryOptions}
+                    </Select>
+                </FormItem>
+                <FormItem
+                label="品牌"
+                {...formItemLayout}
+                >
+                    <Select
+                        value={this.state.brandValue}
+                        style={{ width: 90 }}
+                        onChange={this.handleBrandChange}
+                    >
+                        {brandOptions}
+                    </Select>
+                </FormItem>
+                <FormItem
+                label="数量"
+                {...formItemLayout}
+                >
+                    <span>
+                        <Input
+                            type="text"
+                            size='large'
+                            value={this.state.numberValue}
+                            onChange={this.handleNumberChange.bind(this)}
+                            style={{ width: '65%', marginRight: '3%' }}
+                        />
+                        <Select
+                            value = {this.state.unitValue}
+                            style={{ width: '32%' }}
+                            onChange={this.handleUnitChange.bind(this)}
+                        >
+                          <Option value="个">个</Option>
+                          <Option value="L">L</Option>
+                          <Option value="次">次</Option>
+                        </Select>
+                    </span>
+                </FormItem>
+            </Form>
+        );
 
         return (
             <Form onSubmit={this.handleSubmit}>
@@ -99,16 +254,30 @@ class PackageInfoForm extends React.Component {
                     {...formItemLayout}
                     label='配件'
                 >
-                    {getFieldDecorator('packageAccessory', {
-                        rules: [{
-                            required: true
-                        }],
-                    })(
-                        <Input />
-                    )}
+                    <div>
+                        {this.state.tags.map((tag) => {
+                            const tagElem = (
+                                <Tag key={tag} closable={true} afterClose={() => this.handleTagClose(tag)}>
+                                    {tag}
+                                </Tag>
+                            );
+                            return tagElem;
+                        })}
+                        <Popconfirm
+                            placement="rightTop"
+                            onConfirm={this.handleOK.bind(this)}
+                            onCancel={this.handleCancel.bind(this)}
+                            title={confirmDOM}
+                            okText="确定"
+                            cancelText="取消"
+                            visible={this.state.visible}
+                        >
+                            <Button type="primary" size="small" onClick={()=>this.setState({visible:true})}>+</Button>
+                        </Popconfirm>
+                    </div>
                 </FormItem>
                 <FormItem {...tailFormItemLayout}>
-                    <Button type="primary" htmlType="submit" size="large">保存</Button>
+                    <Button type="primary" htmlType="submit" size="large">提交</Button>
                 </FormItem>
             </Form>
         );
@@ -122,7 +291,7 @@ class PackageInfo extends React.Component {
         return (
             <Tabs defaultActiveKey="1">
                 <TabPane tab="添加" key="1">
-                    <PackageInfoComp />
+                    <PackageInfoComp changeRoute={this.props.history.pushState} />
                 </TabPane>
             </Tabs>
         );

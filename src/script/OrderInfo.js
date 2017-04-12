@@ -434,7 +434,7 @@ class ServiceInfoForm extends React.Component {
                     window.localStorage.setItem("orderList", JSON.stringify(array));
                 }
                 console.log(window.localStorage);
-                message.success('提交成功',1.5,()=>{this.props.changeRoute(null, "/App");});
+                message.success('提交成功',1.5,()=>{this.props.changeRoute(null, "/App")});
 
             }
         });

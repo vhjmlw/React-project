@@ -57,7 +57,15 @@ class PackageList extends React.Component{
     }
 
     render(){
-        console.log(JSON.parse(window.localStorage.getItem("orderList")));
+        console.log(JSON.parse(window.localStorage.getItem("packageList")));
+        let packageList = JSON.parse(window.localStorage.getItem('packageList'));
+        if(packageList){
+            packageList = packageList.map((item)=>{
+                item.packageItem = item.packageItem.join(" - ");
+                item.packageAccessory = item.packageAccessory.join(" - ");
+                return item;
+            });
+        }
         return (
             <div className="antd-layout-OrderList">
                 <div className="clearfix">

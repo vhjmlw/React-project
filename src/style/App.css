@@ -126,12 +126,14 @@
   padding-top: 15px;
   display: block;
 }
-.ant-layout .ant-tabs-content .ant-tabs-tabpane {
-  width: 40% !important;
+.ant-layout .ant-layout-content .ant-form {
+  width: 40%;
   margin: 0 auto;
 }
-.ant-layout .ant-layout-content .ant-form {
-  margin: 0 auto;
+
+/*PackageInfo页面的样式*/
+.ant-popover .ant-popover-content .anticon-exclamation-circle {
+  display: none;
 }
 
 

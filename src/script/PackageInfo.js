@@ -41,13 +41,11 @@ class PackageInfoForm extends React.Component {
                     let packageList = window.localStorage.packageList;
                     if(packageList){
                         packageList = JSON.parse(packageList);
-                        packageList.push(packageInfo);
-                        window.localStorage.setItem("packageList",JSON.stringify(packageList));
                     } else {
                         packageList = [];
-                        packageList.push(packageInfo);
-                        window.localStorage.setItem("packageList",JSON.stringify(packageList));
                     }
+                    packageList.push(packageInfo);
+                    window.localStorage.setItem("packageList",JSON.stringify(packageList));
                     message.success('提交成功', 1.5, ()=>{this.props.changeRoute(null, "/App/PackageList")});
                 }
             }
@@ -75,6 +73,7 @@ class PackageInfoForm extends React.Component {
     }
 
     handleNumberChange(e){
+        e.preventDefault();
         this.setState({
             numberValue: e.target.value,
         });

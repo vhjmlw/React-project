@@ -56,7 +56,7 @@ class PackageInfoForm extends React.Component {
                         }
                     }
                     window.localStorage.setItem('packageList',JSON.stringify(packageList));
-                    message.success('修改成功', 1.5, ()=>{this.props.changeRoute(null,'/App/PackageList')});
+                    message.success('保存成功', 1.5, ()=>{this.props.changeRoute(null,'/App/PackageList')});
                 }
             }
         });
@@ -280,7 +280,7 @@ class PackageInfoForm extends React.Component {
                     </div>
                 </FormItem>
                 <FormItem {...tailFormItemLayout}>
-                    <Button type="primary" htmlType="submit" size="large">修改</Button>
+                    <Button type="primary" htmlType="submit" size="large">保存</Button>
                 </FormItem>
             </Form>
         );

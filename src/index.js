@@ -7,6 +7,7 @@ import ModifyInfo from './script/ModifyInfo';
 import PackageList from './script/PackageList';
 import PackageInfo from './script/PackageInfo';
 import ModifyPackage from './script/ModifyPackage';
+import PackageSale from './script/PackageSale';
 import './style/common.css';
 import './index.css';
 import "./style/App.css";
@@ -23,6 +24,7 @@ ReactDOM.render(
               <Route path="PackageList" component={PackageList}/>
               <Route path="PackageInfo" component={PackageInfo}/>
               <Route path="ModifyPackage" component={ModifyPackage}/>
+              <Route path="PackageSale" component={PackageSale}/>
           </Route>
       </Route>
   </Router>),

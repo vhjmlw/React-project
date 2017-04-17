@@ -2,6 +2,7 @@
   "name": "antd-demo-zhongde",
   "version": "0.1.0",
   "private": true,
+  "proxy": "http://192.168.1.190:8080",
   "dependencies": {
     "antd": "^2.8.1",
     "moment": "^2.18.1",

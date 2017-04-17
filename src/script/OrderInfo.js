@@ -108,7 +108,26 @@ class CustomInfoForm extends React.Component {
         this.props.form.validateFieldsAndScroll((err, values) => {
             if (!err) {
                 console.log('Received values of form: ', values);
-                window.localStorage.setItem("customInfo",JSON.stringify(values));
+                fetch('v1/customer/create',{
+                    method: 'POST',
+                    headers: new Headers({
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    }),
+                    body: JSON.stringify({
+                        name: values.name,
+                        phone: values.phoneNumber,
+                        sex: values.sex === '男'? '1': '0',
+                        remark: values.customComment
+                    }),
+                }).then(function (response) {
+                    return response.text();
+                }).then(function (text) {
+                    text = JSON.parse(text);
+                    values.key = text.data;
+                    window.localStorage.setItem("customInfo",JSON.stringify(values));
+                }).catch(function (err) {
+                    throw err;
+                });
                 this.handleClick(next);
             }
         });
@@ -156,8 +175,6 @@ class CustomInfoForm extends React.Component {
                     >
                         {getFieldDecorator('phoneNumber', {
                             rules: [{
-                                pattern: /^1(3|4|5|7|8)[0-9]\d{8}$/, message: '电话号码格式不正确',
-                            }, {
                                 required: true, message: '请输入电话号码',
                             }],
                         })(
@@ -172,11 +189,25 @@ class CustomInfoForm extends React.Component {
                         {getFieldDecorator('name', {
                             rules: [{
                                 required: true, message: '请输入姓名',
-                            },{
-                                pattern: /^([a-zA-Z\u4e00-\u9fa5\·]{1,10})$/, message: '姓名格式不正确',
                             }],
                         })(
                             <Input />
+                        )}
+                    </FormItem>
+                    <FormItem
+                        {...formItemLayout}
+                        label="性别"
+                    >
+                        {getFieldDecorator('sex',{
+                            rules: [{
+                                required: true, message: '请选择性别'
+                            }],
+                            initialValue: '男',
+                        })(
+                            <Select style={{width: 110}}>
+                                <Option value="男">男</Option>
+                                <Option value="女">女</Option>
+                            </Select>
                         )}
                     </FormItem>
                     <FormItem
@@ -187,9 +218,7 @@ class CustomInfoForm extends React.Component {
                         {getFieldDecorator('plateNumber', {
                             rules: [{
                                 required: true, message: '请输入车牌号',
-                            },{/*{
-                             pattern: /^[京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤青藏川宁琼使领A-Z]{1}\s*[A-Z]{1}[A-Z0-9]{4}[A-Z0-9挂学警港澳]{1}$/, message: '车牌号格式不正确',
-                             }*/}],
+                            }],
                             initialValue: "苏",
                         })(
                             <Input />
@@ -421,7 +450,6 @@ class ServiceInfoForm extends React.Component {
                 orderInfo.serviceDate = new Date(orderInfo.serviceDate).toISOString().substr(0,10);
                 orderInfo.area = orderInfo.address[0];
                 orderInfo.state = "已服务";
-                orderInfo.key = new Date().getTime();
                 // window.localStorage.setItem("orderInfo",JSON.stringify(orderInfo));
                 const orderList = window.localStorage.getItem("orderList");
                 if(orderList){

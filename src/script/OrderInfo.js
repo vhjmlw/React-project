@@ -108,27 +108,41 @@ class CustomInfoForm extends React.Component {
         this.props.form.validateFieldsAndScroll((err, values) => {
             if (!err) {
                 console.log('Received values of form: ', values);
+                let param = ``;
+                param += `name=${values.name}`;
+                param += `&phone=${values.phoneNumber}`;
+                param += `&sex=${values.sex === '男'? '1': '0'}`;
+                param += `&remark=${values.customComment}`;
                 fetch('v1/customer/create',{
                     method: 'POST',
                     headers: new Headers({
                         'Content-Type': 'application/x-www-form-urlencoded',
                     }),
-                    body: JSON.stringify({
-                        name: values.name,
-                        phone: values.phoneNumber,
-                        sex: values.sex === '男'? '1': '0',
-                        remark: values.customComment
-                    }),
-                }).then(function (response) {
-                    return response.text();
-                }).then(function (text) {
-                    text = JSON.parse(text);
-                    values.key = text.data;
-                    window.localStorage.setItem("customInfo",JSON.stringify(values));
-                }).catch(function (err) {
+                    body: param,
+                }).then( (response)=> {
+                    return response.json();
+                }).then( (json)=> {
+                    console.log(json);
+                    if(json.code === "200"){
+                        values.key = json.data + "";
+                        window.localStorage.setItem("customInfo",JSON.stringify(values));
+                        this.handleClick(next);
+                    } else {
+                        message.warning(json.message);
+                    }
+                }).catch( (err)=> {
                     throw err;
                 });
-                this.handleClick(next);
+                /*const xhr = new XMLHttpRequest();
+                xhr.open('POST','v1/customer/create');
+                xhr.onreadystatechange = function () {
+                    if(xhr.readyState === 4 && xhr.status === 200){
+                        console.log(xhr.responseText);
+                    }
+                }
+                const param = 'name=demo&phone=123&mark=askdfk';
+                xhr.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
+                xhr.send(param);*/
             }
         });
     }
@@ -161,7 +175,9 @@ class CustomInfoForm extends React.Component {
         };
 
         return (
-            <div className="antd-layout-AddOrder" style={{zIndex:this.props.visibleState.CustomInfo,opacity:this.props.visibleState.CustomInfoAlpha}}>
+            <div
+                className="antd-layout-AddOrder"
+                style={{zIndex:this.props.visibleState.CustomInfo,opacity:this.props.visibleState.CustomInfoAlpha}}>
                 <Steps current={0} className="layout-AddOrder-steps">
                     <Step title="客户信息" />
                     <Step title="车辆信息" />
@@ -300,8 +316,68 @@ class CarInfoForm extends React.Component {
         this.props.form.validateFieldsAndScroll((err, values) => {
             if (!err) {
                 console.log('Received values of form: ', values);
-                window.localStorage.setItem("carInfo",JSON.stringify(values));
-                this.handleClick(next);
+                const customerId = JSON.parse(window.localStorage.getItem('customInfo')).key;
+                const plate = JSON.parse(window.localStorage.getItem('customInfo')).plateNumber;
+                let registerDate = new Date(values.purchaseDate).toISOString().substr(0,10);
+                registerDate = registerDate.replace(/[^0-9]/g,'');
+                let param = ``;
+                param += `customerId=${customerId}`;
+                param += `&plate=${plate}`;
+                param += `&registerDate= ${registerDate}`;
+                param += `&brandId=12`;
+                param += `&modelId=12`;
+                param += `&displacement=${values.displacement[0]}`;
+                param += `&engineOilBrand=${values.oilBrand.join('/')}`;
+                param += `&engineFilterBrand=${values.filterBrand[0]}`;
+                param += `&remark=${values.carComment}`;
+                fetch('v1/car/create',{
+                    method: 'POST',
+                    headers: new Headers({
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }),
+                    body: param,
+                }).then((response)=>{
+                    return response.json();
+                }).then((json)=>{
+                    console.log(json);
+                    if(json.code === "200"){
+                        values.carId = json.data + "";
+                        window.localStorage.setItem("carInfo",JSON.stringify(values));
+                        this.handleClick(next);
+                    } else {
+                        message.warning(json.message);
+                    }
+                }).catch((error)=>{
+                    throw error;
+                });
+                /*const xhr = new XMLHttpRequest();
+                xhr.open('POST','v1/car/create',true);
+                xhr.onreadystatechange = function () {
+                    if(xhr.readyState === 4 && xhr.status === 200){
+                        const responseJson = JSON.parse(xhr.responseText);
+                        if(responseJson.code === '200'){
+                            values.carId = responseJson.data + "";
+                            window.localStorage.setItem("carInfo",JSON.stringify(values));
+                            this.handleClick(next);
+                        } else {
+                            message.warning(responseJson.message);
+                        }
+                    }
+                }
+                let param = ``;
+                param += `customerId=${customerId}`;
+                param += `&plate=${plate}`;
+                param += `&registerDate=${registerDate}`;
+                param += `&brandId=${values.brand[0]}`;
+                param += `&modelId=${values.cartype[0]}`;
+                param += `&displacement=${values.displacement[0]}`;
+                param += `&engineOilBrand=${values.oilBrand.join('/')}`;
+                param += `&engineFilterBrand=${values.filterBrand[0]}`;
+                param += `&remark=${values.carComment}`;
+                xhr.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
+                console.log(param);
+                xhr.send(param);*/
+
             }
         });
     }
@@ -341,7 +417,9 @@ class CarInfoForm extends React.Component {
         };
 
         return (
-            <div className="antd-layout-AddOrder" style={{zIndex:this.props.visibleState.CarInfo,opacity:this.props.visibleState.CarInfoAlpha}}>
+            <div
+                className="antd-layout-AddOrder"
+                style={{zIndex:this.props.visibleState.CarInfo,opacity:this.props.visibleState.CarInfoAlpha}}>
                 <Steps current={1} className="layout-AddOrder-steps">
                     <Step title="客户信息" />
                     <Step title="车辆信息" />
@@ -440,30 +518,63 @@ class ServiceInfoForm extends React.Component {
         this.props.form.validateFieldsAndScroll((err, values) => {
             if (!err) {
                 console.log('Received values of form: ', values);
-                window.localStorage.setItem("serviceInfo",JSON.stringify(values));
-                const orderInfo = {};
-                const customInfo = JSON.parse(window.localStorage.getItem("customInfo"));
-                const carInfo = JSON.parse(window.localStorage.getItem("carInfo"));
-                const serviceInfo = JSON.parse(window.localStorage.getItem("serviceInfo"));
-                Object.assign(orderInfo,customInfo,carInfo,serviceInfo);
-                orderInfo.purchaseDate = new Date(orderInfo.purchaseDate).toISOString().substr(0,10);
-                orderInfo.serviceDate = new Date(orderInfo.serviceDate).toISOString().substr(0,10);
-                orderInfo.area = orderInfo.address[0];
-                orderInfo.state = "已服务";
-                // window.localStorage.setItem("orderInfo",JSON.stringify(orderInfo));
-                const orderList = window.localStorage.getItem("orderList");
-                if(orderList){
-                    const newOrderList = JSON.parse(orderList);
-                    newOrderList.push(orderInfo);
-                    window.localStorage.setItem("orderList",JSON.stringify(newOrderList));
-                } else {
-                    const array = [];
-                    array.push(orderInfo);
-                    window.localStorage.setItem("orderList", JSON.stringify(array));
-                }
-                console.log(window.localStorage);
-                message.success('提交成功',1.5,()=>{this.props.changeRoute(null, "/App")});
-
+                const customerId = JSON.parse(window.localStorage.customInfo).key;
+                const carId = JSON.parse(window.localStorage.carInfo).carId;
+                const cardId = JSON.parse(window.localStorage.customInfo).captcha;
+                const productType = JSON.parse(window.localStorage.customInfo).product;
+                const cardChannel = JSON.parse(window.localStorage.customInfo).cardChannel;
+                let serviceTime = new Date(values.serviceDate).toISOString().substr(0,10);
+                serviceTime = serviceTime.replace(/[^0-9]/g,'');
+                let param = ``;
+                param += `customerId=${customerId}`;
+                param += `&carId=${carId}`;
+                param += `&cardId=${cardId}`;
+                param += `&productType=${productType}`;
+                param += `&cardChannel=${cardChannel}`;
+                param += `&serviceAddress=${values.address.join('-')}`;
+                param += `&detailAddress=${values.detailAddress}`;
+                param += `&serviceTime=${serviceTime}`;
+                param += `&status=待服务`;
+                fetch('v1/maintain/create',{
+                    method: 'POST',
+                    headers: new Headers({
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    }),
+                    body: param,
+                }).then((response)=>{
+                    if(response.ok){
+                        return response.json();
+                    }
+                }).then((json)=>{
+                    if(json.code === '200'){
+                        values.serviceId = json.data + '';
+                        window.localStorage.setItem("serviceInfo",JSON.stringify(values));
+                        const orderInfo = {};
+                        const customInfo = JSON.parse(window.localStorage.getItem("customInfo"));
+                        const carInfo = JSON.parse(window.localStorage.getItem("carInfo"));
+                        const serviceInfo = JSON.parse(window.localStorage.getItem("serviceInfo"));
+                        Object.assign(orderInfo,customInfo,carInfo,serviceInfo);
+                        orderInfo.purchaseDate = new Date(orderInfo.purchaseDate).toISOString().substr(0,10);
+                        orderInfo.serviceDate = new Date(orderInfo.serviceDate).toISOString().substr(0,10);
+                        orderInfo.area = orderInfo.address[0];
+                        orderInfo.state = "待服务";
+                        const orderList = window.localStorage.getItem("orderList");
+                        if(orderList){
+                            const newOrderList = JSON.parse(orderList);
+                            newOrderList.push(orderInfo);
+                            window.localStorage.setItem("orderList",JSON.stringify(newOrderList));
+                        } else {
+                            const array = [];
+                            array.push(orderInfo);
+                            window.localStorage.setItem("orderList", JSON.stringify(array));
+                        }
+                        message.success('提交成功',1.5,()=>{this.props.changeRoute(null, "/App")});
+                    } else {
+                        message.warning(json.message);
+                    }
+                }).catch((error)=>{
+                    throw error;
+                });
             }
         });
     }
@@ -496,7 +607,9 @@ class ServiceInfoForm extends React.Component {
         };
 
         return (
-            <div className="antd-layout-AddOrder" style={{zIndex:this.props.visibleState.ServiceInfo,opacity:this.props.visibleState.ServiceInfoAlpha}}>
+            <div
+                className="antd-layout-AddOrder"
+                style={{zIndex:this.props.visibleState.ServiceInfo,opacity:this.props.visibleState.ServiceInfoAlpha}}>
                 <Steps current={2} className="layout-AddOrder-steps">
                     <Step title="客户信息" />
                     <Step title="车辆信息" />

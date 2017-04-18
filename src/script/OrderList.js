@@ -1,4 +1,4 @@
-import {Table,Button,Modal} from "antd";
+import {Table, Button, Modal, message} from "antd";
 import React from "react";
 import {browserHistory,Link} from "react-router";
 
@@ -46,7 +46,8 @@ class OrderList extends React.Component{
                     <a href="javascript:alert('打印页面');">打印</a>
                 </span>)
             },
-        }]
+        }],
+        orderListData: null,
     };
 
     handleInfo(record) {
@@ -116,15 +117,61 @@ class OrderList extends React.Component{
         // browserHistory.push("/App/MyForm");
         this.props.history.pushState(null, "/App/OrderInfo");//API已经过时了，但是暂时想不出其他的解决办法
     }
+
+    handleConvert(sourceArray){
+        const newArray = sourceArray.map((source)=>{
+            return {
+                key: source.customerId,
+                carId: source.carId,
+                maintainId: source.maintainId,
+                name: source.customerName,
+                plateNumber: source.plate,
+                phoneNumber: source.phone,
+                product: source.productName,
+                cardChannel: source.cardChannel,
+                area: source.address,
+                serviceDate: source.serviceTime,
+                state: source.status,
+            };
+        });
+        return newArray;
+    }
+
+    componentDidMount(){
+        let orderListData = null;
+        fetch('v1/sheet/list',{
+            method: 'GET',
+            headers: new Headers({
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }),
+        }).then((response)=>{
+            if(response.ok){
+                return response.json();
+            }
+        }).then((json)=>{
+            if(json.code === '200'){
+                orderListData = this.handleConvert(json.data);
+                this.setState({
+                    orderListData
+                });
+                console.log(orderListData);
+            } else {
+                message.warning(json.message);
+            }
+        }).catch((error)=>{
+            throw error;
+        });
+    }
+
     render(){
-        console.log(JSON.parse(window.localStorage.getItem("orderList")));
+
         return (
             <div className="antd-layout-OrderList">
                 <div className="clearfix">
                     <Button type="primary">打印工单</Button>
                     <Button type="primary" onClick={this.handleClick.bind(this)}>新增</Button>
                 </div>
-                <Table columns={this.state.columns} dataSource={JSON.parse(window.localStorage.getItem("orderList"))} />
+                <Table columns={this.state.columns} dataSource={this.state.orderListData} />
             </div>
         );
     }

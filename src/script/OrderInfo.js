@@ -108,41 +108,8 @@ class CustomInfoForm extends React.Component {
         this.props.form.validateFieldsAndScroll((err, values) => {
             if (!err) {
                 console.log('Received values of form: ', values);
-                let param = ``;
-                param += `name=${values.name}`;
-                param += `&phone=${values.phoneNumber}`;
-                param += `&sex=${values.sex === '男'? '1': '0'}`;
-                param += `&remark=${values.customComment}`;
-                fetch('v1/customer/create',{
-                    method: 'POST',
-                    headers: new Headers({
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    }),
-                    body: param,
-                }).then( (response)=> {
-                    return response.json();
-                }).then( (json)=> {
-                    console.log(json);
-                    if(json.code === "200"){
-                        values.key = json.data + "";
-                        window.localStorage.setItem("customInfo",JSON.stringify(values));
-                        this.handleClick(next);
-                    } else {
-                        message.warning(json.message);
-                    }
-                }).catch( (err)=> {
-                    throw err;
-                });
-                /*const xhr = new XMLHttpRequest();
-                xhr.open('POST','v1/customer/create');
-                xhr.onreadystatechange = function () {
-                    if(xhr.readyState === 4 && xhr.status === 200){
-                        console.log(xhr.responseText);
-                    }
-                }
-                const param = 'name=demo&phone=123&mark=askdfk';
-                xhr.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
-                xhr.send(param);*/
+                window.localStorage.setItem("customInfo",JSON.stringify(values));
+                this.handleClick(next);
             }
         });
     }
@@ -316,68 +283,8 @@ class CarInfoForm extends React.Component {
         this.props.form.validateFieldsAndScroll((err, values) => {
             if (!err) {
                 console.log('Received values of form: ', values);
-                const customerId = JSON.parse(window.localStorage.getItem('customInfo')).key;
-                const plate = JSON.parse(window.localStorage.getItem('customInfo')).plateNumber;
-                let registerDate = new Date(values.purchaseDate).toISOString().substr(0,10);
-                registerDate = registerDate.replace(/[^0-9]/g,'');
-                let param = ``;
-                param += `customerId=${customerId}`;
-                param += `&plate=${plate}`;
-                param += `&registerDate= ${registerDate}`;
-                param += `&brandId=12`;
-                param += `&modelId=12`;
-                param += `&displacement=${values.displacement[0]}`;
-                param += `&engineOilBrand=${values.oilBrand.join('/')}`;
-                param += `&engineFilterBrand=${values.filterBrand[0]}`;
-                param += `&remark=${values.carComment}`;
-                fetch('v1/car/create',{
-                    method: 'POST',
-                    headers: new Headers({
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    }),
-                    body: param,
-                }).then((response)=>{
-                    return response.json();
-                }).then((json)=>{
-                    console.log(json);
-                    if(json.code === "200"){
-                        values.carId = json.data + "";
-                        window.localStorage.setItem("carInfo",JSON.stringify(values));
-                        this.handleClick(next);
-                    } else {
-                        message.warning(json.message);
-                    }
-                }).catch((error)=>{
-                    throw error;
-                });
-                /*const xhr = new XMLHttpRequest();
-                xhr.open('POST','v1/car/create',true);
-                xhr.onreadystatechange = function () {
-                    if(xhr.readyState === 4 && xhr.status === 200){
-                        const responseJson = JSON.parse(xhr.responseText);
-                        if(responseJson.code === '200'){
-                            values.carId = responseJson.data + "";
-                            window.localStorage.setItem("carInfo",JSON.stringify(values));
-                            this.handleClick(next);
-                        } else {
-                            message.warning(responseJson.message);
-                        }
-                    }
-                }
-                let param = ``;
-                param += `customerId=${customerId}`;
-                param += `&plate=${plate}`;
-                param += `&registerDate=${registerDate}`;
-                param += `&brandId=${values.brand[0]}`;
-                param += `&modelId=${values.cartype[0]}`;
-                param += `&displacement=${values.displacement[0]}`;
-                param += `&engineOilBrand=${values.oilBrand.join('/')}`;
-                param += `&engineFilterBrand=${values.filterBrand[0]}`;
-                param += `&remark=${values.carComment}`;
-                xhr.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
-                console.log(param);
-                xhr.send(param);*/
-
+                window.localStorage.setItem("carInfo",JSON.stringify(values));
+                this.handleClick(next);
             }
         });
     }
@@ -516,64 +423,98 @@ class ServiceInfoForm extends React.Component {
     handleSubmit = (e) => {
         e.preventDefault();
         this.props.form.validateFieldsAndScroll((err, values) => {
+            let customID = '';
             if (!err) {
                 console.log('Received values of form: ', values);
-                const customerId = JSON.parse(window.localStorage.customInfo).key;
-                const carId = JSON.parse(window.localStorage.carInfo).carId;
-                const cardId = JSON.parse(window.localStorage.customInfo).captcha;
-                const productType = JSON.parse(window.localStorage.customInfo).product;
-                const cardChannel = JSON.parse(window.localStorage.customInfo).cardChannel;
-                let serviceTime = new Date(values.serviceDate).toISOString().substr(0,10);
-                serviceTime = serviceTime.replace(/[^0-9]/g,'');
-                let param = ``;
-                param += `customerId=${customerId}`;
-                param += `&carId=${carId}`;
-                param += `&cardId=${cardId}`;
-                param += `&productType=${productType}`;
-                param += `&cardChannel=${cardChannel}`;
-                param += `&serviceAddress=${values.address.join('-')}`;
-                param += `&detailAddress=${values.detailAddress}`;
-                param += `&serviceTime=${serviceTime}`;
-                param += `&status=待服务`;
-                fetch('v1/maintain/create',{
+                window.localStorage.setItem("serviceInfo",JSON.stringify(values));
+                //发送客户信息的请求
+                const customInfo = JSON.parse(window.localStorage.customInfo);
+                let customParam = ``;
+                customParam += `name=${customInfo.name}`;
+                customParam += `&phone=${customInfo.phoneNumber}`;
+                customParam += `&sex=${customInfo.sex === '男'? '1': '0'}`;
+                customParam += `&remark=${customInfo.customComment}`;
+                fetch('v1/customer/create',{
                     method: 'POST',
                     headers: new Headers({
                         'Content-Type': 'application/x-www-form-urlencoded',
                     }),
-                    body: param,
-                }).then((response)=>{
-                    if(response.ok){
-                        return response.json();
+                    body: customParam,
+                }).then( (response)=> {
+                    return response.json();
+                }).then( (json)=> {
+                    if(json.code === "200"){
+                        const customerId = json.data + "";
+                        customID = customerId;
+                        const plate = JSON.parse(window.localStorage.getItem('customInfo')).plateNumber;
+                        const carInfo = JSON.parse(window.localStorage.carInfo);
+                        let registerDate = new Date(carInfo.purchaseDate).toISOString().substr(0,10);
+                        registerDate = registerDate.replace(/[^0-9]/g,'');
+                        let carParam = ``;
+                        carParam += `customerId=${customerId}`;
+                        carParam += `&plate=${plate}`;
+                        carParam += `&registerDate= ${registerDate}`;
+                        carParam += `&brandId=12`;
+                        carParam += `&modelId=12`;
+                        carParam += `&displacement=${carInfo.displacement[0]}`;
+                        carParam += `&engineOilBrand=${carInfo.oilBrand.join('/')}`;
+                        carParam += `&engineFilterBrand=${carInfo.filterBrand[0]}`;
+                        carParam += `&remark=${carInfo.carComment}`;
+                        return fetch('v1/car/create',{
+                            method: 'POST',
+                            headers: new Headers({
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            }),
+                            body: carParam,
+                        })
+                    } else {
+                        message.warning(json.message);
                     }
+                }).then((response)=>{
+                    return response.json();
+                }).then((json)=>{
+                    console.log(json);
+                    if(json.code === '200'){
+                        const carId = json.data + '';
+                        const customerId = customID;
+                        console.log(customID);
+                        const customInfo = JSON.parse(window.localStorage.customInfo);
+                        const cardId = customInfo.captcha;
+                        const productType = customInfo.product;
+                        const cardChannel = customInfo.cardChannel;
+                        let serviceTime = new Date(values.serviceDate).toISOString().substr(0,10);
+                        serviceTime = serviceTime.replace(/[^0-9]/g,'');
+                        let serviceParam = ``;
+                        serviceParam += `customerId=${customerId}`;
+                        serviceParam += `&carId=${carId}`;
+                        serviceParam += `&cardId=${cardId}`;
+                        serviceParam += `&productType=${productType}`;
+                        serviceParam += `&cardChannel=${cardChannel}`;
+                        serviceParam += `&serviceAddress=${values.address.join('-')}`;
+                        serviceParam += `&detailAddress=${values.detailAddress}`;
+                        serviceParam += `&serviceTime=${serviceTime}`;
+                        serviceParam += `&status=待服务`;
+                        return fetch('v1/maintain/create',{
+                            method: 'POST',
+                            headers: new Headers({
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            }),
+                            body: serviceParam,
+                        })
+                    } else {
+                        message.warning(json.message);
+                    }
+
+                }).then((response)=>{
+                    return response.json();
                 }).then((json)=>{
                     if(json.code === '200'){
-                        values.serviceId = json.data + '';
-                        window.localStorage.setItem("serviceInfo",JSON.stringify(values));
-                        const orderInfo = {};
-                        const customInfo = JSON.parse(window.localStorage.getItem("customInfo"));
-                        const carInfo = JSON.parse(window.localStorage.getItem("carInfo"));
-                        const serviceInfo = JSON.parse(window.localStorage.getItem("serviceInfo"));
-                        Object.assign(orderInfo,customInfo,carInfo,serviceInfo);
-                        orderInfo.purchaseDate = new Date(orderInfo.purchaseDate).toISOString().substr(0,10);
-                        orderInfo.serviceDate = new Date(orderInfo.serviceDate).toISOString().substr(0,10);
-                        orderInfo.area = orderInfo.address[0];
-                        orderInfo.state = "待服务";
-                        const orderList = window.localStorage.getItem("orderList");
-                        if(orderList){
-                            const newOrderList = JSON.parse(orderList);
-                            newOrderList.push(orderInfo);
-                            window.localStorage.setItem("orderList",JSON.stringify(newOrderList));
-                        } else {
-                            const array = [];
-                            array.push(orderInfo);
-                            window.localStorage.setItem("orderList", JSON.stringify(array));
-                        }
                         message.success('提交成功',1.5,()=>{this.props.changeRoute(null, "/App")});
                     } else {
                         message.warning(json.message);
                     }
-                }).catch((error)=>{
-                    throw error;
+                }).catch( (err)=> {
+                    throw err;
                 });
             }
         });

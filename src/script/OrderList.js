@@ -106,7 +106,6 @@ class OrderList extends React.Component{
         return function () {
             this.props.history.pushState(null,"/App/ModifyInfo");
             window.localStorage.setItem('totalInfo',JSON.stringify(record));
-            console.log(window.localStorage);
         }
     }
 

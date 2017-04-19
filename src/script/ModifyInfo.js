@@ -5,10 +5,6 @@ const TabPane = Tabs.TabPane;
 const FormItem = Form.Item;
 const Option = Select.Option;
 
-function callback(key) {
-	console.log(key);
-}
-
 const products = [{
 	value: '上门维修',
 	label: '上门维修',
@@ -119,15 +115,99 @@ const filterBrands = [{
 
 class ModifyInfoForm extends React.Component {
 
+	handleSearch(param){
+		var regexp =new RegExp('(^|&)'+ param +'=([^&]*)(&|$)','i');
+		//window.location.search.substr(1).match(regexp);会出错，无法获取到URL中的search
+		//因为：query的规定是以第一个?开始，至行尾或#结束。fragment以#为开始，行尾为结束。
+		//如果使用上面的方式，获取到的search为空，
+		// hash为"#/App/ModifyInfo?customerId=122&carId=15&maintainId=8"
+		var paramArray = window.location.hash.split('?')[1].match(regexp);
+		if(paramArray){
+			return paramArray[2];
+		}
+		return null;
+	}
+
+	/*handleConvert(source){
+		return {
+			phoneNumber: source.phone,
+			name: source.name,
+			plateNumber: source.plate,
+			captcha: source.cardId,
+			product: source.productType,
+			cardChannel: source.cardChannel,
+			customComment: source.customComment,
+			brand: source.brandId,
+			cartype: source.modelId,
+			displacement: source.displacement,
+			purchaseDate: source.registerDate,//
+			oilBrand: source.engineOilBrand,
+			filterBrand: source.engineFilterBrand,
+			carComment: source.carComment,
+			address: source.serviceAddress,
+			detailAddress: source.detailAddress,
+			serviceDate: source.serviceTime,
+			serviceComment: source.serviceComment,
+		};
+	}*/
+
 	componentWillMount(){
-		let totalInfo = window.localStorage.getItem("totalInfo");
+
+		let customInfo = null;
+		let carInfo = null;
+		let serviceInfo = null;
+		let totalInfo = {};
+		const customerId = this.handleSearch('customerId');
+		const carId = this.handleSearch('carId');
+		const maintainId = this.handleSearch('maintainId');
+
+		fetch(`v1/customer/${customerId}`).then((response)=>{
+			return response.json();
+		}).then((json)=>{
+			console.log(json);
+			if(json.code === '200'){
+				customInfo = json.data;
+				customInfo.customComment = json.data.remark;
+				return fetch(`v1/car/${carId}`);
+			} else {
+				message.warning(json.message);
+			}
+		}).then((response)=>{
+			return response.json();
+		}).then((json)=>{
+			console.log(json);
+			if(json.code === "200"){
+				carInfo = json.data;
+				carInfo.carComment = json.data.remark;
+				return fetch(`v1/maintain/${maintainId}`);
+			} else {
+				message.warning(json.message);
+			}
+		}).then((response)=>{
+			return response.json();
+		}).then((json)=>{
+			console.log(json);
+			if(json.code === '200'){
+				serviceInfo = json.data;
+				serviceInfo.serviceComment = json.data.remark;
+				Object.assign(totalInfo,customInfo,carInfo,serviceInfo);
+				console.log(totalInfo);
+				//先到这里，明天继续
+			} else {
+				message.warning(json.message);
+			}
+		}).catch((error)=>{
+			throw error;
+		});
+
+
+		// let totalInfo = window.localStorage.getItem("totalInfo");
 		if(totalInfo){
 			totalInfo = JSON.parse(totalInfo);
 			totalInfo.purchaseDate = moment(totalInfo.purchaseDate, "YYYY-MM-DD");
 			totalInfo.serviceDate = moment(totalInfo.serviceDate, "YYYY-MM-DD");
 
 			this.setState({
-				confirmDirty: false,
 				key: totalInfo.key,
 				customInfo: {
 					phoneNumber: totalInfo.phoneNumber || '',
@@ -180,19 +260,6 @@ class ModifyInfoForm extends React.Component {
 
 	handleBack(){
 		this.props.history.pushState(null,'App');
-	}
-
-	handleConfirmBlur = (e) => {
-		const value = e.target.value;
-		this.setState({ confirmDirty: this.state.confirmDirty || !!value });
-	}
-
-	checkConfirm = (rule, value, callback) => {
-		const form = this.props.form;
-		if (value && this.state.confirmDirty) {
-			form.validateFields(['confirm'], { force: true });
-		}
-		callback();
 	}
 
 	render(){

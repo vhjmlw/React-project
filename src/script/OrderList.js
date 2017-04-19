@@ -104,7 +104,8 @@ class OrderList extends React.Component{
 
     handleModify(record) {
         return function () {
-            this.props.history.pushState(null,"/App/ModifyInfo");
+            const modifyInfoUrl = `/App/ModifyInfo?customerId=${record.key}&carId=${record.carId}&maintainId=${record.maintainId}`;
+            this.props.history.pushState(null,modifyInfoUrl);
             window.localStorage.setItem('totalInfo',JSON.stringify(record));
         }
     }
@@ -137,7 +138,7 @@ class OrderList extends React.Component{
     }
 
     componentDidMount(){
-        let orderListData = null;
+        let orderListData = [];
         fetch('v1/sheet/list',{
             method: 'GET',
             headers: new Headers({

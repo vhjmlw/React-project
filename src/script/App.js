@@ -43,7 +43,7 @@ class App extends React.Component {
               title={<span><Icon type="team" /><span className="nav-text">套餐</span></span>}
             >
               <Menu.Item key="4"><Link to="/App/PackageList">项目一</Link></Menu.Item>
-              <Menu.Item key="5"><Link to="/App/PackageList">项目二</Link></Menu.Item>
+              <Menu.Item key="5"><Link to="/App/PackageSale">项目二</Link></Menu.Item>
             </SubMenu>
             <Menu.Item key="6">
               <span>

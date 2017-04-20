@@ -302,7 +302,7 @@ class ModifyInfoForm extends React.Component {
 				const customerId = this.handleSearch('customerId');
 				const carId = this.handleSearch('carId');
 				const maintainId = this.handleSearch('maintainId');
-				//这里是开始
+
 				let customParam = ``;
 				customParam += `id=${customerId}`;
 				customParam += `&name=${values.name}`;
@@ -378,7 +378,6 @@ class ModifyInfoForm extends React.Component {
 				}).catch( (err)=> {
 					throw err;
 				});
-				//这里做一个标记
 			}
 		});
 	}

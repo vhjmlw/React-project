@@ -1,5 +1,6 @@
 import {Table, Button, Modal, message} from "antd";
 import React from "react";
+import moment from 'moment';
 import {browserHistory,Link} from "react-router";
 
 class OrderList extends React.Component{
@@ -48,58 +49,143 @@ class OrderList extends React.Component{
             },
         }],
         orderListData: null,
+        currentPage: 1,
+        totalPage: 1,
+        pageSize: 10,
     };
+
+    backToFront(source){
+        const registerDate = source.registerDate ? source.registerDate.substr(0,4)+'-'+source.registerDate.substr(4,2)+'-'+source.registerDate.substr(6,2) : '';
+        const serviceTime = source.serviceTime ? source.serviceTime.substr(0,4)+'-'+source.serviceTime.substr(4,2)+'-'+source.serviceTime.substr(6,2) : '';
+        const engineOilBrand = source.engineOilBrand ? source.engineOilBrand.split('/') : [];
+        const serviceAddress = source.serviceAddress ? source.serviceAddress.split('/') : [];
+        return {
+            phoneNumber: source.phone || '',
+            name: source.name || '',
+            sex: source.sex === true ? '男' : '女',
+            plateNumber: source.plate || '',
+            captcha: source.cardId || '',
+            product: [source.productType] || [],
+            cardChannel: [source.cardChannel] || [],
+            customComment: source.customComment || '',
+            brand: [source.brandId] || [],
+            cartype: [source.modelId] || [],
+            displacement: [source.displacement] || [],
+            purchaseDate: registerDate,
+            oilBrand: engineOilBrand,
+            filterBrand: [source.engineFilterBrand] || [],
+            carComment: source.carComment || '',
+            address: serviceAddress,
+            detailAddress: source.detailAddress || '',
+            state: source.status || '',
+            serviceDate: serviceTime,
+            serviceComment: source.serviceComment || '',
+        };
+    }
 
     handleInfo(record) {
         return function () {
-            Modal.info({
-            title: '',
-            okText: '确定',
-            // width: '50%',
-            onOk: function(){console.log('OK')},
-            onCancel: function() {console.log('cancle')},//虽然用不到取消按钮，但是还是要设置onCancel事件，如果不设置onCancel的话，点击按钮会报错
-            maskClosable: true,
-            content: (
-                <div>
-                    <table>
-                        <caption><h2>客户信息</h2></caption>
-                        <tbody>
-                        <tr><td>电话</td><td>{record.phoneNumber}</td></tr>
-                        <tr><td>姓名</td><td>{record.name}</td></tr>
-                        <tr><td>车牌</td><td>{record.plateNumber}</td></tr>
-                        <tr><td>验证码</td><td>{record.captcha}</td></tr>
-                        <tr><td>产品类型</td><td>{record.product[0]}</td></tr>
-                        <tr><td>发卡渠道</td><td>{record.cardChannel[0]}</td></tr>
-                        <tr><td>备注</td><td>{record.customComment}</td></tr>
-                        </tbody>
-                    </table>
-                    <table>
-                        <caption><h2>车辆信息</h2></caption>
-                        <tbody>
-                        <tr><td>品牌</td><td>{record.brand[0]}</td></tr>
-                        <tr><td>车型</td><td>{record.cartype[0]}</td></tr>
-                        <tr><td>排量</td><td>{record.displacement[0]}</td></tr>
-                        <tr><td>年份</td><td>{record.purchaseDate}</td></tr>
-                        <tr><td>机油品牌</td><td>{record.oilBrand.join('—')}</td></tr>
-                        <tr><td>机滤品牌</td><td>{record.filterBrand}</td></tr>
-                        <tr><td>备注</td><td>{record.carComment}</td></tr>
-                        </tbody>
-                    </table>
-                    <table>
-                        <caption><h2>服务信息</h2></caption>
-                        <tbody>
-                        <tr><td>区域</td><td>{record.address[0]}</td></tr>
-                        <tr><td>服务地址</td><td>{record.address.join('—')}</td></tr>
-                        <tr><td>详细地址</td><td>{record.detailAddress}</td></tr>
-                        <tr><td>服务时间</td><td>{record.serviceDate}</td></tr>
-                        <tr><td>状态</td><td>{record.state}</td></tr>
-                        <tr><td>备注</td><td>{record.serviceComment}</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            ),
-        });
+            let customInfo = null;
+            let carInfo = null;
+            let serviceInfo = null;
+            let totalInfo = {};
+            const customerId = record.key;
+            const carId = record.carId;
+            const maintainId = record.maintainId;
+            fetch(`v1/customer/${customerId}`).then((response)=>{
+                return response.json();
+            }).then((json)=>{
+                console.log(json);
+                if(json.code === '200'){
+                    customInfo = json.data;
+                    customInfo.customComment = json.data.remark;
+                    return fetch(`v1/car/${carId}`);
+                } else {
+                    message.warning(json.message);
+                }
+            }).then((response)=>{
+                return response.json();
+            }).then((json)=>{
+                console.log(json);
+                if(json.code === "200"){
+                    carInfo = json.data;
+                    carInfo.carComment = json.data.remark;
+                    return fetch(`v1/maintain/${maintainId}`);
+                } else {
+                    message.warning(json.message);
+                }
+            }).then((response)=>{
+                return response.json();
+            }).then((json)=>{
+                console.log(json);
+                if(json.code === '200'){
+                    serviceInfo = json.data;
+                    serviceInfo.serviceComment = json.data.remark;
+                    Object.assign(totalInfo,customInfo,carInfo,serviceInfo);
+
+                    totalInfo.engineFilterBrand = carInfo.engineFilterBrand;
+                    totalInfo.engineOilBrand = carInfo.engineOilBrand;
+                    console.log(totalInfo);
+                    totalInfo = this.backToFront(totalInfo);
+                    console.log(totalInfo);
+                    if(totalInfo){
+                        Modal.info({
+                            title: '',
+                            okText: '确定',
+                            // width: '50%',
+                            onOk: function(){console.log('OK')},
+                            onCancel: function() {console.log('cancle')},//虽然用不到取消按钮，但是还是要设置onCancel事件，如果不设置onCancel的话，点击按钮会报错
+                            maskClosable: true,
+                            content: (
+                                <div>
+                                    <table>
+                                        <caption><h2>客户信息</h2></caption>
+                                        <tbody>
+                                        <tr><td>电话</td><td>{totalInfo.phoneNumber}</td></tr>
+                                        <tr><td>姓名</td><td>{totalInfo.name}</td></tr>
+                                        <tr><td>性别</td><td>{totalInfo.sex}</td></tr>
+                                        <tr><td>车牌</td><td>{totalInfo.plateNumber}</td></tr>
+                                        <tr><td>验证码</td><td>{totalInfo.captcha}</td></tr>
+                                        <tr><td>产品类型</td><td>{totalInfo.product[0]}</td></tr>
+                                        <tr><td>发卡渠道</td><td>{totalInfo.cardChannel[0]}</td></tr>
+                                        <tr><td>备注</td><td>{totalInfo.customComment}</td></tr>
+                                        </tbody>
+                                    </table>
+                                    <table>
+                                        <caption><h2>车辆信息</h2></caption>
+                                        <tbody>
+                                        <tr><td>品牌</td><td>{totalInfo.brand[0]}</td></tr>
+                                        <tr><td>车型</td><td>{totalInfo.cartype[0]}</td></tr>
+                                        <tr><td>排量</td><td>{totalInfo.displacement[0]}</td></tr>
+                                        <tr><td>年份</td><td>{totalInfo.purchaseDate}</td></tr>
+                                        <tr><td>机油品牌</td><td>{totalInfo.oilBrand.join('/')}</td></tr>
+                                        <tr><td>机滤品牌</td><td>{totalInfo.filterBrand}</td></tr>
+                                        <tr><td>备注</td><td>{totalInfo.carComment}</td></tr>
+                                        </tbody>
+                                    </table>
+                                    <table>
+                                        <caption><h2>服务信息</h2></caption>
+                                        <tbody>
+                                        <tr><td>区域</td><td>{totalInfo.address[0]}</td></tr>
+                                        <tr><td>服务地址</td><td>{totalInfo.address.join('/')}</td></tr>
+                                        <tr><td>详细地址</td><td>{totalInfo.detailAddress}</td></tr>
+                                        <tr><td>服务时间</td><td>{totalInfo.serviceDate}</td></tr>
+                                        <tr><td>状态</td><td>{totalInfo.state}</td></tr>
+                                        <tr><td>备注</td><td>{totalInfo.serviceComment}</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ),
+                        });
+                    }
+                } else {
+                    message.warning(json.message);
+                }
+            }).catch((error)=>{
+                throw error;
+            });
         }
+
     };
 
     handleModify(record) {
@@ -164,6 +250,10 @@ class OrderList extends React.Component{
         });
     }
 
+    handleChangePage(page, pageSize){
+
+    }
+
     render(){
 
         return (
@@ -172,7 +262,16 @@ class OrderList extends React.Component{
                     <Button type="primary">打印工单</Button>
                     <Button type="primary" onClick={this.handleClick.bind(this)}>新增</Button>
                 </div>
-                <Table columns={this.state.columns} dataSource={this.state.orderListData} />
+                <Table
+                    columns={this.state.columns}
+                    dataSource={this.state.orderListData}
+                    pagination={{
+                        current: this.state.currentPage,
+                        pageSize: this.state.pageSize,
+                        total: this.state.totalPage,
+                        onChange: (page, pageSize)=>{this.handleChangePage(page, pageSize)}
+                    }}
+                />
             </div>
         );
     }

@@ -38,7 +38,7 @@ class PackageSale extends React.Component {
                         cancelText="取消"
                         visible={this.state.modifyVisible}
                     >
-                        <a onClick={this.handleModifyClick(record)}>修改</a>&nbsp;&nbsp;
+                        <a onClick={this.handleModifyClick(record)}>修改</a>&nbsp;&nbsp;&nbsp;
                     </Popconfirm>
                     <Popconfirm
                         placement="bottomRight"

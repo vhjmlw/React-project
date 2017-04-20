@@ -215,7 +215,10 @@ class CustomInfoForm extends React.Component {
                         <Row gutter={8}>
                             <Col span={12}>
                                 {getFieldDecorator('captcha', {
-                                    rules: [{ required: true, message: '请输入验证码' }],
+                                    rules: [
+                                        { required: true, message: '请输入验证码' },
+                                        { pattern: /^[0-9]+$/, message: '验证码必须为数字'},
+                                    ],
                                 })(
                                     <Input size="large" />
                                 )}

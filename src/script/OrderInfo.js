@@ -215,7 +215,7 @@ class CustomInfoForm extends React.Component {
                         <Row gutter={8}>
                             <Col span={12}>
                                 {getFieldDecorator('captcha', {
-                                    rules: [{ required: true, message: 'Please input the captcha you got!' }],
+                                    rules: [{ required: true, message: '请输入验证码' }],
                                 })(
                                     <Input size="large" />
                                 )}
@@ -490,7 +490,7 @@ class ServiceInfoForm extends React.Component {
                         serviceParam += `&cardId=${cardId}`;
                         serviceParam += `&productType=${productType}`;
                         serviceParam += `&cardChannel=${cardChannel}`;
-                        serviceParam += `&serviceAddress=${values.address.join('-')}`;
+                        serviceParam += `&serviceAddress=${values.address.join('/')}`;
                         serviceParam += `&detailAddress=${values.detailAddress}`;
                         serviceParam += `&serviceTime=${serviceTime}`;
                         serviceParam += `&status=待服务`;

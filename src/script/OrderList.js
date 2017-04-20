@@ -120,6 +120,7 @@ class OrderList extends React.Component{
 
     handleConvert(sourceArray){
         const newArray = sourceArray.map((source)=>{
+            const serviceTime = source.serviceTime.substr(0,4)+'-'+source.serviceTime.substr(4,2)+'-'+source.serviceTime.substr(6,2);
             return {
                 key: source.customerId,
                 carId: source.carId,
@@ -130,7 +131,7 @@ class OrderList extends React.Component{
                 product: source.productName,
                 cardChannel: source.cardChannel,
                 area: source.address,
-                serviceDate: source.serviceTime,
+                serviceDate: serviceTime,
                 state: source.status,
             };
         });

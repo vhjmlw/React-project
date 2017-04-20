@@ -115,6 +115,34 @@ const filterBrands = [{
 
 class ModifyInfoForm extends React.Component {
 
+	state = {
+		customInfo: {
+			phoneNumber: '',
+			name: '',
+			sex: '',
+			plateNumber: '',
+			captcha: '',
+			product: [],
+			cardChannel: [],
+			customComment: '',
+		},
+		carInfo: {
+			brand: [],
+			cartype: [],
+			displacement: [],
+			purchaseDate: null,
+			oilBrand: [],
+			filterBrand: [],
+			carComment: '',
+		},
+		serviceInfo: {
+			address: [],
+			detailAddress: '',
+			serviceDate: null,
+			serviceComment: '',
+		}
+	}
+
 	handleSearch(param){
 		var regexp =new RegExp('(^|&)'+ param +'=([^&]*)(&|$)','i');
 		//window.location.search.substr(1).match(regexp);会出错，无法获取到URL中的search
@@ -128,28 +156,59 @@ class ModifyInfoForm extends React.Component {
 		return null;
 	}
 
-	/*handleConvert(source){
+	backToFront(source){
+		const registerDate = source.registerDate ? moment(source.registerDate.substr(0,4)+'-'+source.registerDate.substr(4,2)+'-'+source.registerDate.substr(6,2), "YYYY-MM-DD") : null;
+		const serviceTime = source.serviceTime ? moment(source.serviceTime.substr(0,4)+'-'+source.serviceTime.substr(4,2)+'-'+source.serviceTime.substr(6,2), "YYYY-MM-DD") : null;
+		const engineOilBrand = source.engineOilBrand ? source.engineOilBrand.split('/') : [];
+		const serviceAddress = source.serviceAddress ? source.serviceAddress.split('/') : [];
 		return {
-			phoneNumber: source.phone,
-			name: source.name,
-			plateNumber: source.plate,
-			captcha: source.cardId,
-			product: source.productType,
-			cardChannel: source.cardChannel,
-			customComment: source.customComment,
-			brand: source.brandId,
-			cartype: source.modelId,
-			displacement: source.displacement,
-			purchaseDate: source.registerDate,//
-			oilBrand: source.engineOilBrand,
-			filterBrand: source.engineFilterBrand,
-			carComment: source.carComment,
-			address: source.serviceAddress,
-			detailAddress: source.detailAddress,
-			serviceDate: source.serviceTime,
-			serviceComment: source.serviceComment,
+			phoneNumber: source.phone || '',
+			name: source.name || '',
+			sex: source.sex === true ? '男' : '女',
+			plateNumber: source.plate || '',
+			captcha: source.cardId || '',
+			product: [source.productType] || [],
+			cardChannel: [source.cardChannel] || [],
+			customComment: source.customComment || '',
+			brand: [source.brandId] || [],
+			cartype: [source.modelId] || [],
+			displacement: [source.displacement] || [],
+			purchaseDate: registerDate,
+			oilBrand: engineOilBrand,
+			filterBrand: [source.engineFilterBrand] || [],
+			carComment: source.carComment || '',
+			address: serviceAddress,
+			detailAddress: source.detailAddress || '',
+			serviceDate: serviceTime,
+			serviceComment: source.serviceComment || '',
 		};
-	}*/
+	}
+
+	frontToBack(source){
+		const purchaseDate = source.purchaseDate ? new Date(source.purchaseDate).toISOString().substr(0,10).replace(/[^0-9]/g,'') : '';
+		const serviceDate = source.serviceDate ? new Date(source.serviceDate).toISOString().substr(0,10).replace(/[^0-9]/g,'') : '';
+		return {
+			phone: source.phoneNumber || '',
+			name: source.name || '',
+			sex: source.sex === '男' ? '1' : '0',
+			plate: source.plateNumber || '',
+			cardId: source.captcha || '',
+			productType: source.product[0] || '',
+			cardChannel: source.cardChannel[0] || '',
+			customComment: source.customComment || '',
+			brandId: source.brand[0] || '',
+			modelId: source.cartype[0] || '',
+			displacement: source.displacement[0] || '',
+			registerDate: purchaseDate,
+			engineOilBrand: source.oilBrand.join('/') || '',
+			engineFilterBrand: source.filterBrand[0] || '',
+			carComment: source.carComment || '',
+			serviceAddress: source.address.join('/')|| '',
+			detailAddress: source.detailAddress || '',
+			serviceTime: serviceDate,
+			serviceComment: source.serviceComment || '',
+		};
+	}
 
 	componentWillMount(){
 
@@ -191,69 +250,135 @@ class ModifyInfoForm extends React.Component {
 				serviceInfo = json.data;
 				serviceInfo.serviceComment = json.data.remark;
 				Object.assign(totalInfo,customInfo,carInfo,serviceInfo);
+				totalInfo.engineFilterBrand = carInfo.engineFilterBrand;
+				totalInfo.engineOilBrand = carInfo.engineOilBrand;
 				console.log(totalInfo);
-				//先到这里，明天继续
+				totalInfo = this.backToFront(totalInfo);
+				console.log(totalInfo);
+				if(totalInfo){
+					this.setState({
+						customInfo: {
+							phoneNumber: totalInfo.phoneNumber,
+							name: totalInfo.name,
+							sex: totalInfo.sex,
+							plateNumber: totalInfo.plateNumber,
+							captcha: totalInfo.captcha,
+							product: totalInfo.product,
+							cardChannel: totalInfo.cardChannel,
+							customComment: totalInfo.customComment,
+						},
+						carInfo: {
+							brand: totalInfo.brand,
+							cartype: totalInfo.cartype,
+							displacement: totalInfo.displacement,
+							purchaseDate: totalInfo.purchaseDate,
+							oilBrand: totalInfo.oilBrand,
+							filterBrand: totalInfo.filterBrand,
+							carComment: totalInfo.carComment,
+						},
+						serviceInfo: {
+							address: totalInfo.address,
+							detailAddress: totalInfo.detailAddress,
+							serviceDate: totalInfo.serviceDate,
+							serviceComment: totalInfo.serviceComment,
+						}
+					});
+				}
 			} else {
 				message.warning(json.message);
 			}
 		}).catch((error)=>{
 			throw error;
 		});
-
-
-		// let totalInfo = window.localStorage.getItem("totalInfo");
-		if(totalInfo){
-			totalInfo = JSON.parse(totalInfo);
-			totalInfo.purchaseDate = moment(totalInfo.purchaseDate, "YYYY-MM-DD");
-			totalInfo.serviceDate = moment(totalInfo.serviceDate, "YYYY-MM-DD");
-
-			this.setState({
-				key: totalInfo.key,
-				customInfo: {
-					phoneNumber: totalInfo.phoneNumber || '',
-					name: totalInfo.name || '',
-					plateNumber: totalInfo.plateNumber || '',
-					captcha: totalInfo.captcha || '',
-					product: totalInfo.product || [],
-					cardChannel: totalInfo.cardChannel || [],
-					customComment: totalInfo.customComment || '',
-				},
-				carInfo: {
-					brand: totalInfo.brand || [],
-					cartype: totalInfo.cartype || [],
-					displacement: totalInfo.displacement || [],
-					purchaseDate: totalInfo.purchaseDate || null,
-					oilBrand: totalInfo.oilBrand || [],
-					filterBrand: totalInfo.filterBrand || [],
-					carComment: totalInfo.carComment || '',
-				},
-				serviceInfo: {
-					address: totalInfo.address || [],
-					detailAddress: totalInfo.detailAddress || '',
-					serviceDate: totalInfo.serviceDate || null,
-					serviceComment: totalInfo.serviceComment || '',
-				}
-			});
-		}
 	}
 
 	handleSubmit = (e) => {
 		e.preventDefault();
 		this.props.form.validateFieldsAndScroll((err, values) => {
 			if (!err) {
-				values.key = this.state.key;
-				values.purchaseDate = new Date(values.purchaseDate).toISOString().substr(0,10);
-				values.serviceDate = new Date(values.serviceDate).toISOString().substr(0,10);
 				console.log('Received values of form: ', values);
-				let orderList = JSON.parse(window.localStorage.getItem("orderList"));
-				for(let item of orderList){
-					if(item.key === this.state.key){
-						Object.assign(item,values);
-						break;
+				values = this.frontToBack(values);
+				console.log(values);
+				const customerId = this.handleSearch('customerId');
+				const carId = this.handleSearch('carId');
+				const maintainId = this.handleSearch('maintainId');
+				//这里是开始
+				let customParam = ``;
+				customParam += `id=${customerId}`;
+				customParam += `&name=${values.name}`;
+				customParam += `&phone=${values.phone}`;
+				customParam += `&sex=${values.sex}`;
+				customParam += `&remark=${values.customComment}`;
+				fetch('v1/customer/update',{
+					method: 'POST',
+					headers: new Headers({
+						'Content-Type': 'application/x-www-form-urlencoded',
+					}),
+					body: customParam,
+				}).then( (response)=> {
+					return response.json();
+				}).then( (json)=> {
+					if(json.code === "200"){
+						let carParam = ``;
+						carParam += `id=${carId}`;
+						carParam += `&customerId=${customerId}`;
+						carParam += `&plate=${values.plate}`;
+						carParam += `&registerDate= ${values.registerDate}`;
+						carParam += `&brandId=12`;
+						carParam += `&modelId=12`;
+						carParam += `&displacement=${values.displacement}`;
+						carParam += `&engineOilBrand=${values.engineOilBrand}`;
+						carParam += `&engineFilterBrand=${values.engineFilterBrand}`;
+						carParam += `&remark=${values.carComment}`;
+						return fetch('v1/car/update',{
+							method: 'POST',
+							headers: new Headers({
+								'Content-Type': 'application/x-www-form-urlencoded'
+							}),
+							body: carParam,
+						})
+					} else {
+						message.warning(json.message);
 					}
-				}
-				window.localStorage.setItem('orderList',JSON.stringify(orderList));
-				message.success('保存成功',1.5,()=>{this.props.history.pushState(null, "/App")});
+				}).then((response)=>{
+					return response.json();
+				}).then((json)=>{
+					console.log(json);
+					if(json.code === '200'){
+						let serviceParam = ``;
+						serviceParam += `id=${maintainId}`;
+						serviceParam += `&customerId=${customerId}`;
+						serviceParam += `&carId=${carId}`;
+						serviceParam += `&cardId=${values.cardId}`;
+						serviceParam += `&productType=${values.productType}`;
+						serviceParam += `&cardChannel=${values.cardChannel}`;
+						serviceParam += `&serviceAddress=${values.serviceAddress}`;
+						serviceParam += `&detailAddress=${values.detailAddress}`;
+						serviceParam += `&serviceTime=${values.serviceTime}`;
+						serviceParam += `&status=待服务`;
+						return fetch('v1/maintain/update',{
+							method: 'POST',
+							headers: new Headers({
+								'Content-Type': 'application/x-www-form-urlencoded',
+							}),
+							body: serviceParam,
+						})
+					} else {
+						message.warning(json.message);
+					}
+
+				}).then((response)=>{
+					return response.json();
+				}).then((json)=>{
+					if(json.code === '200'){
+						message.success('提交成功',1.5,()=>{this.props.history.pushState(null, "/App")});
+					} else {
+						message.warning(json.message);
+					}
+				}).catch( (err)=> {
+					throw err;
+				});
+				//这里做一个标记
 			}
 		});
 	}
@@ -287,8 +412,6 @@ class ModifyInfoForm extends React.Component {
 					>
 						{getFieldDecorator('phoneNumber', {
 							rules: [{
-								pattern: /^1(3|4|5|7|8)[0-9]\d{8}$/, message: '电话号码格式不正确',
-							}, {
 								required: true, message: '请输入电话号码',
 							}],
 							initialValue: this.state.customInfo.phoneNumber,
@@ -304,12 +427,26 @@ class ModifyInfoForm extends React.Component {
 						{getFieldDecorator('name', {
 							rules: [{
 								required: true, message: '请输入姓名',
-							},{
-								pattern: /^([a-zA-Z\u4e00-\u9fa5\·]{1,10})$/, message: '姓名格式不正确',
 							}],
 							initialValue: this.state.customInfo.name,
 						})(
 							<Input />
+						)}
+					</FormItem>
+					<FormItem
+						{...formItemLayout}
+						label="性别"
+					>
+						{getFieldDecorator('sex',{
+							rules: [{
+								required: true, message: '请选择性别'
+							}],
+							initialValue: this.state.customInfo.sex,
+						})(
+							<Select style={{width: 110}}>
+								<Option value="男">男</Option>
+								<Option value="女">女</Option>
+							</Select>
 						)}
 					</FormItem>
 					<FormItem
@@ -334,7 +471,7 @@ class ModifyInfoForm extends React.Component {
 						<Row gutter={8}>
 							<Col span={12}>
 								{getFieldDecorator('captcha', {
-									rules: [{ required: true, message: 'Please input the captcha you got!' }],
+									rules: [{ required: true, message: '请输入验证码' }],
 									initialValue: this.state.customInfo.captcha,
 								})(
 									<Input size="large" />

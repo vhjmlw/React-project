@@ -116,18 +116,7 @@ class CustomInfoForm extends React.Component {
     handleClick = (obj)=>{
         this.props.callbackParent(obj);
     }
-    handleConfirmBlur = (e) => {
-        const value = e.target.value;
-        this.setState({ confirmDirty: this.state.confirmDirty || !!value });
-    }
 
-    checkConfirm = (rule, value, callback) => {
-        const form = this.props.form;
-        if (value && this.state.confirmDirty) {
-            form.validateFields(['confirm'], { force: true });
-        }
-        callback();
-    }
     render() {
         const { getFieldDecorator } = this.props.form;
         const formItemLayout = {
@@ -294,17 +283,7 @@ class CarInfoForm extends React.Component {
     handleClick = (obj)=>{
         this.props.callbackParent(obj);
     }
-    handleConfirmBlur = (e) => {
-        const value = e.target.value;
-        this.setState({ confirmDirty: this.state.confirmDirty || !!value });
-    }
-    checkConfirm = (rule, value, callback) => {
-        const form = this.props.form;
-        if (value && this.state.confirmDirty) {
-            form.validateFields(['confirm'], { force: true });
-        }
-        callback();
-    }
+
     render() {
         const { getFieldDecorator } = this.props.form;
         const formItemLayout = {
@@ -525,10 +504,7 @@ class ServiceInfoForm extends React.Component {
     handleClick = (obj)=>{
         this.props.callbackParent(obj);
     }
-    handleConfirmBlur = (e) => {
-        const value = e.target.value;
-        this.setState({ confirmDirty: this.state.confirmDirty || !!value });
-    }
+
     render() {
         const { getFieldDecorator } = this.props.form;
         const formItemLayout = {

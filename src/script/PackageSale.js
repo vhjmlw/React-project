@@ -13,11 +13,11 @@ const packageData = ['套餐一','套餐二','套餐三','套餐四','套餐五'
 class PackageSale extends React.Component {
     state = {
         columns: [{
-            title: '姓名',
+            title: '渠道编号',
             dataIndex: 'channel',
             key: 'channel',
         }, {
-            title: '年龄',
+            title: '名称',
             dataIndex: 'name',
             key: 'name',
         }, {
@@ -361,7 +361,7 @@ class PackageSale extends React.Component {
                 <Table columns={this.state.columns} dataSource={saleList}/>
             </div>
         );
-    }
+}
 }
 
 export default PackageSale;

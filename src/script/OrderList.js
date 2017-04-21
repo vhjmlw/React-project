@@ -1,6 +1,5 @@
 import {Table, Button, Modal, message} from "antd";
 import React from "react";
-import moment from 'moment';
 import {browserHistory,Link} from "react-router";
 
 class OrderList extends React.Component{

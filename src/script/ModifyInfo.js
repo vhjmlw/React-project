@@ -1,7 +1,6 @@
-import { Form, Input, Cascader, Select, Row, Col, Checkbox, Button, DatePicker, message, Tabs } from 'antd';
+import { Form, Input, Cascader, Select, Row, Col, Button, DatePicker, message } from 'antd';
 import React from 'react';
 import moment from 'moment';
-const TabPane = Tabs.TabPane;
 const FormItem = Form.Item;
 const Option = Select.Option;
 

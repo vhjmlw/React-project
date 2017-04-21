@@ -1,8 +1,8 @@
-import React from "react";
-import { Layout, Menu, Breadcrumb, Icon } from 'antd';
-const { Header, Content, Footer, Sider } = Layout;
-const SubMenu = Menu.SubMenu;
+import { Layout, Menu, Icon } from 'antd';
 import {Link} from "react-router";
+import React from "react";
+const { Header, Footer, Sider } = Layout;
+const SubMenu = Menu.SubMenu;
 
 //content标签中的表格
 //这里是表格的列，columns数组中的一个JSON对象就是一列

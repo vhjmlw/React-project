@@ -20,7 +20,18 @@ const cardChannels = [{
 	label: '自己买的',
 }];
 
-const Addresses = [{
+const area = [{
+	value: '无锡',
+	label: '无锡',
+},{
+	value: '苏州',
+	label: '苏州',
+},{
+	value: '南通',
+	label: '南通',
+}];
+
+const address = [{
 	value: '工业园区',
 	label: '工业园区',
 	children: [
@@ -146,6 +157,7 @@ class ModifyInfoForm extends React.Component {
 		var regexp =new RegExp('(^|&)'+ param +'=([^&]*)(&|$)','i');
 		//window.location.search.substr(1).match(regexp);会出错，无法获取到URL中的search
 		//因为：query的规定是以第一个?开始，至行尾或#结束。fragment以#为开始，行尾为结束。
+		//query一定要放在fragment的前面
 		//如果使用上面的方式，获取到的search为空，
 		// hash为"#/App/ModifyInfo?customerId=122&carId=15&maintainId=8"
 		var paramArray = window.location.hash.split('?')[1].match(regexp);
@@ -593,6 +605,17 @@ class ModifyInfoForm extends React.Component {
 						)}
 					</FormItem>
 					<h3>服务信息：</h3>
+					{/*<FormItem
+						{...formItemLayout}
+						label="服务区域"
+					>
+						{getFieldDecorator('area', {
+							rules: [{type: 'array', required: true, message: '请选择服务区域'}],
+							initialValue: this.state.serviceInfo.area,
+						})(
+							<Cascader options={area} size="large" style={{width:'110px'}} placeholder="请选择服务区域" />
+						)}
+					</FormItem>*/}
 					<FormItem
 						{...formItemLayout}
 						label="服务地址"
@@ -601,7 +624,7 @@ class ModifyInfoForm extends React.Component {
 							rules: [{type: 'array', required: true, message: '请选择服务地址'}],
 							initialValue: this.state.serviceInfo.address,
 						})(
-							<Cascader options={Addresses} size="large" placeholder="请选择服务地址" />
+							<Cascader options={address} size="large" placeholder="请选择服务地址" />
 						)}
 					</FormItem>
 					<FormItem

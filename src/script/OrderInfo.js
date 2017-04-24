@@ -20,7 +20,18 @@ const cardChannels = [{
     label: '自己买的',
 }];
 
-const Addresses = [{
+const area = [{
+    value: '无锡',
+    label: '无锡',
+},{
+    value: '苏州',
+    label: '苏州',
+},{
+    value: '南通',
+    label: '南通',
+}];
+
+const address = [{
     value: '工业园区',
     label: '工业园区',
     children: [
@@ -199,7 +210,7 @@ class CustomInfoForm extends React.Component {
                     <FormItem
                         {...formItemLayout}
                         label="验证码"
-                        extra="We must make sure that your are a human."
+                        extra="我们必须确认您非机器人"
                     >
                         <Row gutter={8}>
                             <Col span={12}>
@@ -213,7 +224,7 @@ class CustomInfoForm extends React.Component {
                                 )}
                             </Col>
                             <Col span={12}>
-                                <Button size="large">Get captcha</Button>
+                                <Button size="large">获取验证码</Button>
                             </Col>
                         </Row>
                     </FormItem>
@@ -536,6 +547,18 @@ class ServiceInfoForm extends React.Component {
                     <Step title="服务信息" />
                 </Steps>
                 <Form onSubmit={this.handleSubmit} className="layout-AddOrder-form">
+                    {/*<FormItem
+                        {...formItemLayout}
+                        label="服务区域"
+                    >
+                        {getFieldDecorator('area', {
+                            rules: [{
+                                type: 'array', required: true, message: '请选择服务区域'
+                            }],
+                        })(
+                            <Cascader options={area} size="large" style={{width:'110px'}} placeholder="请选择服务区域" />
+                        )}
+                    </FormItem>*/}
                     <FormItem
                         {...formItemLayout}
                         label="服务地址"
@@ -545,7 +568,7 @@ class ServiceInfoForm extends React.Component {
                                 type: 'array', required: true, message: '请选择服务地址'
                             }],
                         })(
-                            <Cascader options={Addresses} size="large" placeholder="请选择服务地址" />
+                            <Cascader options={address} size="large" placeholder="请选择服务地址" />
                         )}
                     </FormItem>
                     <FormItem

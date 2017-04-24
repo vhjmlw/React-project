@@ -1,4 +1,4 @@
-import { Form, Input, Cascader, Select, Row, Col, Button, Steps, DatePicker, message } from 'antd';
+import { Form, Input, Cascader, Select, Row, Col, Button, Steps, DatePicker, message, Modal } from 'antd';
 import React from 'react';
 const Step = Steps.Step;
 const FormItem = Form.Item;
@@ -295,6 +295,59 @@ class CarInfoForm extends React.Component {
         this.props.callbackParent(obj);
     }
 
+    handleBrandSelect(){
+        Modal.confirm({
+            title: '请选择品牌',
+            footer: null,
+            content: (
+                <div>
+                    <div className="ant-confirm-divNav">
+                        <ul className="clearfix">
+                            <li className="ant-confirm-brandNav"><a >A</a></li>
+                            <li className="ant-confirm-brandNav"><a >B</a></li>
+                            <li className="ant-confirm-brandNav"><a >C</a></li>
+                            <li className="ant-confirm-brandNav"><a >D</a></li>
+                            <li className="ant-confirm-brandNav"><a >E</a></li>
+                            <li className="ant-confirm-brandNav"><a >F</a></li>
+                            <li className="ant-confirm-brandNav"><a >G</a></li>
+                            <li className="ant-confirm-brandNav"><a >H</a></li>
+                            <li className="ant-confirm-brandNav"><a >I</a></li>
+                            <li className="ant-confirm-brandNav"><a >J</a></li>
+                            <li className="ant-confirm-brandNav"><a >K</a></li>
+                            <li className="ant-confirm-brandNav"><a >L</a></li>
+                            <li className="ant-confirm-brandNav"><a >M</a></li>
+                            <li className="ant-confirm-brandNav"><a >N</a></li>
+                            <li className="ant-confirm-brandNav"><a >O</a></li>
+                            <li className="ant-confirm-brandNav"><a >P</a></li>
+                            <li className="ant-confirm-brandNav"><a >Q</a></li>
+                            <li className="ant-confirm-brandNav"><a >R</a></li>
+                            <li className="ant-confirm-brandNav"><a >S</a></li>
+                            <li className="ant-confirm-brandNav"><a >T</a></li>
+                            <li className="ant-confirm-brandNav"><a >U</a></li>
+                            <li className="ant-confirm-brandNav"><a >V</a></li>
+                            <li className="ant-confirm-brandNav"><a >W</a></li>
+                            <li className="ant-confirm-brandNav"><a >X</a></li>
+                            <li className="ant-confirm-brandNav"><a >Y</a></li>
+                            <li className="ant-confirm-brandNav"><a >Z</a></li>
+                        </ul>
+                    </div>
+                    <div className="ant-confirm-divBrand">
+                        <ul className="clearfix">
+                            <li className='ant-confirm-brand'><Button>大众</Button></li>
+                            <li className='ant-confirm-brand'><Button>沃尔沃</Button></li>
+                            <li className='ant-confirm-brand'><Button>丰田</Button></li>
+                            <li className='ant-confirm-brand'><Button>现代</Button></li>
+                            <li className='ant-confirm-brand'><Button>路虎</Button></li>
+                            <li className='ant-confirm-brand'><Button>路虎</Button></li>
+                            <li className='ant-confirm-brand'><Button>路虎</Button></li>
+                            <li className='ant-confirm-brand'><Button>路虎</Button></li>
+                        </ul>
+                    </div>
+                </div>
+            ),
+        });
+    }
+
     render() {
         const { getFieldDecorator } = this.props.form;
         const formItemLayout = {
@@ -333,7 +386,7 @@ class CarInfoForm extends React.Component {
                         {getFieldDecorator('brand', {
                             rules: [{ required: true, message: '请选择品牌' }],
                         })(
-                            <Cascader options={brands} size="large" style={{width:"110px"}} placeholder="请选择品牌"/>
+                            <Button onClick={this.handleBrandSelect.bind(this)}>请选择品牌</Button>
                         )}
                     </FormItem>
                     <FormItem

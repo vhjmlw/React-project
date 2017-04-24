@@ -101,14 +101,38 @@
     background-color: #fff;
     transition: opacity 90ms ease-in;
 }
+.ant-modal .ant-confirm-body .anticon-question-circle {
+    display: none;
+}
+.ant-modal .ant-confirm-content .ant-confirm-divNav {
+    padding: 10px 0;
+    border-bottom: 1px solid #ccc;
+}
+.ant-modal .ant-confirm-content .ant-confirm-brandNav {
+    float: left;
+    width: 18PX;
+    height: 18px;
+    line-height: 18px;
+    margin: 5px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 700;
+}
+.ant-modal .ant-confirm-content .ant-confirm-brandNav a:hover {
+    color: #d60000;
+    text-decoration: underline;
+}
+.ant-modal .ant-confirm-content .ant-confirm-divBrand {
+    padding-top: 10px;
+}
+.ant-modal .ant-confirm-content .ant-confirm-brand {
+    float: left;
+    margin: 5px;
+}
 
-  /*footer样式*/
-/*#root .ant-layout .ant-layout-footer {
-  position: fixed;
-  bottom: 0;
-  left: 120px;
-  width: 100%;
-}*/
+.ant-modal .ant-modal-body .ant-confirm-btns {
+    display: none;
+}
 
 /*AddOrder中的样式*/
 .ant-layout .ant-layout-content .layout-AddOrder-steps {
@@ -135,6 +159,8 @@
 .ant-popover .ant-popover-content .anticon-exclamation-circle {
   display: none;
 }
+
+
 
 
 

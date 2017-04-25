@@ -70,14 +70,6 @@ const cartypes = [{
     label: 'B型车',
 }];
 
-const displacements = [{
-    value: '5.0L',
-    label: '5.0L',
-},{
-    value: '4.0L',
-    label: '4.0L',
-}];
-
 const oilBrands = [{
     value: '机油',
     label: '机油',
@@ -280,6 +272,8 @@ class CarInfoForm extends React.Component {
         cartypeValue: '',
         carseries: ['车系一', '车系二', '车系三', '车系四'],
         carseriesValue: '',
+        displacements: [{value: '5.0L', label: '5.0L',},{value: '4.0L', label: '4.0L',}],
+        years: [{value: '2016', label: '2016',},{value: '2017', label: '2017',}],
     };
     handleSubmit = (e) => {
         e.preventDefault();
@@ -488,8 +482,8 @@ class CarInfoForm extends React.Component {
                 content: (
                     <div>
                         <div className="ant-confirm-divNav">
-                            排量：<Cascader options={displacements} size="default" style={{width:"110px"}} placeholder="请选择排量"/>&nbsp;&nbsp;
-                            年份：<DatePicker />
+                            排量：<Cascader options={this.state.displacements} size="default" style={{width:"110px"}} placeholder="请选择排量"/>&nbsp;&nbsp;
+                            年份：<Cascader options={this.state.years} size="default" style={{width:"110px"}} placeholder="请选择年份"/>
                         </div>
                         <div className="ant-confirm-divBrand">
                             <ul className="clearfix">

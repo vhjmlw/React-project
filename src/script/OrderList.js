@@ -51,13 +51,18 @@ class OrderList extends React.Component{
         currentPage: 1,
         totalPage: 1,
         pageSize: 10,
+        total: 0,
     };
 
     backToFront(source){
-        const registerDate = source.registerDate ? source.registerDate.substr(0,4)+'-'+source.registerDate.substr(4,2)+'-'+source.registerDate.substr(6,2) : '';
-        const serviceTime = source.serviceTime ? source.serviceTime.substr(0,4)+'-'+source.serviceTime.substr(4,2)+'-'+source.serviceTime.substr(6,2) : '';
-        const engineOilBrand = source.engineOilBrand ? source.engineOilBrand.split('/') : [];
-        const serviceAddress = source.serviceAddress ? source.serviceAddress.split('/') : [];
+        let registerDate = source.registerDate;
+        registerDate = registerDate ? registerDate.substr(0,4)+'-'+registerDate.substr(4,2)+'-'+registerDate.substr(6,2) : '';
+        let serviceTime = source.serviceTime;
+        serviceTime = serviceTime ? serviceTime.substr(0,4)+'-'+serviceTime.substr(4,2)+'-'+serviceTime.substr(6,2) : '';
+        let engineOilBrand = source.engineOilBrand;
+        engineOilBrand = engineOilBrand ? engineOilBrand.split('/') : [];
+        let serviceAddress = source.serviceAddress;
+        serviceAddress = serviceAddress ? serviceAddress.split('/') : [];
         return {
             phoneNumber: source.phone || '',
             name: source.name || '',
@@ -205,7 +210,10 @@ class OrderList extends React.Component{
 
     handleConvert(sourceArray){
         const newArray = sourceArray.map((source)=>{
-            const serviceTime = source.serviceTime.substr(0,4)+'-'+source.serviceTime.substr(4,2)+'-'+source.serviceTime.substr(6,2);
+            let serviceTime = source.serviceTime;
+            if(serviceTime){
+                serviceTime = serviceTime.substr(0,4)+'-'+serviceTime.substr(4,2)+'-'+serviceTime.substr(6,2);
+            }
             return {
                 key: source.customerId,
                 carId: source.carId,
@@ -226,21 +234,24 @@ class OrderList extends React.Component{
     componentDidMount(){
         let orderListData = [];
         fetch('v1/sheet/list',{
-            method: 'GET',
+            method: 'POST',
             headers: new Headers({
                 'Content-Type': 'application/x-www-form-urlencoded',
             }),
+            body: `page=1&pageSize=10`
         }).then((response)=>{
             if(response.ok){
                 return response.json();
             }
         }).then((json)=>{
             if(json.code === '200'){
-                orderListData = this.handleConvert(json.data);
+                orderListData = this.handleConvert(json.data.list);
                 this.setState({
-                    orderListData
+                    orderListData,
+                    total: json.data.total,
                 });
                 console.log(orderListData);
+                console.log(this.state.totalPage);
             } else {
                 message.warning(json.message);
             }
@@ -249,8 +260,26 @@ class OrderList extends React.Component{
         });
     }
 
-    handleChangePage(page, pageSize){
-
+    handlePageChange(page, pageSize){
+        fetch('v1/sheet/list',{
+            method: 'POST',
+            headers: new Headers({
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }),
+            body: `page=${page}&pageSize=${pageSize}`
+        }).then((response)=>{
+            return response.json();
+        }).then((json)=>{
+            if(json.code === '200'){
+                const orderListData = this.handleConvert(json.data.list);
+                this.setState({
+                    orderListData,
+                    currentPage: page,
+                });
+            } else {
+                message.warning(json.message);
+            }
+        })
     }
 
     render(){
@@ -267,8 +296,8 @@ class OrderList extends React.Component{
                     pagination={{
                         current: this.state.currentPage,
                         pageSize: this.state.pageSize,
-                        total: this.state.totalPage,
-                        onChange: (page, pageSize)=>{this.handleChangePage(page, pageSize)}
+                        total: this.state.total,
+                        onChange: (page, pageSize)=>{this.handlePageChange(page, pageSize)}
                     }}
                 />
             </div>

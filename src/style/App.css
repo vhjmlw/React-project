@@ -110,15 +110,16 @@
 }
 .ant-modal .ant-confirm-content .ant-confirm-brandNav {
     float: left;
-    width: 18PX;
-    height: 18px;
-    line-height: 18px;
     margin: 5px;
     text-align: center;
     font-size: 16px;
     font-weight: 700;
 }
 .ant-modal .ant-confirm-content .ant-confirm-brandNav a:hover {
+    color: #d60000;
+    text-decoration: underline;
+}
+.brandChar {
     color: #d60000;
     text-decoration: underline;
 }
@@ -129,8 +130,7 @@
     float: left;
     margin: 5px;
 }
-
-.ant-modal .ant-modal-body .ant-confirm-btns {
+.ant-modal .ant-modal-body .ant-confirm-btns button:first-child {
     display: none;
 }
 

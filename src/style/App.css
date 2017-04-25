@@ -130,11 +130,14 @@
     float: left;
     margin: 5px;
 }
-.ant-modal .ant-modal-body .ant-confirm-btns button:first-child {
+/*.ant-modal .ant-modal-body .ant-confirm-btns button:first-child {
     display: none;
+}*/
+.ant-modal-wrap .ant-confirm {
+    width: 650px!important;
 }
 
-/*AddOrder中的样式*/
+    /*AddOrder中的样式*/
 .ant-layout .ant-layout-content .layout-AddOrder-steps {
   width: 60%;
   margin: 0 auto;

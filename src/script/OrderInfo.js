@@ -277,6 +277,9 @@ class CarInfoForm extends React.Component {
         brandValue: '',
         factorys: ['一汽大众', '上汽大众', '广汽大众'],
         cartypes: ['车型一','车型二','车型三'],
+        cartypeValue: '',
+        carseries: ['车系一', '车系二', '车系三', '车系四'],
+        carseriesValue: '',
     };
     handleSubmit = (e) => {
         e.preventDefault();
@@ -329,8 +332,19 @@ class CarInfoForm extends React.Component {
             maskClosable: true,
             okText: "确定",
             cancelText: "取消",
-            onOk: ()=>console.log('OK'),
-            onCancel: ()=>console.log('cancle'),
+            onOk: ()=>{
+                if(this.state.brandValue){
+                    this.handleCartypeSelect.bind(this)();
+                    this.setState({
+                        brandValue: '',
+                    });
+                }
+            },
+            onCancel: ()=>{
+                this.setState({
+                    brandValue: '',
+                });
+            },
             content: (
                 <div>
                     <div className="ant-confirm-divNav">
@@ -379,6 +393,9 @@ class CarInfoForm extends React.Component {
             this.props.form.setFieldsValue({
                 cartype: cartype,
             });
+            this.setState({
+                cartypeValue: cartype,
+            });
             document.querySelectorAll('.ant-confirm-brand button').forEach((item,index)=>{
                 item.classList.remove('ant-btn-primary');
             });
@@ -388,43 +405,109 @@ class CarInfoForm extends React.Component {
     }
 
     handleCartypeSelect(){
-        Modal.confirm({
-            title: '请选择车型',
-            maskClosable: true,
-            onOk: ()=>console.log('OK'),
-            onCancel: ()=>console.log('cancle'),
-            content: (
-                <div>
-                    <div className="ant-confirm-divNav">
-                        <ul className="clearfix">
-                            {
-                                this.state.factorys.map((factory)=>{
-                                    return (
-                                        <li className="ant-confirm-brandNav">
-                                            <a onClick={this.handleFactoryClick(factory).bind(this)}>{factory}</a>
-                                        </li>
-                                    );
-                                })
-                            }
+        if(this.state.factorys.length===0){
+            message.error('请先选择汽车品牌');
+        } else {
+            Modal.confirm({
+                title: '请选择车型',
+                maskClosable: true,
+                onOk: ()=>{
+                    if(this.state.cartypeValue){
+                        this.handleCarseriesSelect.bind(this)();
+                        this.setState({
+                            cartypeValue: '',
+                        });
+                    }
+                },
+                onCancel: ()=>{
+                    this.setState({
+                        cartypeValue: '',
+                    });
+                },
+                content: (
+                    <div>
+                        <div className="ant-confirm-divNav">
+                            <ul className="clearfix">
+                                {
+                                    this.state.factorys.map((factory)=>{
+                                        return (
+                                            <li className="ant-confirm-brandNav">
+                                                <a onClick={this.handleFactoryClick(factory).bind(this)}>{factory}</a>
+                                            </li>
+                                        );
+                                    })
+                                }
 
-                        </ul>
+                            </ul>
+                        </div>
+                        <div className="ant-confirm-divBrand">
+                            <ul className="clearfix">
+                                {
+                                    this.state.cartypes.map((cartype)=>{
+                                        return (
+                                            <li className='ant-confirm-brand'>
+                                                <button onClick={this.handleCartypeClick(cartype).bind(this)} className="ant-btn">{cartype}</button>
+                                            </li>
+                                        );
+                                    })
+                                }
+                            </ul>
+                        </div>
                     </div>
-                    <div className="ant-confirm-divBrand">
-                        <ul className="clearfix">
-                            {
-                                this.state.cartypes.map((cartype)=>{
-                                    return (
-                                        <li className='ant-confirm-brand'>
-                                            <button onClick={this.handleCartypeClick(cartype).bind(this)} className="ant-btn">{cartype}</button>
-                                        </li>
-                                    );
-                                })
-                            }
-                        </ul>
+                ),
+            });
+        }
+    }
+
+    handleCarseriesClick(series){
+        return (e)=>{
+            this.props.form.setFieldsValue({
+                carseries: series,
+            });
+            this.setState({
+                carseriesValue: series,
+            });
+            document.querySelectorAll('.ant-confirm-brand button').forEach((item,index)=>{
+                item.classList.remove('ant-btn-primary');
+            });
+            e.target.classList.add('ant-btn-primary');
+        }
+    }
+
+    handleCarseriesSelect(){
+        if(this.state.factorys.length===0){
+            message.error('请选择品牌');
+        } else if(this.state.carseries.length===0){
+            message.error('请先选择车型');
+        } else {
+            Modal.confirm({
+                title: '请选择车系',
+                maskClosable: true,
+                onOk: ()=>{console.log('OK')},
+                onCancel: ()=>console.log('cancle'),
+                content: (
+                    <div>
+                        <div className="ant-confirm-divNav">
+                            排量：<Cascader options={displacements} size="default" style={{width:"110px"}} placeholder="请选择排量"/>&nbsp;&nbsp;
+                            年份：<DatePicker />
+                        </div>
+                        <div className="ant-confirm-divBrand">
+                            <ul className="clearfix">
+                                {
+                                    this.state.carseries.map((series)=>{
+                                        return (
+                                            <li className='ant-confirm-brand'>
+                                                <button onClick={this.handleCarseriesClick(series).bind(this)} className="ant-btn">{series}</button>
+                                            </li>
+                                        );
+                                    })
+                                }
+                            </ul>
+                        </div>
                     </div>
-                </div>
-            ),
-        });
+                ),
+            });
+        }
     }
 
     render() {
@@ -486,22 +569,15 @@ class CarInfoForm extends React.Component {
                     </FormItem>
                     <FormItem
                         {...formItemLayout}
-                        label="排量"
+                        label="车系"
                     >
-                        {getFieldDecorator('displacement', {
-                            rules: [{ required: true, message: '请选择排量' }],
+                        {getFieldDecorator('carseries', {
+                            rules: [{ required: true, message: '请选择车系' }],
                         })(
-                            <Cascader options={displacements} size="large" style={{width:"110px"}} placeholder="请选择排量"/>
-                        )}
-                    </FormItem>
-                    <FormItem
-                        {...formItemLayout}
-                        label="年份"
-                    >
-                        {getFieldDecorator('purchaseDate', {
-                            rules: [{ type: 'object', required: true, message: '请选择购买日期' }],
-                        })(
-                            <DatePicker />
+                            <Input
+                                onClick={this.handleCarseriesSelect.bind(this)}
+                                placeholder="请选择车系"
+                            />
                         )}
                     </FormItem>
                     <FormItem

@@ -202,7 +202,7 @@ class OrderList extends React.Component{
 
     //点击新增按钮的执行逻辑，<Button><Link to='App/OrderInfo'>新增</Link></Button>会有浏览器兼容性问题
     //火狐 IE浏览器下点击新增无效，页面无法跳转，所以使用onClick点击事件的方式
-    handleClick (event) {
+    handleAddClick (event) {
         event.preventDefault();
         // browserHistory.push("/App/MyForm");
         this.props.history.pushState(null, "/App/OrderInfo");//API已经过时了，但是暂时想不出其他的解决办法
@@ -288,7 +288,7 @@ class OrderList extends React.Component{
             <div className="antd-layout-OrderList">
                 <div className="clearfix">
                     <Button type="primary">打印工单</Button>
-                    <Button type="primary" onClick={this.handleClick.bind(this)}>新增</Button>
+                    <Button type="primary" onClick={this.handleAddClick.bind(this)}>新增</Button>
                 </div>
                 <Table
                     columns={this.state.columns}

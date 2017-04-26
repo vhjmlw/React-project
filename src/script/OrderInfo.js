@@ -298,6 +298,7 @@ class CarInfoForm extends React.Component {
 
     }
 
+    //选择汽车品牌的逻辑
     handleCharClick(e){
         document.querySelectorAll('.ant-confirm-brandNav a').forEach((item,index)=>{
             item.classList.remove('brandChar');
@@ -374,6 +375,7 @@ class CarInfoForm extends React.Component {
         });
     }
 
+    //选择汽车车型的逻辑
     handleFactoryClick(factory){
         return (e)=>{
             document.querySelectorAll('.ant-confirm-brandNav a').forEach((item,index)=>{
@@ -455,6 +457,7 @@ class CarInfoForm extends React.Component {
         }
     }
 
+    //选择汽车车系的逻辑
     handleCarseriesClick(series){
         return (e)=>{
             this.props.form.setFieldsValue({

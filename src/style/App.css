@@ -53,9 +53,6 @@
 }
 
 /*content中表格的样式*/
-/*.ant-layout .ant-layout-content .antd-layout-OrderList{
-  margin-top: -20px;
-}*/
 .ant-layout .ant-layout-content .ant-btn-primary {
   margin: 0 5px 10px 5px;
   float: right;
@@ -73,6 +70,10 @@
 }
 .ant-modal-wrap .ant-confirm-content {
   margin: 0 0;
+  font-size: 13px;
+}
+.ant-modal-wrap .ant-confirm-content td {
+    width: 50%;
 }
 .ant-modal-wrap .ant-confirm-content div table{
   width: 70%;
@@ -133,9 +134,9 @@
 /*.ant-modal .ant-modal-body .ant-confirm-btns button:first-child {
     display: none;
 }*/
-.ant-modal-wrap .ant-confirm {
+/*.ant-modal-wrap .ant-confirm {
     width: 650px!important;
-}
+}*/
 
     /*AddOrder中的样式*/
 .ant-layout .ant-layout-content .layout-AddOrder-steps {

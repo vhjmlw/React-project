@@ -136,7 +136,7 @@ class OrderList extends React.Component{
                         Modal.info({
                             title: '',
                             okText: '确定',
-                            // width: '50%',
+                            width: '550px',
                             onOk: function(){console.log('OK')},
                             onCancel: function() {console.log('cancle')},//虽然用不到取消按钮，但是还是要设置onCancel事件，如果不设置onCancel的话，点击按钮会报错
                             maskClosable: true,

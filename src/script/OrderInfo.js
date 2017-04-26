@@ -323,6 +323,7 @@ class CarInfoForm extends React.Component {
     handleBrandSelect(){
         Modal.confirm({
             title: '按照首字母选择汽车品牌',
+            width: '650px',
             maskClosable: true,
             okText: "确定",
             cancelText: "取消",
@@ -404,6 +405,7 @@ class CarInfoForm extends React.Component {
         } else {
             Modal.confirm({
                 title: '请选择车型',
+                width: '650px',
                 maskClosable: true,
                 onOk: ()=>{
                     if(this.state.cartypeValue){
@@ -476,6 +478,7 @@ class CarInfoForm extends React.Component {
         } else {
             Modal.confirm({
                 title: '请选择车系',
+                width: '650px',
                 maskClosable: true,
                 onOk: ()=>{console.log('OK')},
                 onCancel: ()=>console.log('cancle'),

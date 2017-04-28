@@ -109,7 +109,14 @@
     padding: 10px 0;
     border-bottom: 1px solid #ccc;
 }
-.ant-modal .ant-confirm-content .ant-confirm-brandNav {
+.ant-modal .ant-confirm-content .ant-confirm-navList {
+    float: left;
+    margin: 5px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 700;
+}
+.ant-modal .ant-confirm-content .ant-confirm-yearList {
     float: left;
     margin: 5px;
     text-align: center;
@@ -120,25 +127,22 @@
     color: #d60000;
     text-decoration: underline;
 }
-.brandChar {
+.navList {
     color: #d60000;
     text-decoration: underline;
 }
-.ant-modal .ant-confirm-content .ant-confirm-divBrand {
+.ant-modal .ant-confirm-content .ant-confirm-divContent {
     padding-top: 10px;
 }
-.ant-modal .ant-confirm-content .ant-confirm-brand {
+.ant-modal .ant-confirm-content .ant-confirm-contentList {
     float: left;
     margin: 5px;
 }
 /*.ant-modal .ant-modal-body .ant-confirm-btns button:first-child {
     display: none;
 }*/
-/*.ant-modal-wrap .ant-confirm {
-    width: 650px!important;
-}*/
 
-    /*AddOrder中的样式*/
+/*AddOrder中的样式*/
 .ant-layout .ant-layout-content .layout-AddOrder-steps {
   width: 60%;
   margin: 0 auto;

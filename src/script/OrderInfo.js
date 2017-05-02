@@ -544,7 +544,7 @@ class CarInfoForm extends React.Component {
                                         if(this.state.brandValue){
                                             this.handleCartypeSelect.bind(this)();
                                             this.setState({
-                                            brandVisible: false,
+                                                brandVisible: false,
                                             });
                                         } else {
                                             message.error('请先选择汽车品牌');
@@ -570,7 +570,6 @@ class CarInfoForm extends React.Component {
                                                             );
                                                         })
                                                     }
-
                                                 </ul>
                                             </div>
                                             <div className="ant-confirm-divContent">
@@ -596,6 +595,19 @@ class CarInfoForm extends React.Component {
                     </FormItem>
                     <FormItem
                         {...formItemLayout}
+                        label="车系"
+                    >
+                        {getFieldDecorator('carseries', {
+                            rules: [{ required: true, message: '请选择车系' }],
+                        })(
+                            <Input
+                                onClick={this.handleCarseriesSelect.bind(this)}
+                                placeholder="请选择车系"
+                            />
+                        )}
+                    </FormItem>
+                    <FormItem
+                        {...formItemLayout}
                         label="车型"
                     >
                         {getFieldDecorator('cartype', {
@@ -610,7 +622,7 @@ class CarInfoForm extends React.Component {
                                 <Modal
                                     title= '请选择车型'
                                     width= '650px'
-                                    maskClosable= {true}
+                                    maskClosable= {false}
                                     visible={this.state.cartypeVisible}
                                     onOk= {()=>{
                                         if(this.state.cartypeValue){
@@ -664,19 +676,6 @@ class CarInfoForm extends React.Component {
                                 </Modal>
                             </div>
 
-                        )}
-                    </FormItem>
-                    <FormItem
-                        {...formItemLayout}
-                        label="车系"
-                    >
-                        {getFieldDecorator('carseries', {
-                            rules: [{ required: true, message: '请选择车系' }],
-                        })(
-                            <Input
-                                onClick={this.handleCarseriesSelect.bind(this)}
-                                placeholder="请选择车系"
-                            />
                         )}
                     </FormItem>
                     <FormItem

@@ -166,6 +166,14 @@
   display: none;
 }
 
+/*Modal通用组件header footer样式*/
+.ant-modal-footer {
+    border-top: 0;
+}
+.ant-modal-header {
+    border-bottom: 0;
+}
+
 
 
 

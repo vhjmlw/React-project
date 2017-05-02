@@ -102,28 +102,26 @@
     background-color: #fff;
     transition: opacity 90ms ease-in;
 }
-.ant-modal .ant-confirm-body .anticon-question-circle {
-    display: none;
-}
-.ant-modal .ant-confirm-content .ant-confirm-divNav {
+
+.ant-modal .ant-modal-content .ant-confirm-divNav {
     padding: 10px 0;
     border-bottom: 1px solid #ccc;
 }
-.ant-modal .ant-confirm-content .ant-confirm-navList {
+.ant-modal .ant-modal-content .ant-confirm-divNav .ant-confirm-navList {
     float: left;
     margin: 5px;
     text-align: center;
     font-size: 16px;
     font-weight: 700;
 }
-.ant-modal .ant-confirm-content .ant-confirm-yearList {
+.ant-modal .ant-modal-content .ant-confirm-yearList {
     float: left;
     margin: 5px;
     text-align: center;
     font-size: 16px;
     font-weight: 700;
 }
-.ant-modal .ant-confirm-content .ant-confirm-brandNav a:hover {
+.ant-modal .ant-modal-content .ant-confirm-navList a:hover {
     color: #d60000;
     text-decoration: underline;
 }
@@ -131,10 +129,10 @@
     color: #d60000;
     text-decoration: underline;
 }
-.ant-modal .ant-confirm-content .ant-confirm-divContent {
+.ant-modal .ant-modal-content .ant-confirm-divContent {
     padding-top: 10px;
 }
-.ant-modal .ant-confirm-content .ant-confirm-contentList {
+.ant-modal .ant-modal-content .ant-confirm-divContent .ant-confirm-contentList {
     float: left;
     margin: 5px;
 }

@@ -348,6 +348,7 @@ class CarInfoForm extends React.Component {
                 brands: json.brands,
                 brandSelect: json.initials,
                 brandVisible: true,
+                brandValue: '',
             });
             document.querySelectorAll('.ant-confirm-navList a').forEach((item,index)=>{
                 item.classList.remove('navList');
@@ -376,6 +377,10 @@ class CarInfoForm extends React.Component {
     }
 
     handleCarseriesSelect(){
+        if(!this.state.brandValue){
+            message.error('请选择汽车品牌');
+            return;
+        }
         fetch(`/car/series?brand_name=${this.state.brandValue}`).then((response)=>{
             return response.json();
         }).then((json)=>{
@@ -383,6 +388,7 @@ class CarInfoForm extends React.Component {
             this.setState({
                 carseriesVisible: true,
                 carseries: json.series,
+                carseriesValue: '',
             });
             document.querySelectorAll('.ant-confirm-contentList button').forEach((item,index)=>{
                 item.classList.remove('ant-btn-primary');
@@ -405,6 +411,7 @@ class CarInfoForm extends React.Component {
 
             this.setState({
                 factoryValue: factory,
+                cartypeValue: '',
             });
 
             let param = `serie_name=${this.state.carseriesValue}`;
@@ -435,6 +442,7 @@ class CarInfoForm extends React.Component {
 
             this.setState({
                 yearValue: year,
+                cartypeValue: '',
             });
 
             let param = `serie_name=${this.state.carseriesValue}`;
@@ -465,6 +473,7 @@ class CarInfoForm extends React.Component {
 
             this.setState({
                 displacementValue: displacement,
+                cartypeValue: '',
             });
 
             let param = `serie_name=${this.state.carseriesValue}`;
@@ -496,33 +505,44 @@ class CarInfoForm extends React.Component {
     }
 
     handleCartypeSelect(){
-        fetch(`/car/type?serie_name=${this.state.carseriesValue}`).then((response)=>{
-            return response.json();
-        }).then((json)=>{
-            console.log(json);
-            this.setState({
-                factorys: json.factorys,
-                displacements: json.displacements,
-                years: json.years,
-                cartypes: json.types,
-                cartypeVisible: true,
+        if(!this.state.brandValue) {
+            message.error('请选择汽车品牌');
+            return;
+        } else if(!this.state.carseriesValue){
+            message.error('请选择车系');
+            return;
+        } else {
+            fetch(`/car/type?serie_name=${this.state.carseriesValue}`).then((response)=>{
+                return response.json();
+            }).then((json)=>{
+                console.log(json);
+                this.setState({
+                    factorys: json.factorys,
+                    displacements: json.displacements,
+                    years: json.years,
+                    cartypes: json.types,
+                    cartypeVisible: true,
+                    factoryValue: '',
+                    yearValue: '',
+                    displacementValue: '',
+                    cartypeValue: '',
+                });
+                document.querySelectorAll('.ant-confirm-navList a').forEach((item,index)=>{
+                    item.classList.remove('navList');
+                });
+                document.querySelectorAll('.ant-confirm-yearList a').forEach((item,index)=>{
+                    item.classList.remove('navList');
+                });
+                document.querySelectorAll('.ant-confirm-factoryList a').forEach((item,index)=>{
+                    item.classList.remove('navList');
+                });
+                document.querySelectorAll('.ant-confirm-contentList button').forEach((item,index)=>{
+                    item.classList.remove('ant-btn-primary');
+                });
+            }).catch((error)=>{
+                throw error;
             });
-            document.querySelectorAll('.ant-confirm-navList a').forEach((item,index)=>{
-                item.classList.remove('navList');
-            });
-            document.querySelectorAll('.ant-confirm-yearList a').forEach((item,index)=>{
-                item.classList.remove('navList');
-            });
-            document.querySelectorAll('.ant-confirm-factoryList a').forEach((item,index)=>{
-                item.classList.remove('navList');
-            });
-            document.querySelectorAll('.ant-confirm-contentList button').forEach((item,index)=>{
-                item.classList.remove('ant-btn-primary');
-            });
-        }).catch((error)=>{
-            throw error;
-        });
-
+        }
     }
 
     render() {
@@ -583,7 +603,7 @@ class CarInfoForm extends React.Component {
                                                 brandVisible: false,
                                             });
                                         } else {
-                                            message.error('请先选择汽车品牌');
+                                            message.error('请选择汽车品牌');
                                         }
                                     }}
                                     onCancel= {()=>{
@@ -666,6 +686,7 @@ class CarInfoForm extends React.Component {
                                         } else {
                                             message.error('请选择车系');
                                         }
+
                                     }}
                                     onCancel= {()=>{
                                         this.setState({
@@ -724,7 +745,7 @@ class CarInfoForm extends React.Component {
                                                 cartypeVisible: false,
                                             });
                                         } else {
-                                            message.error('请先选择车型');
+                                            message.error('请选择车型');
                                         }
                                     }}
                                     onCancel= {()=>{

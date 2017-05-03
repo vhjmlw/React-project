@@ -266,14 +266,17 @@ const CustomInfo = Form.create()(CustomInfoForm);
 class CarInfoForm extends React.Component {
     state = {
         brandSelect: [],
-        brands: ['大众', '路虎', '丰田', '标致'],
-        carseries: ['车系一', '车系二', '车系三', '车系四'],
-        factorys: ['一汽大众', '上汽大众', '广汽大众'],
-        displacements: ['4.0L', '5.0L'],
-        years: ['2016', '2017'],
-        cartypes: ['车型一','车型二','车型三'],
+        brands: [],
+        carseries: [],
+        factorys: [],
+        displacements: [],
+        years: [],
+        cartypes: [],
         brandValue: '',
         carseriesValue: '',
+        factoryValue: '',
+        yearValue: '',
+        displacementValue: '',
         cartypeValue: '',
         brandVisible : false,
         carsereisVisible: false,
@@ -390,14 +393,32 @@ class CarInfoForm extends React.Component {
     }
 
     //选择汽车车型的逻辑
-    handleDisplacementClick(displacement){
+    handleFactoryClick(factory){
         return (e)=>{
-            document.querySelectorAll('.ant-confirm-navList a').forEach((item,index)=>{
+            document.querySelectorAll('.ant-confirm-factoryList a').forEach((item,index)=>{
                 item.classList.remove('navList');
             });
             e.target.classList.add('navList');
             document.querySelectorAll('.ant-confirm-contentList button').forEach((item,index)=>{
                 item.classList.remove('ant-btn-primary');
+            });
+
+            this.setState({
+                factoryValue: factory,
+            });
+
+            let param = `serie_name=${this.state.carseriesValue}`;
+                param += `&factory_name=${encodeURIComponent(factory)}`;
+                param += `&product_year=${encodeURIComponent(this.state.yearValue)}`;
+                param += `&displacement=${encodeURIComponent(this.state.displacementValue)}`;
+            fetch(`/car/type?${param}`).then((response)=>{
+                return response.json();
+            }).then((json)=>{
+                this.setState({
+                    cartypes: json.types,
+                });
+            }).catch((error)=>{
+                throw error;
             });
         }
     }
@@ -411,17 +432,53 @@ class CarInfoForm extends React.Component {
             document.querySelectorAll('.ant-confirm-contentList button').forEach((item,index)=>{
                 item.classList.remove('ant-btn-primary');
             });
+
+            this.setState({
+                yearValue: year,
+            });
+
+            let param = `serie_name=${this.state.carseriesValue}`;
+                param += `&factory_name=${encodeURIComponent(this.state.factoryValue)}`;
+                param += `&product_year=${encodeURIComponent(year)}`;
+                param += `&displacement=${encodeURIComponent(this.state.displacementValue)}`;
+            fetch(`/car/type?${param}`).then((response)=>{
+                return response.json();
+            }).then((json)=>{
+                this.setState({
+                    cartypes: json.types,
+                });
+            }).catch((error)=>{
+                throw error;
+            });
         }
     }
 
-    handleFactoryClick(factory){
+    handleDisplacementClick(displacement){
         return (e)=>{
-            document.querySelectorAll('.ant-confirm-factoryList a').forEach((item,index)=>{
+            document.querySelectorAll('.ant-confirm-navList a').forEach((item,index)=>{
                 item.classList.remove('navList');
             });
             e.target.classList.add('navList');
             document.querySelectorAll('.ant-confirm-contentList button').forEach((item,index)=>{
                 item.classList.remove('ant-btn-primary');
+            });
+
+            this.setState({
+                displacementValue: displacement,
+            });
+
+            let param = `serie_name=${this.state.carseriesValue}`;
+                param += `&factory_name=${encodeURIComponent(this.state.factoryValue)}`;
+                param += `&product_year=${encodeURIComponent(this.state.yearValue)}`;
+                param += `&displacement=${encodeURIComponent(displacement)}`;
+            fetch(`/car/type?${param}`).then((response)=>{
+                return response.json();
+            }).then((json)=>{
+                this.setState({
+                    cartypes: json.types,
+                });
+            }).catch((error)=>{
+                throw error;
             });
         }
     }
@@ -443,25 +500,29 @@ class CarInfoForm extends React.Component {
             return response.json();
         }).then((json)=>{
             console.log(json);
-            //先占个位置，明天继续
+            this.setState({
+                factorys: json.factorys,
+                displacements: json.displacements,
+                years: json.years,
+                cartypes: json.types,
+                cartypeVisible: true,
+            });
+            document.querySelectorAll('.ant-confirm-navList a').forEach((item,index)=>{
+                item.classList.remove('navList');
+            });
+            document.querySelectorAll('.ant-confirm-yearList a').forEach((item,index)=>{
+                item.classList.remove('navList');
+            });
+            document.querySelectorAll('.ant-confirm-factoryList a').forEach((item,index)=>{
+                item.classList.remove('navList');
+            });
+            document.querySelectorAll('.ant-confirm-contentList button').forEach((item,index)=>{
+                item.classList.remove('ant-btn-primary');
+            });
         }).catch((error)=>{
             throw error;
         });
-        this.setState({
-            cartypeVisible: true,
-        });
-        document.querySelectorAll('.ant-confirm-navList a').forEach((item,index)=>{
-            item.classList.remove('navList');
-        });
-        document.querySelectorAll('.ant-confirm-yearList a').forEach((item,index)=>{
-            item.classList.remove('navList');
-        });
-        document.querySelectorAll('.ant-confirm-factoryList a').forEach((item,index)=>{
-            item.classList.remove('navList');
-        });
-        document.querySelectorAll('.ant-confirm-contentList button').forEach((item,index)=>{
-            item.classList.remove('ant-btn-primary');
-        });
+
     }
 
     render() {
@@ -649,7 +710,7 @@ class CarInfoForm extends React.Component {
                                 <Input
                                     onClick={this.handleCartypeSelect.bind(this)}
                                     placeholder="请选择车型"
-                                    value={this.state.cartypeValue}
+                                    value={this.state.factoryValue + this.state.yearValue + this.state.cartypeValue}
                                 />
                                 <Modal
                                     title= '请选择车型'
@@ -669,6 +730,9 @@ class CarInfoForm extends React.Component {
                                     onCancel= {()=>{
                                         this.setState({
                                             cartypeValue: '',
+                                            factoryValue: '',
+                                            yearValue: '',
+                                            displacementValue: '',
                                             cartypeVisible: false,
                                         });
                                     }}
@@ -676,13 +740,13 @@ class CarInfoForm extends React.Component {
                                     {
                                         <div>
                                             <div className="ant-confirm-divNav">
-                                                排量：
+                                                组机厂：
                                                 <ul className="clearfix">
                                                     {
-                                                        this.state.displacements.map((displacement)=>{
+                                                        this.state.factorys.map((factory)=>{
                                                             return (
-                                                                <li className="ant-confirm-navList">
-                                                                    <a onClick={this.handleDisplacementClick(displacement).bind(this)}>{displacement}</a>
+                                                                <li className="ant-confirm-factoryList">
+                                                                    <a onClick={this.handleFactoryClick(factory).bind(this)}>{factory}</a>
                                                                 </li>
                                                             );
                                                         })
@@ -700,18 +764,17 @@ class CarInfoForm extends React.Component {
                                                         })
                                                     }
                                                 </ul>
-                                                组机厂：
+                                                排量：
                                                 <ul className="clearfix">
                                                     {
-                                                        this.state.factorys.map((factory)=>{
+                                                        this.state.displacements.map((displacement)=>{
                                                             return (
-                                                                <li className="ant-confirm-factoryList">
-                                                                    <a onClick={this.handleFactoryClick(factory).bind(this)}>{factory}</a>
+                                                                <li className="ant-confirm-navList">
+                                                                    <a onClick={this.handleDisplacementClick(displacement).bind(this)}>{displacement}</a>
                                                                 </li>
                                                             );
                                                         })
                                                     }
-
                                                 </ul>
                                             </div>
                                             <div className="ant-confirm-divContent">
@@ -720,7 +783,12 @@ class CarInfoForm extends React.Component {
                                                         this.state.cartypes.map((cartype)=>{
                                                             return (
                                                                 <li className='ant-confirm-contentList'>
-                                                                    <button onClick={this.handleCartypeClick(cartype).bind(this)} className="ant-btn">{cartype}</button>
+                                                                    <button
+                                                                        onClick={this.handleCartypeClick(cartype).bind(this)}
+                                                                        className="ant-btn"
+                                                                    >
+                                                                        {cartype}
+                                                                    </button>
                                                                 </li>
                                                             );
                                                         })

@@ -1,4 +1,4 @@
-import { Tabs, Form, Input, Button, Select, Tag, Popconfirm, message } from 'antd';
+import { Tabs, Form, Input, Button, Select, Tag, Popconfirm, message, InputNumber } from 'antd';
 import React from 'react';
 const TabPane = Tabs.TabPane;
 const FormItem = Form.Item;
@@ -72,10 +72,9 @@ class PackageInfoForm extends React.Component {
         });
     }
 
-    handleNumberChange(e){
-        e.preventDefault();
+    handleNumberChange(value){
         this.setState({
-            numberValue: e.target.value,
+            numberValue: value,
         });
     }
 
@@ -91,7 +90,7 @@ class PackageInfoForm extends React.Component {
             message.error('数量输入的格式有误');
             return;
         } else if (numberValue === 0){
-            message.error('请输入数量');
+            message.warning('请输入数量');
             return;
         }
         const {categoryValue, brandValue, unitValue} = this.state;
@@ -169,9 +168,9 @@ class PackageInfoForm extends React.Component {
                 {...formItemLayout}
                 >
                     <span>
-                        <Input
-                            type="text"
+                        <InputNumber
                             size='large'
+                            min={0}
                             value={this.state.numberValue}
                             onChange={this.handleNumberChange.bind(this)}
                             style={{ width: '65%', marginRight: '3%' }}

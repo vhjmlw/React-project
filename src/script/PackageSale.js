@@ -1,4 +1,4 @@
-import { Table, Button, Popconfirm, Form, message, Input, Select, DatePicker } from 'antd';
+import { Table, Button, Popconfirm, Form, message, Input, Select, DatePicker, InputNumber } from 'antd';
 import React from 'react';
 import moment from 'moment';
 const FormItem = Form.Item;
@@ -30,13 +30,13 @@ class PackageSale extends React.Component {
             render: (text, record) => (
                 <span>
                     <Popconfirm
-                        placement="bottomLeft"
+                        placement="bottomRight"
                         onConfirm={this.handleModifyOK.bind(this)}
                         onCancel={this.handleModifyCancel.bind(this)}
                         title={this.addConfirm.bind(this)()}
                         okText="确定"
                         cancelText="取消"
-                        visible={this.state.modifyVisible}
+                        visible={this.state.key===record.key&&this.state.which==='modify'}
                     >
                         <a onClick={this.handleModifyClick(record)}>修改</a>&nbsp;&nbsp;&nbsp;
                     </Popconfirm>
@@ -47,7 +47,7 @@ class PackageSale extends React.Component {
                         title={this.packageConfirm.bind(this)()}
                         okText="确定"
                         cancelText="取消"
-                        visible={this.state.packageVisible}
+                        visible={this.state.key===record.key&&this.state.which==='package'}
                     >
                         <a onClick={this.handlePackageClick(record)}>保养套餐销售</a>
                     </Popconfirm>
@@ -55,8 +55,6 @@ class PackageSale extends React.Component {
             ),
         }],
         addVisible: false,
-        modifyVisible: false,
-        packageVisible: false,
         channel: '',
         name: '',
         key: 0,
@@ -64,15 +62,16 @@ class PackageSale extends React.Component {
         package: '',
         date: '',
         number: '',
+        which: '',
     }
 
     handleModifyClick(record){
         return ()=>{
             this.setState({
-                modifyVisible:true,
                 channel:record.channel,
                 name:record.name,
-                key:record.key
+                key:record.key,
+                which: 'modify',
             })
         }
     }
@@ -81,21 +80,21 @@ class PackageSale extends React.Component {
         return ()=>{
                 if(record.packageAndNumber){
                     this.setState({
-                        packageVisible: true,
                         packageAndNumber: record.packageAndNumber,
                         package: record.package,
                         date: record.date,
                         number: record.number,
                         key: record.key,
+                        which: 'package',
                     });
                 } else {
                     this.setState({
-                        packageVisible: true,
                         packageAndNumber: '',
                         package: '',
                         date: '',
                         number: '',
                         key: record.key,
+                        which: 'package',
                     });
                 }
         }
@@ -127,10 +126,9 @@ class PackageSale extends React.Component {
         });
     }
 
-    handleNumberChange(e){
-        e.preventDefault();
+    handleNumberChange(value){
         this.setState({
-            number: e.target.value,
+            number: value,
         });
     }
 
@@ -140,15 +138,15 @@ class PackageSale extends React.Component {
         const number = Number(this.state.number);
         console.log(pkg,date,number);
         if(!pkg){
-            message.error('请选择套餐');
+            message.warning('请选择套餐');
             return;
         }
         if(!date){
-            message.error('请选择销售日期');
+            message.warning('请选择销售日期');
             return;
         }
         if(!number){
-            message.error('请输入数量');
+            message.warning('请输入数量');
             return;
         }
         const packageAndNumber = pkg + number + '份';
@@ -167,6 +165,7 @@ class PackageSale extends React.Component {
             date: '',
             number: '',
             key: 0,
+            which: '',
         });
     }
 
@@ -178,6 +177,7 @@ class PackageSale extends React.Component {
             date: '',
             number: '',
             key: 0,
+            which: '',
         });
     }
 
@@ -243,6 +243,7 @@ class PackageSale extends React.Component {
                 channel: '',
                 name: '',
                 key: 0,
+                which: '',
             });
         }
     }
@@ -253,6 +254,7 @@ class PackageSale extends React.Component {
             channel: '',
             name: '',
             key: 0,
+            which: '',
         });
     }
 
@@ -327,9 +329,8 @@ class PackageSale extends React.Component {
                     {...formItemLayout}
                     label="数量"
                 >
-                    <Input
-                        placeholder="请输入数量"
-                        type="number"
+                    <InputNumber
+                        min={0}
                         value={this.state.number}
                         style={{ width: '65%', marginRight: '3%' }}
                         onChange={this.handleNumberChange.bind(this)}
@@ -361,7 +362,7 @@ class PackageSale extends React.Component {
                 <Table columns={this.state.columns} dataSource={saleList}/>
             </div>
         );
-}
+    }
 }
 
 export default PackageSale;

@@ -8,3 +8,8 @@
 .clearfix {
     zoom: 1;
 }
+.btn-primary {
+    color: #fff;
+    background-color: #108ee9;
+    border-color: #108ee9;
+}

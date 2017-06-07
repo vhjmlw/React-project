@@ -448,6 +448,15 @@ class OrderInfoForm extends React.Component {
         });
     }
 
+    disabledDate(current) {
+        return current && current.valueOf() < Date.now();
+    }
+
+    handleBack(){
+        this.props.history.pushState(null,'/App');
+    }
+
+
     render() {
         const {getFieldDecorator} = this.props.form;
         const formItemLayout = {
@@ -786,7 +795,9 @@ class OrderInfoForm extends React.Component {
                     {getFieldDecorator('serviceDate', {
                         rules: [{type: 'object', required: true, message: '请选择服务时间'}],
                     })(
-                        <DatePicker />
+                        <DatePicker
+                            disabledDate={this.disabledDate.bind(this)}
+                        />
                     )}
                 </FormItem>
                 <FormItem
@@ -811,7 +822,7 @@ class OrderInfoForm extends React.Component {
                     )}
                 </FormItem>
                 <FormItem {...tailFormItemLayout}>
-                    <Button type='primary' size="large">返回</Button>
+                    <Button type='primary' size="large" onClick={this.handleBack.bind(this)}>返回</Button>
                     <Button type="primary" htmlType="submit" size="large">提交</Button>
                 </FormItem>
             </Form>

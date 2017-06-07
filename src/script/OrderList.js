@@ -375,6 +375,10 @@ class OrderList extends React.Component {
         })
     }
 
+    handleNameChange(e){
+
+    }
+
     render() {
         const formItemLayout = {
             labelCol: {span: 8},
@@ -389,7 +393,11 @@ class OrderList extends React.Component {
                             label="客户姓名"
                             {...formItemLayout}
                         >
-                            <Input placeholder='请输入姓名'/>
+                            <Input
+                                placeholder='请输入姓名'
+                                value={this.state.nameValue}
+                                onChange={this.handleNameChange.bind(this)}
+                            />
                         </FormItem>
                     </Col>
                     <Col span={6}>

@@ -1,5 +1,7 @@
 import {Table, Button, Modal, message, Row, Col, Form, Input, Cascader, DatePicker} from "antd";
 import React from "react";
+import Request from "./util/Request"
+import OrderInfo from "./OrderInfo";
 import {browserHistory, Link} from "react-router";
 const FormItem = Form.Item;
 const {RangePicker} = DatePicker;
@@ -17,8 +19,9 @@ const area = [
     {value: '常熟', label: '常熟'}
 ];
 const status = [
-    {value: '已服务', label: '已服务'},
-    {value: '待服务', label: '待服务'}
+    {value: '1', label: '待服务'},
+    {value: '2', label: '已服务'},
+    {value: '3', label: '已收单'}
 ];
 const products = [{
     value: '上门维修',
@@ -28,89 +31,128 @@ const products = [{
     label: '到店维修',
 }];
 
+const columns = [{
+    title: '客户姓名',
+    dataIndex: 'customerName',
+    key: 'customerName',
+}, {
+    title: '车牌',
+    dataIndex: 'plate',
+    key: 'plate',
+}, {
+    title: '电话',
+    dataIndex: 'phone',
+    key: 'phone',
+}, {
+    title: '服务产品',
+    dataIndex: 'productName',
+    key: 'productName',
+}, {
+    title: '发卡渠道',
+    dataIndex: 'channelName',
+    key: 'channelName',
+}, {
+    title: '服务市场',
+    dataIndex: 'serviceRegion',
+    key: 'serviceRegion',
+}, {
+    title: '服务时间',
+    dataIndex: 'serviceDate',
+    key: 'serviceDate',
+}, {
+    title: '状态',
+    dataIndex: 'status',
+    key: 'status',
+}, {
+    title: '操作',
+    key: 'action',
+    render: (text, record) => {
+        return (<span>
+                    <a onClick={this.handleInfo(record).bind(this)}>详情</a>&nbsp;&nbsp;&nbsp;
+            <a onClick={this.handleModify(record).bind(this)}>编辑</a>&nbsp;&nbsp;&nbsp;
+            <a href="javascript:alert('打印页面');">打印</a>
+                </span>)
+    },
+}];
+
 class OrderList extends React.Component {
     state = {
-        columns: [{
-            title: '客户姓名',
-            dataIndex: 'name',
-            key: 'name',
-        }, {
-            title: '车牌',
-            dataIndex: 'plateNumber',
-            key: 'plateNumber',
-        }, {
-            title: '电话',
-            dataIndex: 'phoneNumber',
-            key: 'phoneNumber',
-        }, {
-            title: '服务产品',
-            dataIndex: 'product',
-            key: 'product',
-        }, {
-            title: '发卡渠道',
-            dataIndex: 'cardChannel',
-            key: 'cardChannel',
-        }, {
-            title: '服务市场',
-            dataIndex: 'area',
-            key: 'area',
-        }, {
-            title: '服务时间',
-            dataIndex: 'serviceDate',
-            key: 'serviceDate',
-        }, {
-            title: '状态',
-            dataIndex: 'state',
-            key: 'state',
-        }, {
-            title: '操作',
-            key: 'action',
-            render: (text, record) => {
-                return (<span>
-                    <a onClick={this.handleInfo(record).bind(this)}>详情</a>&nbsp;&nbsp;&nbsp;
-                    <a onClick={this.handleModify(record).bind(this)}>编辑</a>&nbsp;&nbsp;&nbsp;
-                    <a href="javascript:alert('打印页面');">打印</a>
-                </span>)
-            },
-        }],
-        orderListData: null,
+        showFlag: 1,
+        showDetailId: null,
+        condition: {
+            createDateBegin: "",
+            createDateEnd: "",
+            serviceDateBegin: "",
+            serviceDateEnd: "",
+            plate: "",
+            phone: "",
+            status: "",
+            serviceUserId: "",
+            serviceRegionName: "",
+            channelId: "",
+            productId: "",
+            pageSize: 10,
+            currrentPage: 1,
+        },
+        data: [],
         currentPage: 1,
-        totalPage: 1,
         pageSize: 10,
         total: 0,
     };
 
-    backToFront(source) {
-        let registerDate = source.registerDate;
-        registerDate = registerDate ? registerDate.substr(0, 4) + '-' + registerDate.substr(4, 2) + '-' + registerDate.substr(6, 2) : '';
-        let serviceTime = source.serviceTime;
-        serviceTime = serviceTime ? serviceTime.substr(0, 4) + '-' + serviceTime.substr(4, 2) + '-' + serviceTime.substr(6, 2) : '';
-        let engineOilBrand = source.engineOilBrand;
-        engineOilBrand = engineOilBrand ? engineOilBrand.split('/') : [];
-        let serviceAddress = source.serviceAddress;
-        serviceAddress = serviceAddress ? serviceAddress.split('/') : [];
-        return {
-            phoneNumber: source.phone || '',
-            name: source.name || '',
-            sex: source.sex === true ? '男' : '女',
-            plateNumber: source.plate || '',
-            captcha: source.cardId || '',
-            product: [source.productType] || [],
-            cardChannel: [source.cardChannel] || [],
-            customComment: source.customComment || '',
-            brand: [source.brandId] || [],
-            cartype: [source.modelId] || [],
-            displacement: [source.displacement] || [],
-            purchaseDate: registerDate,
-            oilBrand: engineOilBrand,
-            filterBrand: [source.engineFilterBrand] || [],
-            carComment: source.carComment || '',
-            address: serviceAddress,
-            detailAddress: source.detailAddress || '',
-            state: source.status || '',
-            serviceDate: serviceTime,
-            serviceComment: source.serviceComment || '',
-        };
+    search(condition) {
+        condition = Object.assign(this.state.condition, condition);
+        let pageData = Request.synPost("workOder/list", condition);
+        let data = this.backToFront(pageData.data);
+        this.setState({
+            showFlag: 1,
+            showDetailId: null,
+            condition: condition,
+            data: data,
+            currentPage: pageData.currrentPage,
+            pageSize: pageData.pageSize,
+            total: pageData.totalNum
+        });
+    }
+
+    handlePageChange(page, pageSize) {
+        this.search({
+            currentPage: page,
+            pageSize: pageSize
+        });
+    }
+
+    backToFront(data) {
+        // let registerDate = source.registerDate;
+        // registerDate = registerDate ? registerDate.substr(0, 4) + '-' + registerDate.substr(4, 2) + '-' + registerDate.substr(6, 2) : '';
+        // let serviceTime = source.serviceTime;
+        // serviceTime = serviceTime ? serviceTime.substr(0, 4) + '-' + serviceTime.substr(4, 2) + '-' + serviceTime.substr(6, 2) : '';
+        // let engineOilBrand = source.engineOilBrand;
+        // engineOilBrand = engineOilBrand ? engineOilBrand.split('/') : [];
+        // let serviceAddress = source.serviceAddress;
+        // serviceAddress = serviceAddress ? serviceAddress.split('/') : [];
+        // return {
+        //     phoneNumber: source.phone || '',
+        //     name: source.name || '',
+        //     sex: source.sex === true ? '男' : '女',
+        //     plateNumber: source.plate || '',
+        //     captcha: source.cardId || '',
+        //     product: [source.productType] || [],
+        //     cardChannel: [source.cardChannel] || [],
+        //     customComment: source.customComment || '',
+        //     brand: [source.brandId] || [],
+        //     cartype: [source.modelId] || [],
+        //     displacement: [source.displacement] || [],
+        //     purchaseDate: registerDate,
+        //     oilBrand: engineOilBrand,
+        //     filterBrand: [source.engineFilterBrand] || [],
+        //     carComment: source.carComment || '',
+        //     address: serviceAddress,
+        //     detailAddress: source.detailAddress || '',
+        //     state: source.status || '',
+        //     serviceDate: serviceTime,
+        //     serviceComment: source.serviceComment || '',
+        // };
     }
 
     handleInfo(record) {
@@ -293,12 +335,11 @@ class OrderList extends React.Component {
         }
     }
 
-    //点击新增按钮的执行逻辑，<Button><Link to='App/OrderInfo'>新增</Link></Button>会有浏览器兼容性问题
-    //火狐 IE浏览器下点击新增无效，页面无法跳转，所以使用onClick点击事件的方式
     handleAddClick(event) {
-        event.preventDefault();
-        // browserHistory.push("/App/MyForm");
-        this.props.history.pushState(null, "/App/OrderInfo");//API已经过时了，但是暂时想不出其他的解决办法
+        this.setState({
+            showFlag: 2,
+            showDetailId: null
+        });
     }
 
     handleConvert(sourceArray) {
@@ -325,57 +366,39 @@ class OrderList extends React.Component {
     }
 
     componentDidMount() {
-        let orderListData = [];
-        fetch('v1/sheet/list', {
-            method: 'POST',
-            headers: new Headers({
-                'Content-Type': 'application/x-www-form-urlencoded',
-            }),
-            body: `page=1&pageSize=10`
-        }).then((response)=> {
-            if (response.ok) {
-                return response.json();
-            }
-        }).then((json)=> {
-            if (json.code === '200') {
-                orderListData = this.handleConvert(json.data.list);
-                this.setState({
-                    orderListData,
-                    total: json.data.total,
-                });
-                console.log(orderListData);
-                console.log(this.state.totalPage);
-            } else {
-                message.warning(json.message);
-            }
-        }).catch((error)=> {
-            throw error;
-        });
-    }
-
-    handlePageChange(page, pageSize) {
-        fetch('v1/sheet/list', {
-            method: 'POST',
-            headers: new Headers({
-                'Content-Type': 'application/x-www-form-urlencoded',
-            }),
-            body: `page=${page}&pageSize=${pageSize}`
-        }).then((response)=> {
-            return response.json();
-        }).then((json)=> {
-            if (json.code === '200') {
-                const orderListData = this.handleConvert(json.data.list);
-                this.setState({
-                    orderListData,
-                    currentPage: page,
-                });
-            } else {
-                message.warning(json.message);
-            }
-        })
+        this.search({});
     }
 
     render() {
+        if (this.state.showFlag === 2) {
+            return <OrderInfo
+                showDetailId={this.state.showDetailId}
+                back={
+                    ()=>{
+                        let condtion = {};
+                        if (this.state.showDetailId === null) {
+                            condtion = {
+                                createDateBegin: "",
+                                createDateEnd: "",
+                                serviceDateBegin: "",
+                                serviceDateEnd: "",
+                                plate: "",
+                                phone: "",
+                                status: "",
+                                serviceUserId: "",
+                                serviceRegionName: "",
+                                channelId: "",
+                                productId: "",
+                                pageSize: 10,
+                                currrentPage: 1,
+                            }
+                            this.search(condtion);
+                        }
+                    }
+                }
+            />;
+        }
+
         const formItemLayout = {
             labelCol: {span: 8},
             wrapperCol: {span: 16},
@@ -459,8 +482,8 @@ class OrderList extends React.Component {
                     <Button type="primary">重置</Button>
                 </div>
                 <Table
-                    columns={this.state.columns}
-                    dataSource={this.state.orderListData}
+                    columns={columns}
+                    dataSource={this.state.data}
                     pagination={{
                         current: this.state.currentPage,
                         pageSize: this.state.pageSize,

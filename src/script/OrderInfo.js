@@ -1,5 +1,8 @@
 import {Form, Input, Cascader, Select, Row, Col, Button, Steps, DatePicker, message, Modal, Radio} from 'antd';
 import React from 'react';
+import Request from "./util/Request";
+import CarModalSelect from "./CarModalSelect";
+
 const Step = Steps.Step;
 const FormItem = Form.Item;
 const Option = Select.Option;
@@ -53,15 +56,16 @@ const area = [
 class OrderInfoForm extends React.Component {
 
     state = {
-        brandSelect: [],
+        brandLetters: ['A', 'B', 'C', 'D'],
+        selectedLetter: 'A',
+        selectedBrandId: "",
+        selectedBrandName: "",
         brands: [],
         carseries: [],
         factorys: [],
         displacements: [],
         years: [],
         cartypes: [],
-        initialValue: '',
-        brandValue: '',
         carseriesValue: '',
         factoryValue: '',
         yearValue: '',
@@ -81,371 +85,8 @@ class OrderInfoForm extends React.Component {
         });
     }
 
-    //选择汽车品牌的逻辑
-    handleInitialClick(item) {
-        return (e)=> {
-            if (item === this.state.initialValue) {
-                return;
-            }
-            document.querySelectorAll('.selectBrand .ant-confirm-navList a').forEach((item, index)=> {
-                item.classList.remove('navList');
-            });
-            e.target.classList.add('navList');
-            document.querySelectorAll('.selectBrand .ant-confirm-contentList button').forEach((item, index)=> {
-                item.classList.remove('ant-btn-primary');
-            });
-            fetch(`car/brand?initial=${item}`).then((response)=> {
-                return response.json();
-            }).then((json)=> {
-                console.log(json);
-                this.setState({
-                    brands: json.brands,
-                    initialValue: item,
-                    brandValue: '',
-                });
-            }).catch((error)=> {
-                throw error;
-            });
-        }
-    }
-
-    handleBrandClick(brand) {
-        return (e)=> {
-            if (brand === this.state.brandValue) {
-                return;
-            }
-            this.setState({
-                brandValue: brand,
-            });
-            this.resetSeries.bind(this)();
-            this.resetType.bind(this)();
-            document.querySelectorAll('.selectBrand .ant-confirm-contentList button').forEach((item, index)=> {
-                item.classList.remove('ant-btn-primary');
-            });
-            e.target.classList.add('ant-btn-primary');
-        }
-    }
-
-    handleBrandSelect() {
-        fetch(`car/brand?initial=${this.state.initialValue || 'A'}`).then((response)=> {
-            return response.json();
-        }).then((json)=> {
-            this.setState({
-                brands: json.brands,
-                brandSelect: json.initials,
-                brandVisible: true,
-                // brandValue: '',
-            });
-            /*document.querySelectorAll('.selectBrand .ant-confirm-navList a').forEach((item,index)=>{
-             item.classList.remove('navList');
-             });
-             document.querySelector('.selectBrand .ant-confirm-navList:first-child a').classList.add('navList');
-             document.querySelectorAll('.selectBrand .ant-confirm-contentList button').forEach((item,index)=>{
-             item.classList.remove('ant-btn-primary');
-             });*/
-        }).catch((error)=> {
-            message.error(`请求出错：${error}`);
-            throw error;
-        });
-    }
-
-    //选择汽车车系的逻辑
-    handleCarseriesClick(series) {
-        return (e)=> {
-            if (series === this.state.carseriesValue) {
-                return;
-            }
-            this.setState({
-                carseriesValue: series,
-            });
-            this.resetType.bind(this)();
-            document.querySelectorAll('.selectSeries .ant-confirm-contentList button').forEach((item, index)=> {
-                item.classList.remove('ant-btn-primary');
-            });
-            e.target.classList.add('ant-btn-primary');
-        }
-    }
-
-    //显示
-    handleCarseriesSelect() {
-        if (!this.state.brandValue) {
-            message.warning('请选择汽车品牌');
-            return;
-        }
-        fetch(`/car/series?brand_name=${this.state.brandValue}`).then((response)=> {
-            return response.json();
-        }).then((json)=> {
-            console.log(json);
-            this.setState({
-                carseriesVisible: true,
-                carseries: json.series,
-                // carseriesValue: '',
-            });
-            /*document.querySelectorAll('.selectSeries .ant-confirm-contentList button').forEach((item,index)=>{
-             item.classList.remove('ant-btn-primary');
-             });*/
-        }).catch((error)=> {
-            throw error;
-        });
-    }
-
-    //选择汽车车型的逻辑
-    //选择组机场的逻辑
-    handleFactoryClick(factory) {
-        return (e)=> {
-            document.querySelectorAll('.selectType .ant-confirm-factoryList a').forEach((item, index)=> {
-                item.classList.remove('navList');
-            });
-            e.target.classList.add('navList');
-            document.querySelectorAll('.selectType .ant-confirm-contentList button').forEach((item, index)=> {
-                item.classList.remove('ant-btn-primary');
-            });
-
-            this.setState({
-                factoryValue: factory,
-                cartypeValue: '',
-            });
-
-            let param = `serie_name=${this.state.carseriesValue}`;
-            param += `&factory_name=${encodeURIComponent(factory)}`;
-            param += `&product_year=${encodeURIComponent(this.state.yearValue)}`;
-            param += `&displacement=${encodeURIComponent(this.state.displacementValue)}`;
-            fetch(`/car/type?${param}`).then((response)=> {
-                return response.json();
-            }).then((json)=> {
-                this.setState({
-                    cartypes: json.types,
-                });
-            }).catch((error)=> {
-                throw error;
-            });
-        }
-    }
-
-    //选择年份的逻辑
-    handleYearClick(year) {
-        return (e)=> {
-            document.querySelectorAll('.selectType .ant-confirm-yearList a').forEach((item, index)=> {
-                item.classList.remove('navList');
-            });
-            e.target.classList.add('navList');
-            document.querySelectorAll('.selectType .ant-confirm-contentList button').forEach((item, index)=> {
-                item.classList.remove('ant-btn-primary');
-            });
-
-            this.setState({
-                yearValue: year,
-                cartypeValue: '',
-            });
-
-            let param = `serie_name=${this.state.carseriesValue}`;
-            param += `&factory_name=${encodeURIComponent(this.state.factoryValue)}`;
-            param += `&product_year=${encodeURIComponent(year)}`;
-            param += `&displacement=${encodeURIComponent(this.state.displacementValue)}`;
-            fetch(`/car/type?${param}`).then((response)=> {
-                return response.json();
-            }).then((json)=> {
-                this.setState({
-                    cartypes: json.types,
-                });
-            }).catch((error)=> {
-                throw error;
-            });
-        }
-    }
-
-    //选择排量的逻辑
-    handleDisplacementClick(displacement) {
-        return (e)=> {
-            document.querySelectorAll('.selectType .ant-confirm-navList a').forEach((item, index)=> {
-                item.classList.remove('navList');
-            });
-            e.target.classList.add('navList');
-            document.querySelectorAll('.selectType .ant-confirm-contentList button').forEach((item, index)=> {
-                item.classList.remove('ant-btn-primary');
-            });
-
-            this.setState({
-                displacementValue: displacement,
-                cartypeValue: '',
-            });
-
-            let param = `serie_name=${this.state.carseriesValue}`;
-            param += `&factory_name=${encodeURIComponent(this.state.factoryValue)}`;
-            param += `&product_year=${encodeURIComponent(this.state.yearValue)}`;
-            param += `&displacement=${encodeURIComponent(displacement)}`;
-            fetch(`/car/type?${param}`).then((response)=> {
-                return response.json();
-            }).then((json)=> {
-                this.setState({
-                    cartypes: json.types,
-                });
-            }).catch((error)=> {
-                throw error;
-            });
-        }
-    }
-
-    //选择车型的逻辑
-    handleCartypeClick(cartype) {
-        return (e)=> {
-            this.setState({
-                cartypeValue: cartype,
-            });
-            document.querySelectorAll('.selectType .ant-confirm-contentList button').forEach((item, index)=> {
-                item.classList.remove('ant-btn-primary');
-            });
-            e.target.classList.add('ant-btn-primary');
-        }
-    }
-
-    //显示选择车型的modal
-    handleCartypeSelect() {
-        if (!this.state.brandValue) {
-            message.warning('请选择汽车品牌');
-            return;
-        } else if (!this.state.carseriesValue) {
-            message.warning('请选择车系');
-            return;
-        } else {
-            fetch(`/car/type?serie_name=${this.state.carseriesValue}`).then((response)=> {
-                return response.json();
-            }).then((json)=> {
-                console.log(json);
-
-                let factoryValue = '';
-                let yearValue = '';
-                let displacementValue = '';
-
-                if (json.factorys.length === 1) {
-                    factoryValue = json.factorys[0];
-                }
-                if (json.years.length === 1) {
-                    yearValue = json.years[0];
-                }
-                if (json.displacements.length === 1) {
-                    displacementValue = json.displacements[0];
-                }
-
-                this.setState({
-                    factorys: json.factorys,
-                    displacements: json.displacements,
-                    years: json.years,
-                    cartypes: json.types,
-                    cartypeVisible: true,
-                    /*factoryValue: factoryValue,
-                     yearValue: yearValue,
-                     displacementValue: displacementValue,
-                     cartypeValue: '',*/
-                });
-
-                /*document.querySelectorAll('.selectType .ant-confirm-navList a').forEach((item,index)=>{
-                 item.classList.remove('navList');
-                 });
-                 document.querySelectorAll('.selectType .ant-confirm-yearList a').forEach((item,index)=>{
-                 item.classList.remove('navList');
-                 });
-                 document.querySelectorAll('.selectType .ant-confirm-factoryList a').forEach((item,index)=>{
-                 item.classList.remove('navList');
-                 });
-                 document.querySelectorAll('.selectType .ant-confirm-contentList button').forEach((item,index)=>{
-                 item.classList.remove('ant-btn-primary');
-                 });*/
-            }).catch((error)=> {
-                throw error;
-            });
-        }
-    }
-
-    //点击品牌下一步的逻辑
-    handleBrandNext() {
-        if (this.state.brandValue) {
-            this.handleCarseriesSelect.bind(this)();
-            this.setState({
-                brandVisible: false,
-            });
-        } else {
-            message.warning('请选择汽车品牌');
-        }
-    }
-
-    //点击车系下一步的逻辑
-    handleSeriesNext() {
-        if (this.state.carseriesValue) {
-            this.handleCartypeSelect.bind(this)();
-            this.setState({
-                carseriesVisible: false,
-            });
-        } else {
-            message.warning('请选择车系');
-        }
-    }
-
-    //点击车系上一步的逻辑
-    handleSeriesPrevious() {
-        this.setState({
-            brandVisible: true,
-            carseriesVisible: false,
-        });
-    }
-
-    //点击车型上一步的逻辑
-    handleTypePrevious() {
-        this.setState({
-            carseriesVisible: true,
-            cartypeVisible: false,
-        });
-    }
-
-    //点击车型下一步的逻辑
-    handleTypeNext() {
-        if (this.state.cartypeValue) {
-            this.setState({
-                cartypeValue: this.state.cartypeValue,
-                cartypeVisible: false,
-            });
-            var brandSeriesType = ``;
-            brandSeriesType += `品牌:${this.state.brandValue};`;
-            brandSeriesType += `车系:${this.state.carseriesValue};`;
-            brandSeriesType += `车型:${this.state.cartypeValue};`;
-            this.props.form.setFieldsValue({
-                brandSeriesType: brandSeriesType,
-            });
-        } else {
-            message.warning('请选择车型');
-        }
-    }
-
-    //重置车系
-    resetSeries() {
-        this.setState({
-            carseriesValue: '',
-        });
-        document.querySelectorAll('.selectSeries .ant-confirm-contentList button').forEach((item, index)=> {
-            item.classList.remove('ant-btn-primary');
-        });
-    }
-
-    //重置车型
-    resetType() {
-        this.setState({
-            factoryValue: '',
-            yearValue: '',
-            displacementValue: '',
-            cartypeValue: '',
-        });
-        document.querySelectorAll('.selectType .ant-confirm-navList a').forEach((item, index)=> {
-            item.classList.remove('navList');
-        });
-        document.querySelectorAll('.selectType .ant-confirm-yearList a').forEach((item, index)=> {
-            item.classList.remove('navList');
-        });
-        document.querySelectorAll('.selectType .ant-confirm-factoryList a').forEach((item, index)=> {
-            item.classList.remove('navList');
-        });
-        document.querySelectorAll('.selectType .ant-confirm-contentList button').forEach((item, index)=> {
-            item.classList.remove('ant-btn-primary');
-        });
+    selectCarModal() {
+        this.refs.CarModalSelect.init();
     }
 
     render() {
@@ -568,190 +209,8 @@ class OrderInfoForm extends React.Component {
                     )}
                 </FormItem>
 
-                <Modal
-                    title={`品牌：${this.state.brandValue}`}
-                    width='650px'
-                    maskClosable={false}
-                    visible={this.state.brandVisible}
-                    wrapClassName="selectBrand"
-                    footer={[
-                        <Button key="next" type="primary" size="large" onClick={this.handleBrandNext.bind(this)}>
-                            下一步
-                        </Button>,
-                    ]}
-                    onCancel={()=> {
-                        this.setState({
-                            brandVisible: false,
-                        });
-                    }}
-                >
-                    {
-                        <div>
-                            <div className="ant-confirm-divNav">
-                                <ul className="clearfix">
-                                    {
-                                        this.state.brandSelect.map((item)=> {
-                                            return (
-                                                <li className="ant-confirm-navList">
-                                                    <a
-                                                        onClick={this.handleInitialClick(item).bind(this)}
-                                                        className={item === 'A' ? 'navList' : ''}
-                                                    >
-                                                        {item}
-                                                    </a>
-                                                </li>
-                                            );
-                                        })
-                                    }
-                                </ul>
-                            </div>
-                            <div className="ant-confirm-divContent">
-                                <ul className="clearfix">
-                                    {
-                                        this.state.brands.map((brand)=> {
-                                            return (
-                                                <li className='ant-confirm-contentList'>
-                                                    <button
-                                                        onClick={this.handleBrandClick(brand).bind(this)}
-                                                        className="ant-btn"
-                                                    >
-                                                        {brand}
-                                                    </button>
-                                                </li>
-                                            );
-                                        })
-                                    }
-                                </ul>
-                            </div>
-                        </div>
-                    }
-                </Modal>
-                <Modal
-                    title={`${this.state.brandValue}  ${this.state.carseriesValue}`}
-                    width='650px'
-                    maskClosable={false}
-                    visible={this.state.carseriesVisible}
-                    wrapClassName="selectSeries"
-                    footer={[
-                        <Button key="seriesPrevious" size='large' onClick={this.handleSeriesPrevious.bind(this)}>
-                            上一步
-                        </Button>,
-                        <Button key="seriesNext" size='large' type="primary" onClick={this.handleSeriesNext.bind(this)}>
-                            下一步
-                        </Button>
-                    ]}
-                    onCancel={()=> {
-                        this.setState({
-                            carseriesVisible: false,
-                        });
-                    }}
-                >
-                    {
-                        <div className="ant-confirm-divContent">
-                            <ul className="clearfix">
-                                {
-                                    this.state.carseries.map((series)=> {
-                                        return (
-                                            <li className='ant-confirm-contentList'>
-                                                <button
-                                                    onClick={this.handleCarseriesClick(series).bind(this)}
-                                                    className="ant-btn"
-                                                >
-                                                    {series}
-                                                </button>
-                                            </li>
-                                        );
-                                    })
-                                }
-                            </ul>
-                        </div>
-                    }
-                </Modal>
-                <Modal
-                    title={`${this.state.brandValue} ${this.state.carseriesValue} ${this.state.cartypeValue}`}
-                    width='650px'
-                    maskClosable={false}
-                    visible={this.state.cartypeVisible}
-                    wrapClassName="selectType"
-                    footer={[
-                        <Button key="typePrevious" size="large" onClick={this.handleTypePrevious.bind(this)}>
-                            上一步
-                        </Button>,
-                        <Button key='typeNext' size="large" type="primary" onClick={this.handleTypeNext.bind(this)}>
-                            确定
-                        </Button>
-                    ]}
-                    onCancel={()=> {
-                        this.setState({
-                            /*cartypeValue: '',
-                             factoryValue: '',
-                             yearValue: '',
-                             displacementValue: '',*/
-                            cartypeVisible: false,
-                        });
-                    }}
-                >
-                    {
-                        <div>
-                            <div className="ant-confirm-divNav">
-                                组机厂：
-                                <ul className="clearfix">
-                                    {
-                                        this.state.factorys.map((factory)=> {
-                                            return (
-                                                <li className="ant-confirm-factoryList">
-                                                    <a onClick={this.handleFactoryClick(factory).bind(this)}>{factory}</a>
-                                                </li>
-                                            );
-                                        })
-                                    }
-                                </ul>
-                                年份：
-                                <ul className="clearfix">
-                                    {
-                                        this.state.years.map((year)=> {
-                                            return (
-                                                <li className="ant-confirm-yearList">
-                                                    <a onClick={this.handleYearClick(year).bind(this)}>{year}</a>
-                                                </li>
-                                            );
-                                        })
-                                    }
-                                </ul>
-                                排量：
-                                <ul className="clearfix">
-                                    {
-                                        this.state.displacements.map((displacement)=> {
-                                            return (
-                                                <li className="ant-confirm-navList">
-                                                    <a onClick={this.handleDisplacementClick(displacement).bind(this)}>{displacement}</a>
-                                                </li>
-                                            );
-                                        })
-                                    }
-                                </ul>
-                            </div>
-                            <div className="ant-confirm-divContent">
-                                <ul className="clearfix">
-                                    {
-                                        this.state.cartypes.map((cartype)=> {
-                                            return (
-                                                <li className='ant-confirm-contentList'>
-                                                    <button
-                                                        onClick={this.handleCartypeClick(cartype).bind(this)}
-                                                        className="ant-btn"
-                                                    >
-                                                        {cartype}
-                                                    </button>
-                                                </li>
-                                            );
-                                        })
-                                    }
-                                </ul>
-                            </div>
-                        </div>
-                    }
-                </Modal>
+                {/*选择车辆型号*/}
+                <CarModalSelect ref="CarModalSelect"/>
                 <h3>车辆信息</h3>
                 <FormItem
                     {...formItemLayout}
@@ -761,7 +220,7 @@ class OrderInfoForm extends React.Component {
                         rules: [{required: true, message: '车型'}],
                     })(
                         <Input
-                            onClick={this.handleBrandSelect.bind(this)}
+                            onClick={this.selectCarModal.bind(this)}
                             placeholder="请选择车型"
                         />
                     )}
@@ -811,7 +270,9 @@ class OrderInfoForm extends React.Component {
                     )}
                 </FormItem>
                 <FormItem {...tailFormItemLayout}>
-                    <Button type='primary' size="large">返回</Button>
+                    <Button type='primary' onClick={()=>{
+                        this.props.back();
+                    }} size="large">返回</Button>
                     <Button type="primary" htmlType="submit" size="large">提交</Button>
                 </FormItem>
             </Form>

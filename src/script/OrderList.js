@@ -373,6 +373,10 @@ class OrderList extends React.Component {
 
     }
 
+    handleNameChange(e){
+
+    }
+
     render() {
         if (this.state.showFlag === 2) {
             return <OrderInfo

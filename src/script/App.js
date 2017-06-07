@@ -30,19 +30,11 @@ class App extends React.Component {
         >
           <div className="logo" />
           <Menu theme="dark" mode={this.state.mode} defaultSelectedKeys={['6']}>
-            <SubMenu
-              key="sub1"
-              title={<span><Icon type="aliwangwang-o" /><span className="nav-text">客服</span></span>}
-            >
               <Menu.Item key="1"><Link to="/">服务工单</Link></Menu.Item>
-            </SubMenu>
-            <SubMenu
-              key="sub2"
-              title={<span><Icon type="team" /><span className="nav-text">运营</span></span>}
-            >
-              <Menu.Item key="4"><Link to="/App/PackageList">套餐</Link></Menu.Item>
-              <Menu.Item key="5"><Link to="/App/PackageSale">渠道</Link></Menu.Item>
-            </SubMenu>
+              <Menu.Item key="2"><Link to="/App/PackageList">套餐</Link></Menu.Item>
+              <Menu.Item key="3"><Link to="/App/PackageSale">渠道</Link></Menu.Item>
+              <Menu.Item key="4"><Link to="/App/Fitting">配件</Link></Menu.Item>
+              <Menu.Item key="5"><Link to="/App/Service">服务</Link></Menu.Item>
           </Menu>
         </Sider>
         <Layout>

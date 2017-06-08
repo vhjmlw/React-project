@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button, Table, Modal, Form, Input, InputNumber, Select, Tag, Popconfirm, Row, Col } from 'antd';
 const FormItem = Form.Item;
+const Option = Select.Option;
 
 const dataSource = [{
     key: '1',
@@ -32,22 +33,27 @@ class Service extends React.Component {
             title: '名称',
             dataIndex: 'name',
             key: 'name',
+            width: 150,
         },{
             title: '类型',
             dataIndex: 'type',
             key: 'type',
+            width: 150,
         },{
             title: '使用配件',
             dataIndex: 'fitting',
             key: 'fitting',
+            width: 150,
         },{
             title: '创建时间',
             dataIndex: 'createDate',
             key: 'createDate',
+            width: 150,
         },{
             title: '服务报价',
             dataIndex: 'price',
             key: 'price',
+            width: 150,
         },{
             title: '操作',
             key: 'action',
@@ -109,7 +115,10 @@ class Service extends React.Component {
                     label="类型"
                     {...formPopLayout}
                 >
-                    <Select>
+                    <Select
+                        value={this.state.popType}
+                        onChange={(value)=>{this.setState({popType:value})}}
+                    >
                         <Option value='类型一'>类型一</Option>
                         <Option value='类型二'>类型二</Option>
                     </Select>
@@ -239,6 +248,8 @@ class Service extends React.Component {
                 <Table
                     columns={this.state.columns}
                     dataSource={dataSource}
+                    pagination={false}
+                    scroll={{y:700}}
                 />
             </div>
         );

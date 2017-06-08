@@ -16,8 +16,8 @@ class CarModalSelect extends React.Component {
         selectedBrandName: "",
         selectedSerieId: "",
         selectedSerieName: "",
-        selectedModalName: "",
         selectedModalId: "",
+        selectedModalName: "",
         selectedFactoryId: "",
         selectedFactoryName: "",
         selectedYear: "",
@@ -40,16 +40,51 @@ class CarModalSelect extends React.Component {
 
     // 初始化
     init() {
-        let brands = Request.synPost("carInfo/listBrands", {
-            letter: "A"
-        });
-        this.setState({
-            showFlag: "brand",
-            selectedLetter: 'A',
-            brands: brands,
-            selectedBrandId: "",
-            selectedBrandName: ""
-        });
+        if (this.props.modalId) {
+            let modal = Request.synPost("carInfo/listCarModals", {modalId: this.props.modalId})[0];
+            let brands = Request.synPost("carInfo/listBrands", {
+                letter: modal.firstBrandLetter
+            });
+            let series = Request.synPost("carInfo/listCarSeries", {brandId: modal.brandId});
+            let modals = Request.synPost("carInfo/listCarModals", {
+                serieId: modal.serieId,
+                factoryId: modal.factoryId,
+                productYear: modal.productYear,
+                displacement: modal.displacement
+            });
+            let factoriesYearsDisplacements = this.getFactoriesYearsDisplacements(modals);
+            this.setState({
+                showFlag: "modal",
+                selectedLetter: modal.firstBrandLetter,
+                selectedBrandId: modal.brandId,
+                selectedBrandName: modal.brandName,
+                selectedSerieId: modal.serieId,
+                selectedSerieName: modal.serieName,
+                selectedModalId: modal.id,
+                selectedModalName: modal.modalName,
+                selectedFactoryId: modal.factoryId,
+                selectedFactoryName: modal.factoryName,
+                selectedYear: modal.productYear,
+                selectedDisplacement: modal.displacement,
+                brands: brands,
+                series: series,
+                modals: modals,
+                factories: factoriesYearsDisplacements.factories,
+                years: factoriesYearsDisplacements.years,
+                displacements: factoriesYearsDisplacements.displacements
+            });
+        } else {
+            let brands = Request.synPost("carInfo/listBrands", {
+                letter: "A"
+            });
+            this.setState({
+                showFlag: "brand",
+                selectedLetter: 'A',
+                brands: brands,
+                selectedBrandId: "",
+                selectedBrandName: ""
+            });
+        }
     }
 
     // 选择品牌首字母
@@ -184,9 +219,23 @@ class CarModalSelect extends React.Component {
         });
     }
 
+    // 选择车型
+    selectModal(id, name) {
+        if (id === this.state.selectedModalId) {
+            id = "";
+            name = "";
+        }
+        this.setState({
+            selectedModalId: id,
+            selectedModalName: name
+        });
+    }
+
     changeShowFlag(showFlag) {
         if (showFlag === "serie" && !this.state.selectedBrandId) {
             message.warning("请选择品牌!");
+        } else if (showFlag === "modal" && !this.state.selectedSerieId) {
+            message.warning("请选择车系!");
         } else {
             this.setState({
                 showFlag: showFlag
@@ -295,13 +344,13 @@ class CarModalSelect extends React.Component {
                                             <li key={index} className='ant-confirm-contentList'>
                                                 <button
                                                     onClick={()=>{
-                                                        this.selectSerie(item.id, item.serieName);
+                                                        this.selectSerie(item.id, item.serieName + "(" + item.className + ")");
                                                     }}
                                                     className={
                                                         item.id == this.state.selectedSerieId ? "ant-btn ant-btn-primary" : "ant-btn"
                                                     }
                                                 >
-                                                    {item.serieName}
+                                                    {item.serieName + "(" + item.className + ")"}
                                                 </button>
                                             </li>
                                         );
@@ -327,7 +376,8 @@ class CarModalSelect extends React.Component {
                             上一步
                         </Button>,
                         <Button key='typeNext' size="large" type="primary" onClick={()=>{
-
+                            this.changeShowFlag("");
+                            this.props.selectModal(this.state.selectedModalId, `${this.state.selectedBrandName} ${this.state.selectedSerieName} ${this.state.selectedModalName}`);
                         }}>
                             确定
                         </Button>

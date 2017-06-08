@@ -8,45 +8,6 @@ const FormItem = Form.Item;
 const Option = Select.Option;
 const RadioGroup = Radio.Group;
 
-const products = [{
-    value: '上门维修',
-    label: '上门维修',
-}, {
-    value: '到店维修',
-    label: '到店维修',
-}];
-
-const cardChannels = [{
-    value: '超市赠送',
-    label: '超市赠送',
-}, {
-    value: '自己买的',
-    label: '自己买的',
-}];
-
-const address = [{
-    value: '工业园区',
-    label: '工业园区',
-    children: [
-        {value: '星龙节街459号', label: '星龙节街459号'},
-        {value: '西周路', label: '西周路'}
-    ],
-}, {
-    value: '高新区',
-    label: '高新区',
-    children: [
-        {value: '马涧路', label: '马涧路'},
-        {value: '建林路', label: '建林路'}
-    ],
-}, {
-    value: '姑苏区',
-    label: '姑苏区',
-    children: [
-        {value: '平江路', label: '平江路'},
-        {value: '观前街', label: '观前街'}
-    ],
-}];
-
 const area = [
     {value: '苏州', label: '苏州'},
     {value: '无锡', label: '无锡'},
@@ -56,25 +17,23 @@ const area = [
 class OrderInfoForm extends React.Component {
 
     state = {
-        brandLetters: ['A', 'B', 'C', 'D'],
-        selectedLetter: 'A',
-        selectedBrandId: "",
-        selectedBrandName: "",
-        brands: [],
-        carseries: [],
-        factorys: [],
-        displacements: [],
-        years: [],
-        cartypes: [],
-        carseriesValue: '',
-        factoryValue: '',
-        yearValue: '',
-        displacementValue: '',
-        cartypeValue: '',
-        brandVisible: false,
-        carsereisVisible: false,
-        cartypeVisible: false,
+        modalDes: "",
+        modalId: "",
+        serviceRegions: [],
+        channels: [],
+        products: []
     };
+
+    componentDidMount() {
+        let serviceRegions = Request.synPost("serviceRegion/list");
+        for (let serviceRegion of serviceRegions) {
+            serviceRegion.value = serviceRegion.id;
+            serviceRegion.label = serviceRegion.name;
+        }
+        this.setState({
+            serviceRegions: serviceRegions
+        });
+    }
 
     handleSubmit(e) {
         e.preventDefault();
@@ -85,8 +44,18 @@ class OrderInfoForm extends React.Component {
         });
     }
 
-    selectCarModal() {
+    openCarModal() {
         this.refs.CarModalSelect.init();
+    }
+
+    selectModal(modalId, modalDes) {
+        this.props.form.setFieldsValue({
+            modalDes: modalDes,
+        });
+        this.setState({
+           modalId: modalId,
+           modalDes: modalDes
+        });
     }
 
     render() {
@@ -110,7 +79,7 @@ class OrderInfoForm extends React.Component {
                     label="电话"
                     hasFeedback
                 >
-                    {getFieldDecorator('phoneNumber', {
+                    {getFieldDecorator('phone', {
                         rules: [
                             {required: true, message: '请输入电话号码',},
                             {
@@ -127,7 +96,7 @@ class OrderInfoForm extends React.Component {
                     label="姓名"
                     hasFeedback
                 >
-                    {getFieldDecorator('name', {
+                    {getFieldDecorator('customerName', {
                         rules: [{
                             required: true, message: '请输入姓名',
                         }],
@@ -145,8 +114,8 @@ class OrderInfoForm extends React.Component {
                         }],
                     })(
                         <RadioGroup>
-                            <Radio value="男">男</Radio>
-                            <Radio value="女">女</Radio>
+                            <Radio value="1">男</Radio>
+                            <Radio value="2">女</Radio>
                         </RadioGroup>
                     )}
                 </FormItem>
@@ -155,7 +124,7 @@ class OrderInfoForm extends React.Component {
                     label="车牌"
                     hasFeedback
                 >
-                    {getFieldDecorator('plateNumber', {
+                    {getFieldDecorator('plate', {
                         rules: [
                             {required: true, message: '请输入车牌号',},
                             {
@@ -174,7 +143,7 @@ class OrderInfoForm extends React.Component {
                 >
                     <Row gutter={8}>
                         <Col span={12}>
-                            {getFieldDecorator('captcha', {
+                            {getFieldDecorator('verifyCode', {
                                 rules: [
                                     {required: true, message: '请输入验证码'},
                                     {pattern: /^[0-9a-zA-Z]+$/, message: '验证码格式有误'},
@@ -195,7 +164,7 @@ class OrderInfoForm extends React.Component {
                     {getFieldDecorator('cardChannel', {
                         rules: [{required: true, message: '请选择发卡渠道'}],
                     })(
-                        <Cascader options={cardChannels} size="large" style={{width: "110px"}} placeholder="请选择发卡渠道"/>
+                        <Cascader options={this.state.channels} size="large" style={{width: "110px"}} placeholder="请选择发卡渠道"/>
                     )}
                 </FormItem>
                 <FormItem
@@ -205,22 +174,26 @@ class OrderInfoForm extends React.Component {
                     {getFieldDecorator('product', {
                         rules: [{required: true, message: '请选择服务产品'}],
                     })(
-                        <Cascader options={products} size="large" style={{width: "110px"}} placeholder="请选择服务产品"/>
+                        <Cascader options={this.state.products} size="large" style={{width: "110px"}} placeholder="请选择服务产品"/>
                     )}
                 </FormItem>
 
                 {/*选择车辆型号*/}
-                <CarModalSelect ref="CarModalSelect"/>
+                <CarModalSelect ref="CarModalSelect" modalId={this.state.modalId} selectModal={
+                    (modalId, desc)=>{
+                        this.selectModal(modalId, desc);
+                    }
+                }/>
                 <h3>车辆信息</h3>
                 <FormItem
                     {...formItemLayout}
                     label="车型"
                 >
-                    {getFieldDecorator('brandSeriesType', {
+                    {getFieldDecorator('modalDes', {
                         rules: [{required: true, message: '车型'}],
                     })(
                         <Input
-                            onClick={this.selectCarModal.bind(this)}
+                            onClick={this.openCarModal.bind(this)}
                             placeholder="请选择车型"
                         />
                     )}
@@ -232,10 +205,13 @@ class OrderInfoForm extends React.Component {
                 >
                     {getFieldDecorator('address', {
                         rules: [{
-                            type: 'array', required: true, message: '请选择服务地址'
+                            type: 'array', required: true, message: '请填写服务地址'
                         }],
                     })(
-                        <Cascader options={address} size="large" placeholder="请选择服务地址"/>
+                        <Input
+                            onClick={this.openCarModal.bind(this)}
+                            placeholder="请填写服务地址"
+                        />
                     )}
                 </FormItem>
                 <FormItem
@@ -252,12 +228,12 @@ class OrderInfoForm extends React.Component {
                     {...formItemLayout}
                     label="服务市场"
                 >
-                    {getFieldDecorator('area', {
+                    {getFieldDecorator('serviceRegion', {
                         rules: [{
                             type: 'array', required: true, message: '请选择服务市场'
                         }],
                     })(
-                        <Cascader options={area} size="large" style={{width: '110px'}} placeholder="请选择服务市场"/>
+                        <Cascader options={this.state.serviceRegions} size="large" style={{width: '110px'}} placeholder="请选择服务市场"/>
                     )}
                 </FormItem>
                 <FormItem

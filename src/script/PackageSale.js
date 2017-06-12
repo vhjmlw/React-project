@@ -1,6 +1,7 @@
 import { Table, Button, Popconfirm, Form, message, Input, Select, DatePicker, InputNumber } from 'antd';
 import React from 'react';
 import moment from 'moment';
+import Request from "./util/Request";
 const FormItem = Form.Item;
 const Option = Select.Option;
 
@@ -8,20 +9,20 @@ const formItemLayout = {
     labelCol: { span: 7 },
     wrapperCol: { span: 17 },
 }
-const packageData = ['套餐一','套餐二','套餐三','套餐四','套餐五'];
+const packageData = ['产品一','产品二','产品三','产品四','产品五'];
 
 class PackageSale extends React.Component {
     state = {
         columns: [{
             title: '渠道编号',
-            dataIndex: 'channel',
-            key: 'channel',
+            dataIndex: 'code',
+            key: 'code',
         }, {
             title: '名称',
             dataIndex: 'name',
             key: 'name',
         }, {
-            title: '保养套餐',
+            title: '产品',
             dataIndex: 'packageAndNumber',
             key: 'packageAndNumber',
         }, {
@@ -49,7 +50,7 @@ class PackageSale extends React.Component {
                         cancelText="取消"
                         visible={this.state.key===record.key&&this.state.which==='package'}
                     >
-                        <a onClick={this.handlePackageClick(record)}>保养套餐销售</a>
+                        <a onClick={this.handlePackageClick(record)}>产品销售</a>
                     </Popconfirm>
                 </span>
             ),
@@ -63,6 +64,22 @@ class PackageSale extends React.Component {
         date: '',
         number: '',
         which: '',
+        channels: []
+    }
+
+    componentDidMount() {
+        this.search();
+    }
+
+    search() {
+        let channels = Request.synPost("channel/list", {status: 0}).map((item) => {
+            item.key = item.id;
+            return item;
+        });
+        this.setState({
+            channels: channels,
+            addVisible: false
+        });
     }
 
     handleModifyClick(record){
@@ -138,7 +155,7 @@ class PackageSale extends React.Component {
         const number = Number(this.state.number);
         console.log(pkg,date,number);
         if(!pkg){
-            message.warning('请选择套餐');
+            message.warning('请选择产品');
             return;
         }
         if(!date){
@@ -191,19 +208,7 @@ class PackageSale extends React.Component {
             message.error('请输入姓名');
             return;
         } else {
-            const packageSale = {
-                channel,
-                name,
-                key: new Date().getTime(),
-            };
-            let saleList = window.localStorage.getItem('saleList');
-            if(!saleList){
-                saleList = [];
-            } else {
-                saleList = JSON.parse(saleList);
-            }
-            saleList.push(packageSale);
-            window.localStorage.setItem('saleList',JSON.stringify(saleList));
+
             this.setState({
                 addVisible: false,
                 channel: '',
@@ -230,21 +235,7 @@ class PackageSale extends React.Component {
             message.error('请输入姓名');
             return;
         } else {
-            let saleList = JSON.parse(window.localStorage.getItem('saleList'));
-            saleList = saleList.map((item)=>{
-                if(item.key === this.state.key){
-                    Object.assign(item,{channel,name});
-                }
-                return item;
-            });
-            window.localStorage.setItem('saleList',JSON.stringify(saleList));
-            this.setState({
-                modifyVisible: false,
-                channel: '',
-                name: '',
-                key: 0,
-                which: '',
-            });
+
         }
     }
 
@@ -303,11 +294,11 @@ class PackageSale extends React.Component {
             <Form>
                 <FormItem
                     {...formItemLayout}
-                    label="套餐"
+                    label="产品"
                 >
                     <Select
                         style={{ width: 120 }}
-                        placeholder="请选择套餐"
+                        placeholder="请选择产品"
                         value={this.state.package}
                         onChange={this.handlePackageChange.bind(this)}
                     >
@@ -342,8 +333,6 @@ class PackageSale extends React.Component {
     }
 
     render(){
-        const saleList = JSON.parse(window.localStorage.getItem('saleList'));
-
         return (
             <div className="antd-layout-OrderList">
                 <div className="clearfix">
@@ -359,7 +348,7 @@ class PackageSale extends React.Component {
                         <Button type="primary" onClick={()=>this.setState({addVisible:true})}>添加</Button>
                     </Popconfirm>
                 </div>
-                <Table columns={this.state.columns} dataSource={saleList}/>
+                <Table columns={this.state.columns} dataSource={this.state.channels}/>
             </div>
         );
     }

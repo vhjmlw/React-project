@@ -1,124 +1,135 @@
 import { Tabs, Form, Input, Button, Select, Tag, Popconfirm, message, InputNumber } from 'antd';
 import React from 'react';
+import Request from "./util/Request";
+
 const TabPane = Tabs.TabPane;
 const FormItem = Form.Item;
 const Option = Select.Option;
 
-function handleChange(value) {
-    console.log(`selected ${value}`);
-}
-
-const categoryDate = ['机油', '机滤'];
-const brandData = {
-    '机油': ['潍柴动力', '金龙鱼', '双龙鱼'],
-    '机滤': ['机滤品牌1', '机滤品牌2', '机滤品牌3'],
-};
-
 class PackageInfoForm extends React.Component {
     state = {
-        confirmDirty: false,
-        tags: [],
-        brands: brandData[categoryDate[0]],
-        brandValue: brandData[categoryDate[0]][0],
-        visible: false,
-        categoryValue: categoryDate[0],
-        numberValue: '0',
-        unitValue: '个',
+        allServices: [],
+        serviceMap: {},
+        serviceCates: [],
+        services: [],
+        selectServices: [],
+        currentService: "",
+        currentServiceCate: "",
+        currentServiceNum: 0,
+        serviceSelectVisible: false
     };
+
+    componentDidMount() {
+        let allServices = Request.synPost("service/list");
+        let serviceCates = [], serviceMap = {};
+        for (let service of allServices) {
+            serviceCates.push(service.cate);
+            serviceMap[service.id] = service.name;
+        }
+        serviceCates = [...new Set(serviceCates)];
+        this.setState({
+            allServices: allServices,
+            serviceCates: serviceCates,
+            serviceMap: serviceMap
+        });
+    }
 
     handleSubmit = (e) => {
         e.preventDefault();
         this.props.form.validateFieldsAndScroll((err, values) => {
             if (!err) {
-                console.log('Received values of form: ', values);
-                if(this.state.tags.length === 0){
-                    message.error('请选择配件');
-                    return;
+                if (this.state.selectServices.length === 0) {
+                    message.warning("请添加服务!");
                 } else {
-                    const packageInfo = {packageAccessory: this.state.tags, ...values};
-                    packageInfo.key = new Date().getTime();
-                    window.localStorage.setItem('packageInfo',JSON.stringify(packageInfo));
-                    let packageList = window.localStorage.packageList;
-                    if(packageList){
-                        packageList = JSON.parse(packageList);
-                    } else {
-                        packageList = [];
+                    values.services = this.state.selectServices;
+                    let id = Request.synPost("product/create", values);
+                    if (id) {
+                        message.success("添加成功!", 1, ()=>this.props.changeRoute(null,'App/PackageList'));
                     }
-                    packageList.push(packageInfo);
-                    window.localStorage.setItem("packageList",JSON.stringify(packageList));
-                    message.success('提交成功', 1.5, ()=>{this.props.changeRoute(null, "/App/PackageList")});
                 }
             }
         });
     }
 
-    handleTagClose = (removedTag) => {
-        const tags = this.state.tags.filter(tag => tag !== removedTag);
-        console.log(tags);
-        this.setState({ tags });
-    }
-
-    handleCategoryChange = (value) => {
+    openServiceSelect() {
         this.setState({
-            brands: brandData[value],
-            brandValue: brandData[value][0],
-            categoryValue: value,
+            serviceSelectVisible: true,
+            currentService: "",
+            currentServiceCate: "",
+            currentServiceNum: 0
         });
     }
 
-    handleBrandChange = (value) => {
+    closeServiceSelect() {
         this.setState({
-            brandValue: value,
+            serviceSelectVisible: false,
+            currentService: "",
+            currentServiceCate: "",
+            currentServiceNum: 0
         });
     }
 
-    handleNumberChange(value){
-        this.setState({
-            numberValue: value,
-        });
-    }
-
-    handleUnitChange(value){
-        this.setState({
-            unitValue: value,
-        });
-    }
-
-    handleOK(){
-        const numberValue = Number(this.state.numberValue);
-        if(isNaN(numberValue)){
-            message.error('数量输入的格式有误');
-            return;
-        } else if (numberValue === 0){
-            message.warning('请输入数量');
-            return;
+    addService() {
+        if (this.state.currentService && this.state.currentServiceNum) {
+            let selectServices = this.state.selectServices;
+            let flag = true;
+            for (let selectService of selectServices) {
+                if (selectService.serviceId == this.state.currentService) {
+                    selectService.num = this.state.currentServiceNum;
+                    selectService.desc = this.state.serviceMap[this.state.currentService] + " X " + this.state.currentServiceNum;
+                    flag = false;
+                    break;
+                }
+            }
+            if (flag) {
+                selectServices.push({
+                    serviceId: this.state.currentService,
+                    num: this.state.currentServiceNum,
+                    desc: this.state.serviceMap[this.state.currentService] + " X " + this.state.currentServiceNum
+                })
+            }
+            this.setState({
+                selectServices: selectServices,
+                serviceSelectVisible: false
+            });
+        } else {
+            message.warning("请填写完整信息!");
         }
-        const {categoryValue, brandValue, unitValue} = this.state;
-        const newTag = brandValue + categoryValue + numberValue + unitValue;
-        console.log(newTag);
-        let tags = this.state.tags;
-        if(tags.indexOf(newTag) === -1){
-           tags = [...tags,newTag];
+    }
+
+    deleteService(item) {
+        let selectSerivices = this.state.selectServices;
+        for (let index in selectSerivices) {
+            if (item.id == selectSerivices[index].id) {
+                selectSerivices.splice(index, 1);
+            }
         }
         this.setState({
-            tags,
-            visible: false,
-            categoryValue: categoryDate[0],
-            brandValue: brandData[categoryDate[0]][0],
-            numberValue: '0',
-            unitValue: '个',
-            brands: brandData[categoryDate[0]],
+            selectSerivices: selectSerivices
         });
     }
 
-    handleCancel(){
+    selectServiceCate(value) {
+        let services = [];
+        for (let service of this.state.allServices) {
+            if (service.cate === value) {
+                services.push(service);
+            }
+        }
         this.setState({
-            visible: false,
-            categoryValue: categoryDate[0],
-            brandValue: brandData[categoryDate[0]][0],
-            numberValue: '0',
-            unitValue: '个',
-            brands: brandData[categoryDate[0]],
+            services: services,
+            currentService: "",
+            currentServiceCate: value
+        });
+    }
+    selectService(value) {
+        this.setState({
+            currentService: value
+        });
+    }
+    changeServiceNum(num) {
+        this.setState({
+            currentServiceNum: num
         });
     }
 
@@ -135,8 +146,8 @@ class PackageInfoForm extends React.Component {
             },
         };
 
-        const categoryOptions = categoryDate.map(category => <Option key={category}>{category}</Option>);
-        const brandOptions = this.state.brands.map(brand => <Option key={brand}>{brand}</Option>);
+        const serviceCateOptions = this.state.serviceCates.map(cate => <Option key={cate} value={cate}>{cate}</Option>);
+        const serviceOptions = this.state.services.map(service => <Option key={service.id} value={service.id}>{service.name}</Option>);
         const confirmDOM = (
             <Form>
                 <FormItem
@@ -144,23 +155,29 @@ class PackageInfoForm extends React.Component {
                 {...formItemLayout}
                 >
                     <Select
-                        value={this.state.categoryValue}
                         style={{ width: 90 }}
-                        onChange={this.handleCategoryChange}
+                        onChange={(value)=>{
+                            this.selectServiceCate(value);
+                        }}
+                        value={this.state.currentServiceCate}
                     >
-                        {categoryOptions}
+                        <Option value="">请选择</Option>
+                        {serviceCateOptions}
                     </Select>
                 </FormItem>
                 <FormItem
-                label="品牌"
+                label="名称"
                 {...formItemLayout}
                 >
                     <Select
-                        value={this.state.brandValue}
+                        value={this.state.currentService}
                         style={{ width: 90 }}
-                        onChange={this.handleBrandChange}
+                        onChange={(value)=>{
+                            this.selectService(value);
+                        }}
                     >
-                        {brandOptions}
+                        <Option value="">请选择</Option>
+                        {serviceOptions}
                     </Select>
                 </FormItem>
                 <FormItem
@@ -171,19 +188,13 @@ class PackageInfoForm extends React.Component {
                         <InputNumber
                             size='large'
                             min={0}
-                            value={this.state.numberValue}
-                            onChange={this.handleNumberChange.bind(this)}
+                            value={this.state.currentServiceNum}
+                            onChange={(value) => {
+                                this.changeServiceNum(value);
+                            }}
                             style={{ width: '65%', marginRight: '3%' }}
                         />
-                        <Select
-                            value = {this.state.unitValue}
-                            style={{ width: '32%' }}
-                            onChange={this.handleUnitChange.bind(this)}
-                        >
-                          <Option value="个">个</Option>
-                          <Option value="L">L</Option>
-                          <Option value="次">次</Option>
-                        </Select>
+                        次
                     </span>
                 </FormItem>
             </Form>
@@ -196,7 +207,7 @@ class PackageInfoForm extends React.Component {
                     label="名称"
                     hasFeedback
                 >
-                    {getFieldDecorator('packageName', {
+                    {getFieldDecorator('name', {
                         rules: [{
                             required: true, message: '请输入名称',
                         }],
@@ -206,10 +217,23 @@ class PackageInfoForm extends React.Component {
                 </FormItem>
                 <FormItem
                     {...formItemLayout}
+                    label="代码"
+                    hasFeedback
+                >
+                    {getFieldDecorator('code', {
+                        rules: [{
+                            required: true, message: '请输入代码',
+                        }],
+                    })(
+                        <Input placeholder="请输入代码"/>
+                    )}
+                </FormItem>
+                <FormItem
+                    {...formItemLayout}
                     label="价格"
                     hasFeedback
                 >
-                    {getFieldDecorator('packagePrice', {
+                    {getFieldDecorator('price', {
                         rules: [{
                             required: true, message: '请输入价格',
                         }],
@@ -219,54 +243,42 @@ class PackageInfoForm extends React.Component {
                 </FormItem>
                 <FormItem
                     {...formItemLayout}
-                    label="服务项目"
-                >
-                    {getFieldDecorator('packageItem', {
-                        rules: [{
-                            required: true, message: '请选择服务项目'
-                        }],
-                    })(
-                        <Select
-                            multiple
-                            style={{ width: '100%' }}
-                            placeholder="请选择服务项目"
-                            onChange={handleChange}
-                        >
-                            <Option value='更换机油'>更换机油</Option>
-                            <Option value='更换机滤'>更换机滤</Option>
-                            <Option value='发动机舱清洗'>发动机舱清洗</Option>
-                            <Option value='更换轮胎'>更换轮胎</Option>
-                            <Option value='清洗车身'>清洗车身</Option>
-                        </Select>
-                    )}
-                </FormItem>
-                <FormItem
-                    {...formItemLayout}
-                    label='配件'
+                    label='服务'
                 >
                     <div>
-                        {this.state.tags.map((tag) => {
+                        {this.state.selectServices.map((selectService, index) => {
                             const tagElem = (
-                                <Tag key={tag} closable={true} afterClose={() => this.handleTagClose(tag)}>
-                                    {tag}
+                                <Tag key={index} closable={true} afterClose={() => this.deleteService(selectService)}>
+                                    {selectService.desc}
                                 </Tag>
                             );
                             return tagElem;
                         })}
                         <Popconfirm
                             placement="rightTop"
-                            onConfirm={this.handleOK.bind(this)}
-                            onCancel={this.handleCancel.bind(this)}
+                            onConfirm={() => {
+                                this.addService();
+                            }}
+                            onCancel={() => {
+                                this.closeServiceSelect();
+                            }}
                             title={confirmDOM}
                             okText="确定"
                             cancelText="取消"
-                            visible={this.state.visible}
+                            visible={this.state.serviceSelectVisible}
                         >
-                            <Button type="primary" size="small" onClick={()=>this.setState({visible:true})}>+</Button>
+                            <Button type="primary" size="small" onClick={
+                                () => {
+                                    this.openServiceSelect();
+                                }
+                            }>+</Button>
                         </Popconfirm>
                     </div>
                 </FormItem>
                 <FormItem {...tailFormItemLayout}>
+                    <Button type="primary" size="large" onClick={()=>{
+                        this.props.changeRoute(null,'App/PackageList');
+                    }}>返回</Button>
                     <Button type="primary" htmlType="submit" size="large">提交</Button>
                 </FormItem>
             </Form>

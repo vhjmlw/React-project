@@ -1,35 +1,19 @@
-import {Table, Button, Modal, message, Row, Col, Form, Input, Cascader, DatePicker} from "antd";
+import {Table, Button, Modal, message, Row, Col, Form, Input, Cascader, DatePicker, Select} from "antd";
 import React from "react";
 import Request from "./util/Request"
 import OrderInfo from "./OrderInfo";
 import {browserHistory, Link} from "react-router";
+import moment from 'moment';
+const Option = Select.Option;
 const FormItem = Form.Item;
 const {RangePicker} = DatePicker;
 
-const cardChannels = [{
-    value: '超市赠送',
-    label: '超市赠送',
-}, {
-    value: '自己买的',
-    label: '自己买的',
-}];
-const area = [
-    {value: '苏州', label: '苏州'},
-    {value: '无锡', label: '无锡'},
-    {value: '常熟', label: '常熟'}
-];
-const status = [
+const statuses = [
+    {value: '0', label: '新建'},
     {value: '1', label: '待服务'},
     {value: '2', label: '已服务'},
     {value: '3', label: '已收单'}
 ];
-const products = [{
-    value: '上门维修',
-    label: '上门维修',
-}, {
-    value: '到店维修',
-    label: '到店维修',
-}];
 
 const columns = [{
     title: '客户姓名',
@@ -68,9 +52,15 @@ const columns = [{
     key: 'action',
     render: (text, record) => {
         return (<span>
-                    <a onClick={this.handleInfo(record).bind(this)}>详情</a>&nbsp;&nbsp;&nbsp;
-            <a onClick={this.handleModify(record).bind(this)}>编辑</a>&nbsp;&nbsp;&nbsp;
-            <a href="javascript:alert('打印页面');">打印</a>
+                    <a onClick={() => {
+
+                    }}>详情</a>
+                    &nbsp;&nbsp;&nbsp;
+                    <a onClick={() => {
+
+                    }}>编辑</a>
+                    &nbsp;&nbsp;&nbsp;
+                    <a href="javascript:alert('打印页面');">打印</a>
                 </span>)
     },
 }];
@@ -79,6 +69,9 @@ class OrderList extends React.Component {
     state = {
         showFlag: 1,
         showDetailId: null,
+        channels: [],
+        products: [],
+        serviceRegions: [],
         condition: {
             createDateBegin: "",
             createDateEnd: "",
@@ -88,17 +81,29 @@ class OrderList extends React.Component {
             phone: "",
             status: "",
             serviceUserId: "",
-            serviceRegionName: "",
+            serviceRegion: "",
             channelId: "",
             productId: "",
             pageSize: 10,
-            currrentPage: 1,
+            currentPage: 1,
         },
         data: [],
         currentPage: 1,
         pageSize: 10,
         total: 0,
     };
+
+    componentDidMount() {
+        let serviceRegions = Request.synPost("serviceRegion/list");
+        let products = Request.synPost("product/list");
+        let channels = Request.synPost("channel/list", {status: 1});
+        this.setState({
+            serviceRegions: serviceRegions,
+            channels: channels,
+            products: products
+        });
+        this.search({});
+    }
 
     search(condition) {
         condition = Object.assign(this.state.condition, condition);
@@ -109,7 +114,7 @@ class OrderList extends React.Component {
             showDetailId: null,
             condition: condition,
             data: data,
-            currentPage: pageData.currrentPage,
+            currentPage: pageData.currentPage,
             pageSize: pageData.pageSize,
             total: pageData.totalNum
         });
@@ -123,36 +128,17 @@ class OrderList extends React.Component {
     }
 
     backToFront(data) {
-        // let registerDate = source.registerDate;
-        // registerDate = registerDate ? registerDate.substr(0, 4) + '-' + registerDate.substr(4, 2) + '-' + registerDate.substr(6, 2) : '';
-        // let serviceTime = source.serviceTime;
-        // serviceTime = serviceTime ? serviceTime.substr(0, 4) + '-' + serviceTime.substr(4, 2) + '-' + serviceTime.substr(6, 2) : '';
-        // let engineOilBrand = source.engineOilBrand;
-        // engineOilBrand = engineOilBrand ? engineOilBrand.split('/') : [];
-        // let serviceAddress = source.serviceAddress;
-        // serviceAddress = serviceAddress ? serviceAddress.split('/') : [];
-        // return {
-        //     phoneNumber: source.phone || '',
-        //     name: source.name || '',
-        //     sex: source.sex === true ? '男' : '女',
-        //     plateNumber: source.plate || '',
-        //     captcha: source.cardId || '',
-        //     product: [source.productType] || [],
-        //     cardChannel: [source.cardChannel] || [],
-        //     customComment: source.customComment || '',
-        //     brand: [source.brandId] || [],
-        //     cartype: [source.modelId] || [],
-        //     displacement: [source.displacement] || [],
-        //     purchaseDate: registerDate,
-        //     oilBrand: engineOilBrand,
-        //     filterBrand: [source.engineFilterBrand] || [],
-        //     carComment: source.carComment || '',
-        //     address: serviceAddress,
-        //     detailAddress: source.detailAddress || '',
-        //     state: source.status || '',
-        //     serviceDate: serviceTime,
-        //     serviceComment: source.serviceComment || '',
-        // };
+        let result = [];
+        for (let item of data) {
+            item.serviceDate = item.serviceDate.substring(0, 4) + "-" + item.serviceDate.substring(4, 6) + "-" + item.serviceDate.substring(6, 8);
+            item.status = statuses.map((e)=>{
+                if (item.status == e.value) {
+                    return e.label;
+                }
+            })[0];
+            result.push(item);
+        }
+        return result;
     }
 
     handleInfo(record) {
@@ -365,16 +351,12 @@ class OrderList extends React.Component {
         return newArray;
     }
 
-    componentDidMount() {
-        this.search({});
-    }
-
-    handleNameChange(e){
-
-    }
-
-    handleNameChange(e){
-
+    changeCondition(obj) {
+        let condition = this.state.condition;
+        condition = Object.assign(condition, obj);
+        this.setState({
+            condition: condition
+        });
     }
 
     render() {
@@ -398,7 +380,7 @@ class OrderList extends React.Component {
                                 channelId: "",
                                 productId: "",
                                 pageSize: 10,
-                                currrentPage: 1,
+                                currentPage: 1,
                             }
                             this.search(condtion);
                         }
@@ -422,8 +404,12 @@ class OrderList extends React.Component {
                         >
                             <Input
                                 placeholder='请输入姓名'
-                                value={this.state.nameValue}
-                                onChange={this.handleNameChange.bind(this)}
+                                value={this.state.condition.customerName}
+                                onChange={(e)=>{
+                                    this.changeCondition({
+                                        customerName: e.target.value
+                                    })
+                                }}
                             />
                         </FormItem>
                     </Col>
@@ -432,7 +418,13 @@ class OrderList extends React.Component {
                             label="车牌"
                             {...formItemLayout}
                         >
-                            <Input placeholder='请输入车牌'/>
+                            <Input
+                                value={this.state.condition.plate}
+                                onChange={(e)=>{
+                                    this.changeCondition({
+                                        plate: e.target.value
+                                    })
+                                }} placeholder='请输入车牌'/>
                         </FormItem>
                     </Col>
                     <Col span={6}>
@@ -440,7 +432,13 @@ class OrderList extends React.Component {
                             label="电话"
                             {...formItemLayout}
                         >
-                            <Input placeholder='请输入电话'/>
+                            <Input
+                                value={this.state.condition.phone}
+                                onChange={(e)=>{
+                                    this.changeCondition({
+                                        phone: e.target.value
+                                    })
+                                }} placeholder='请输入电话'/>
                         </FormItem>
                     </Col>
                     <Col span={6}>
@@ -448,8 +446,24 @@ class OrderList extends React.Component {
                             label="渠道"
                             {...formItemLayout}
                         >
-                            <Cascader options={cardChannels} size="large" style={{width: "110px"}}
-                                      placeholder="请选择发卡渠道"/>
+                            <Select
+                                style={{ width: 120 }}
+                                onChange={(value)=>{
+                                    this.changeCondition({
+                                        channelId: value
+                                    })
+                                }}
+                                value={this.state.condition.channelId}
+                            >
+                                <Option value="">请选择</Option>
+                                {(()=> {
+                                    return this.state.channels.map((item, index) => {
+                                        return (
+                                            <Option key={index} value={item.id}>{item.name}</Option>
+                                        );
+                                    });
+                                })()}
+                            </Select>
                         </FormItem>
                     </Col>
                 </Row>
@@ -459,7 +473,24 @@ class OrderList extends React.Component {
                             label="服务市场"
                             {...formItemLayout}
                         >
-                            <Cascader options={area} size="large" style={{width: '110px'}} placeholder="请选择服务市场"/>
+                            <Select
+                                style={{ width: 120 }}
+                                onChange={(value)=>{
+                                    this.changeCondition({
+                                        serviceRegion: value
+                                    })
+                                }}
+                                value={this.state.condition.serviceRegion}
+                            >
+                                <Option value="">请选择</Option>
+                                {(()=> {
+                                    return this.state.serviceRegions.map((item, index) => {
+                                        return (
+                                            <Option key={index} value={item.id}>{item.name}</Option>
+                                        );
+                                    });
+                                })()}
+                            </Select>
                         </FormItem>
                     </Col>
                     <Col span={6}>
@@ -467,7 +498,31 @@ class OrderList extends React.Component {
                             label="时间"
                             {...formItemLayout}
                         >
-                            <RangePicker size='default'/>
+                            <RangePicker
+                                format="YYYY-MM-DD"
+                                value={
+                                    (()=>{
+                                        let beginTime, endTime;
+                                        if (this.state.condition.serviceDateBegin) {
+                                            beginTime = moment(this.state.condition.serviceDateBegin, 'YYYYMMDD')
+                                        }
+                                        if (this.state.condition.serviceDateEnd) {
+                                            endTime = moment(this.state.condition.serviceDateEnd, 'YYYYMMDD')
+                                        }
+                                        return [beginTime, endTime]
+                                    })()
+                                }
+                                onChange={(dates, dateStrings) => {
+                                    let condition = this.state.condition, beginTime = dateStrings[0], endTime = dateStrings[1];
+                                    beginTime = beginTime.replace(/(-)/g, "").replace(" ", "").replace(/(:)/g, "");
+                                    condition.serviceDateBegin = beginTime;
+                                    endTime = endTime.replace(/(-)/g, "").replace(" ", "").replace(/(:)/g, "");
+                                    condition.serviceDateEnd = endTime;
+                                    this.setState({
+                                        condition: condition
+                                    });
+                                }}
+                                size='default'/>
                         </FormItem>
                     </Col>
                     <Col span={6}>
@@ -475,7 +530,24 @@ class OrderList extends React.Component {
                             label="状态"
                             {...formItemLayout}
                         >
-                            <Cascader options={status} size="large" style={{width: '110px'}} placeholder="请选择状态"/>
+                            <Select
+                                style={{ width: 120 }}
+                                onChange={(value)=>{
+                                    this.changeCondition({
+                                        status: value
+                                    });
+                                }}
+                                value={this.state.condition.status}
+                            >
+                                <Option value="">请选择</Option>
+                                {(()=> {
+                                    return statuses.map((item, index) => {
+                                        return (
+                                            <Option key={index} value={item.value}>{item.label}</Option>
+                                        );
+                                    });
+                                })()}
+                            </Select>
                         </FormItem>
                     </Col>
                     <Col span={6}>
@@ -483,15 +555,50 @@ class OrderList extends React.Component {
                             label="服务产品"
                             {...formItemLayout}
                         >
-                            <Cascader options={products} size="large" style={{width: "110px"}} placeholder="请选择服务产品"/>
+                            <Select
+                                style={{ width: 120 }}
+                                onChange={(value)=>{
+                                    this.changeCondition({
+                                        productId: value
+                                    });
+                                }}
+                                value={this.state.condition.productId}
+                            >
+                                <Option value="">请选择</Option>
+                                {(()=> {
+                                    return this.state.products.map((item, index) => {
+                                        return (
+                                            <Option key={index} value={item.id}>{item.name}</Option>
+                                        );
+                                    });
+                                })()}
+                            </Select>
                         </FormItem>
                     </Col>
                 </Row>
                 <div className="clearfix">
                     <Button type="primary">打印工单</Button>
                     <Button type="primary" onClick={this.handleAddClick.bind(this)}>新增</Button>
-                    <Button type="primary">查询</Button>
-                    <Button type="primary">重置</Button>
+                    <Button type="primary" onClick={()=>this.search({pageSize: 10, currentPage: 1})}>查询</Button>
+                    <Button type="primary" onClick={()=>{
+                        this.setState({
+                            condition: {
+                                createDateBegin: "",
+                                createDateEnd: "",
+                                serviceDateBegin: "",
+                                serviceDateEnd: "",
+                                plate: "",
+                                phone: "",
+                                status: "",
+                                serviceUserId: "",
+                                serviceRegion: "",
+                                channelId: "",
+                                productId: "",
+                                pageSize: 10,
+                                currentPage: 1
+                            }
+                        });
+                    }}>重置</Button>
                 </div>
                 <Table
                     columns={columns}

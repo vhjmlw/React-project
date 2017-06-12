@@ -188,3 +188,8 @@
 .ant-modal-header {
     border-bottom: 0;
 }
+
+/*BillInfo页面的样式*/
+.ant-layout-content .BillInfo span,label {
+    font-size: 13px;
+}

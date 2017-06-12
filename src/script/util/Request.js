@@ -19,7 +19,7 @@ class Request {
                     alert(json.message || "系统出错,请重新操作!");
                 }
             },
-            dataType: 'json'
+            dataType: 'json',
         });
         return result;
     }

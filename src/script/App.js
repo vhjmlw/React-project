@@ -30,7 +30,7 @@ class App extends React.Component {
                     onCollapse={this.onCollapse}
                 >
                     <div className="logo"/>
-                    <Menu theme="dark" mode={this.state.mode} defaultSelectedKeys={['6']}>
+                    <Menu theme="dark" mode={this.state.mode} defaultSelectedKeys={['1']}>
                         <Menu.Item key="1">
                             <Link to="/">
                                 <Icon type="user"/>
@@ -59,6 +59,12 @@ class App extends React.Component {
                             <Link to="/App/Service">
                                 <Icon type="customer-service" />
                                 <span className="nav-text">服务</span>
+                            </Link>
+                        </Menu.Item>
+                        <Menu.Item key="6">
+                            <Link to="/App/BillList">
+                                <Icon type="bars" />
+                                <span className="nav-text">收单列表</span>
                             </Link>
                         </Menu.Item>
                     </Menu>

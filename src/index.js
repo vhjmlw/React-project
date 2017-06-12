@@ -10,6 +10,8 @@ import ModifyPackage from './script/ModifyPackage';
 import PackageSale from './script/PackageSale';
 import Fitting from './script/Fitting';
 import Service from './script/Service';
+import BillList from './script/BillList';
+import BillInfo from './script/BillInfo';
 import './style/common.css';
 import './index.css';
 import "./style/App.css";
@@ -29,6 +31,8 @@ ReactDOM.render(
               <Route path="PackageSale" component={PackageSale}/>
               <Route path="Fitting" component={Fitting}/>
               <Route path="Service" component={Service}/>
+              <Route path="BillList" component={BillList}/>
+              <Route path="BillInfo" component={BillInfo}/>
           </Route>
       </Route>
   </Router>),

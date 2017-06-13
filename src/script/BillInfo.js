@@ -1,5 +1,5 @@
 import React from 'react';
-import {Button, Form, Popconfirm, Tag, Cascader, InputNumber, message} from 'antd';
+import {Button, Form, Popconfirm, Tag, Cascader, InputNumber, message, Modal} from 'antd';
 const FormItem = Form.Item;
 
 const popTypes = [{
@@ -41,8 +41,11 @@ class BillInfo extends React.Component {
         popStandard: [],
         popAmount: '',
         popPrice: '',
+        backVisible: false,
+        recoverVisible: false
     }
 
+    //技师销售pop确定按钮的逻辑
     handlePopOK(e) {
         e.preventDefault();
         const { popType, popBrand, popName, popStandard, popAmount, popPrice, tags } = this.state;
@@ -71,7 +74,7 @@ class BillInfo extends React.Component {
             return;
         }
 
-        const tag = `${popType[0]}/${popBrand[0]}/${popName[0]}/${popStandard[0]}/${popAmount}*${popPrice}元`;
+        const tag = `${popType[0]} ${popBrand[0]} ${popName[0]} ${popStandard[0]} ${popAmount}*${popPrice}元`;
         tags.push(tag);
         this.setState({
             tags,
@@ -85,6 +88,7 @@ class BillInfo extends React.Component {
         });
     }
 
+    //技师销售pop取消按钮的逻辑
     handlePopCancel(e) {
         e.preventDefault();
         this.setState({
@@ -211,7 +215,7 @@ class BillInfo extends React.Component {
                     <span>通用 别克 君威1.6T 2016款</span>
                 </FormItem>
                 <FormItem
-                    label="收卡渠道"
+                    label="发卡渠道"
                     {...formItemLayout}
                 >
                     <span>苏州平安</span>
@@ -263,18 +267,28 @@ class BillInfo extends React.Component {
                     <span>300</span>元
                 </FormItem>
                 <FormItem>
-                    <Popconfirm
-                        onConfirm={()=>{console.log('收单')}}
+                    <Modal
+                        title="确定返回"
+                        width={300}
+                        visible={this.state.backVisible}
+                        okText='确定'
+                        cancelText='取消'
+                        onOk={()=>{this.props.changeShowDetailToFalse()}}
+                        onCancel={()=>{this.setState({backVisible:false})}}
+                    >
+                    </Modal>
+                    <Modal
                         title="确定收单"
+                        width={300}
+                        visible={this.state.recoverVisible}
+                        okText="确定"
+                        cancelText="取消"
+                        onOk={()=>{this.setState({recoverVisible:false})}}
+                        onCancel={()=>{this.setState({recoverVisible:false})}}
                     >
-                        <Button type="primary">收单</Button>
-                    </Popconfirm>
-                    <Popconfirm
-                        onConfirm={()=>{this.props.history.pushState(null,'/App/BillList')}}
-                        title='确定返回'
-                    >
-                        <Button type="primary">返回</Button>
-                    </Popconfirm>
+                    </Modal>
+                    <Button type="primary" onClick={()=>{this.setState({recoverVisible:true})}}>收单</Button>
+                    <Button type="primary" onClick={()=>{this.setState({backVisible:true})}}>返回</Button>
                 </FormItem>
             </Form>
         );

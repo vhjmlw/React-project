@@ -1,46 +1,32 @@
 import React from 'react';
-import {
-    Button,
-    Table,
-    Modal,
-    Form,
-    Input,
-    InputNumber,
-    Select,
-    Tag,
-    Popconfirm,
-    Row,
-    Col,
-    Cascader,
-    message
-} from 'antd';
+import { Button, Table, Modal, Form, Input, InputNumber, Select, Tag, Popconfirm, Row, Col, Cascader, message } from 'antd';
 import Request from './util/Request';
 import $ from 'jquery';
 const FormItem = Form.Item;
 const Option = Select.Option;
 
 /*const dataSource = [{
-    key: '1',
-    name: '名称一',
-    type: '类型一',
-    fitting: '配件一',
-    createDate: '时间一',
-    price: '报价一',
-}, {
-    key: '2',
-    name: '名称二',
-    type: '类型二',
-    fitting: '配件二',
-    createDate: '时间二',
-    price: '报价二',
-}, {
-    key: '3',
-    name: '名称三',
-    type: '类型三',
-    fitting: '配件三',
-    createDate: '时间三',
-    price: '报价三',
-}];*/
+ key: '1',
+ name: '名称一',
+ type: '类型一',
+ fitting: '配件一',
+ createDate: '时间一',
+ price: '报价一',
+ }, {
+ key: '2',
+ name: '名称二',
+ type: '类型二',
+ fitting: '配件二',
+ createDate: '时间二',
+ price: '报价二',
+ }, {
+ key: '3',
+ name: '名称三',
+ type: '类型三',
+ fitting: '配件三',
+ createDate: '时间三',
+ price: '报价三',
+ }];*/
 
 class Service extends React.Component {
 
@@ -102,12 +88,13 @@ class Service extends React.Component {
         disabled: true
     }
 
+    //后台请求的字段转换为前端的字段，传入一个数组，返回一个数组
     backToFront(backArray) {
         let frontArray = [];
         for (let item of backArray) {
             const date = item.createDate;
             let createDate = '';
-            if(date){
+            if (date) {
                 createDate += date.substr(0, 4) + '-' + date.substr(4, 2) + '-' + date.substr(6, 2);
                 createDate += ' ' + date.substr(8, 2) + ':' + date.substr(10, 2) + ':' + date.substr(12, 2);
             }
@@ -124,7 +111,8 @@ class Service extends React.Component {
         return frontArray;
     }
 
-    searchList(){
+    //请求列表数据
+    searchList() {
         const backArray = Request.synPost('service/list');
         const frontArray = this.backToFront(backArray);
         return frontArray;
@@ -137,6 +125,7 @@ class Service extends React.Component {
         });
     }
 
+    //使用配件pop确定按钮的逻辑
     handlePopOK(e) {
         e.preventDefault();
         const {popType, popBrand, popFitting, popAmount, tags, popUnit} = this.state;
@@ -196,6 +185,7 @@ class Service extends React.Component {
         });
     }
 
+    //使用配件pop取消按钮的逻辑
     handlePopCancel(e) {
         e.preventDefault();
         this.setState({
@@ -207,6 +197,7 @@ class Service extends React.Component {
         });
     }
 
+    //新增modal确定按钮的逻辑
     handleModalOk() {
         const tags = this.state.tags;
         let dataArray = [];
@@ -219,12 +210,13 @@ class Service extends React.Component {
             createUser: 1,
             partRelModels: dataArray
         };
+        //使用jQuery中的Ajax模块发送数组的处理方法
         let result;
         $.ajax({
             type: 'POST',
             async: false,
             url: 'service/create',
-            data: JSON.stringify(params),
+            data: JSON.stringify(params),//params中包含数组
             success: function (json) {
                 if (json.code === "200") {
                     result = json.data;
@@ -233,7 +225,7 @@ class Service extends React.Component {
                 }
             },
             dataType: 'json',
-            contentType: "application/json"
+            contentType: "application/json"//发送参数中包含数组
         });
         const frontArray = this.searchList();
         this.setState({
@@ -251,6 +243,7 @@ class Service extends React.Component {
         });
     }
 
+    //新增modal取消按钮的逻辑
     handleModalCancel() {
         this.setState({
             modalVisible: false,
@@ -266,6 +259,7 @@ class Service extends React.Component {
         });
     }
 
+    //新增按钮的逻辑
     handleNewClick(e) {
         e.preventDefault();
         this.setState({
@@ -273,6 +267,7 @@ class Service extends React.Component {
         });
     }
 
+    //+号点击的逻辑
     handlePlus(e) {
         e.preventDefault();
         const brandArray = Request.synPost('part/listPartBrand');
@@ -301,6 +296,7 @@ class Service extends React.Component {
 
     }
 
+    //pop页面类型改变的逻辑
     handlePopTypeChange(value) {
         const fittingObj = Request.synPost('part/listParts', {
             cateId: value[0],
@@ -321,11 +317,12 @@ class Service extends React.Component {
             popType: value,
             popFittings,
             unitObj,
-            disabled: popFittings.length?false:true,
+            disabled: popFittings.length ? false : true,
         });
         console.log(popFittings);
     }
 
+    //pop页面品牌改变的逻辑
     handlePopBrandChange(value) {
         const fittingObj = Request.synPost('part/listParts', {
             cateId: this.state.popType[0],
@@ -346,11 +343,12 @@ class Service extends React.Component {
             popBrand: value,
             popFittings,
             unitObj,
-            disabled: popFittings.length?false:true,
+            disabled: popFittings.length ? false : true,
         });
         console.log(popFittings);
     }
 
+    //pop页面配件改变的逻辑
     handlePopFittingChange(value) {
         const fittingId = value[0];
         const unitObj = this.state.unitObj;
@@ -361,6 +359,7 @@ class Service extends React.Component {
         });
     }
 
+    //删除使用配件选项的逻辑
     handleTagClose(removedTag) {
         return ()=> {
             console.log(removedTag);
@@ -506,6 +505,7 @@ class Service extends React.Component {
                                 {...formItemLayout}
                             >
                                 <InputNumber
+                                    min={0}
                                     value={this.state.modalPrice}
                                     onChange={(value)=> {
                                         this.setState({modalPrice: value});

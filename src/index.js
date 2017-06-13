@@ -32,7 +32,6 @@ ReactDOM.render(
               <Route path="Fitting" component={Fitting}/>
               <Route path="Service" component={Service}/>
               <Route path="BillList" component={BillList}/>
-              <Route path="BillInfo" component={BillInfo}/>
           </Route>
       </Route>
   </Router>),

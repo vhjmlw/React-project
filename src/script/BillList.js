@@ -306,7 +306,7 @@ class BillList extends React.Component {
     render() {
         if(this.state.showDetail){
             return <BillInfo
-                taskId={this.state.detailId}
+                detailId={this.state.detailId}
                 changeShowDetailToFalse={this.changeShowDetailToFalse.bind(this)}
             />
         }

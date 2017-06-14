@@ -1,5 +1,6 @@
 import React from 'react';
 import {Button, Form, Popconfirm, Tag, Cascader, InputNumber, message, Modal} from 'antd';
+import Request from './util/Request';
 const FormItem = Form.Item;
 
 const popTypes = [{
@@ -42,7 +43,39 @@ class BillInfo extends React.Component {
         popAmount: '',
         popPrice: '',
         backVisible: false,
-        recoverVisible: false
+        recoverVisible: false,
+        dataObj: {},
+        serviceArr: []
+    }
+
+    componentDidMount() {
+        const detailId = this.props.detailId;
+        const dataObj = Request.synPost('/workOrder/getDetailByWorkOrderId',{id:detailId});
+        const channelProduct = dataObj.channelProduct;
+        let serviceArr = [];
+        if(channelProduct){
+            const productObj = Request.synPost('/product/detailByChannelProduct',{channelProduct});
+            const array = productObj.servicePartDtos;
+            for(let item of array){
+                let str = '';
+                str += item.serviceName + '(';
+                for(let part of item.partDtos){
+                    str += part.partCateName + part.partBrandName + part.partName + part.num+part.unit+' ';
+                }
+                str += ')';
+                serviceArr.push(str);
+            }
+        }
+        this.setState({
+            dataObj,
+            serviceArr
+        });
+    }
+
+    componentWillReceiveProps() {
+        const detailId = this.props.detailId;
+        const dataObj = Request.synPost('/workOrder/getDetailByWorkOrderId',{id:detailId});
+        this.setState({dataObj});
     }
 
     //技师销售pop确定按钮的逻辑
@@ -100,6 +133,13 @@ class BillInfo extends React.Component {
             popAmount: '',
             popPrice: '',
         });
+    }
+
+    dateFormate(dateStr){
+        let dateFormate = '';
+        dateFormate += dateStr.substr(0,4)+'-'+dateStr.substr(4,2)+'-'+dateStr.substr(6,2);
+        dateFormate += ' '+dateStr.substr(8,2)+':'+dateStr.substr(10,2)+':'+dateStr.substr(12,2);
+        return dateFormate;
     }
 
     render() {
@@ -175,6 +215,16 @@ class BillInfo extends React.Component {
                 </FormItem>
             </Form>
         );
+        const createDate = this.state.dataObj.createDate;
+        let createDateFormate = '';
+        if(createDate){
+            createDateFormate = this.dateFormate(createDate);
+        }
+        const serviceDate = this.state.dataObj.serviceDate;
+        let serviceDateFormate = '';
+        if(serviceDate){
+            serviceDateFormate = this.dateFormate(serviceDate);
+        }
 
         return (
             <Form className="BillInfo">
@@ -182,56 +232,61 @@ class BillInfo extends React.Component {
                     label="服务技师"
                     {...formItemLayout}
                 >
-                    <span>尤雨溪</span>
+                    <span>{this.state.dataObj.serviceUserName}</span>
                 </FormItem>
                 <FormItem
                     label="工单创建日期"
                     {...formItemLayout}
                 >
-                    <span>2017-06-04</span>
+                    <span>{createDateFormate}</span>
                 </FormItem>
                 <FormItem
                     label="服务时间"
                     {...formItemLayout}
                 >
-                    <span>2017-06-07</span>
+                    <span>{serviceDateFormate}</span>
                 </FormItem>
                 <FormItem
                     label="服务地址"
                     {...formItemLayout}
                 >
-                    <span>苏州市高新区何山路268号</span>
+                    <span>{this.state.dataObj.address}</span>
                 </FormItem>
                 <FormItem
                     label="车牌"
                     {...formItemLayout}
                 >
-                    <span>苏NHF562</span>
+                    <span>{this.state.dataObj.plate}</span>
                 </FormItem>
                 <FormItem
                     label="车型"
                     {...formItemLayout}
                 >
-                    <span>通用 别克 君威1.6T 2016款</span>
+                    <span>{this.state.dataObj.modalDes}</span>
                 </FormItem>
                 <FormItem
                     label="发卡渠道"
                     {...formItemLayout}
                 >
-                    <span>苏州平安</span>
+                    <span>{this.state.dataObj.channelName}</span>
                 </FormItem>
                 <FormItem
                     label="服务产品"
                     {...formItemLayout}
                 >
-                    <span>爱保养A套餐</span>
+                    <span>{this.state.dataObj.productName}</span>
                 </FormItem>
                 <FormItem
                     label="服务内容"
                     {...formItemLayout}
                 >
-                    <span>更换机油</span><br/>
-                    <span>更换机滤</span>
+                    {this.state.serviceArr.map((item)=>{
+                        return (
+                            <div>
+                                <span>{item}</span><br/>
+                            </div>
+                        );
+                    })}
                 </FormItem>
                 <FormItem
                     {...formItemLayout}

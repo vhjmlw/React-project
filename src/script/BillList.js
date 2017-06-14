@@ -262,7 +262,7 @@ class BillList extends React.Component {
         const channelId = condition.channel[0];
         const currentPage = currentPageNum;
 
-        const dataObj = Request.synPost('workOder/list',{
+        const dataObj = Request.synPost('workOrder/list',{
             serviceUserId,
             status,
             serviceDateBegin,

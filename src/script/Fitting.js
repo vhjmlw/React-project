@@ -4,7 +4,7 @@ const FormItem = Form.Item;
 const Option = Select.Option;
 import Request from './util/Request';
 
-const types = [{
+/*const types = [{
     value: '类型一',
     label: '类型一',
 }, {
@@ -47,7 +47,7 @@ const dataSource = [{
     name: '名称三',
     unit: '单位三',
     standard: '规格三',
-}]
+}]*/
 
 class Fitting extends React.Component {
 
@@ -78,11 +78,13 @@ class Fitting extends React.Component {
             render: (text, record)=> {
                 return (
                     <span>
-                        <Popconfirm title={<h3>确定删除</h3>} placement="bottomRight">
+                        <Popconfirm
+                            title={<h3>确定删除 ?</h3>}
+                            placement="bottomRight"
+                            onConfirm={()=>{this.handleFittingDel(record.key)}}
+                        >
                             <a href="javascript:;">删除</a>
                         </Popconfirm>
-                        <span className="ant-divider"/>
-                        <a href="javascript:;">修改</a>
                     </span>
                 );
             }
@@ -111,7 +113,7 @@ class Fitting extends React.Component {
     }
 
     componentDidMount() {
-        //发送请求，获取品牌选项
+        //发送请求，获取类型选项
         let typeArray = Request.synPost('/part/listPartCate');
         let types = [];
         for (let item of typeArray) {
@@ -142,7 +144,7 @@ class Fitting extends React.Component {
         }).catch((err)=> {
             throw err;
         });*/
-        //发送请求，获取类型选项
+        //发送请求，获取品牌选项
         let brandArray = Request.synPost('part/listPartBrand');
         let brands = [];
         for (let item of brandArray) {
@@ -206,6 +208,7 @@ class Fitting extends React.Component {
         let frontArray = [];
         for(let item of backArray){
             const front = {
+                key: item.id,
                 type: item.cateName || '',
                 brand: item.brandName || '',
                 name: item.partName || '',
@@ -267,6 +270,7 @@ class Fitting extends React.Component {
             createUser: 1,
         });
         console.log(`配件ID${data}`);
+        message.success('新增成功',1.5);
         this.setState({
             newVisible: false,
             newtype: [],
@@ -293,6 +297,67 @@ class Fitting extends React.Component {
     //点击分页的逻辑
     handlePageChange(page, pageSize){
         this.handleSearch(this.state.condition, page, pageSize);
+    }
+
+    //新增类型pop确定按钮的逻辑
+    typePopOk(){
+        if(!this.state.newtypeName){
+            message.warning('请输入类型名称');
+            return;
+        }
+        Request.synPost('/part/addCate',{
+            createUser: 1,
+            CateName: this.state.newtypeName
+        });
+        message.success('新增成功',1.5);
+        let typeArray = Request.synPost('/part/listPartCate');
+        let types = [];
+        for (let item of typeArray) {
+            const obj = {
+                value: item.id,
+                label: item.name,
+            };
+            types.push(obj);
+        }
+        this.setState({
+            types,
+            newtypeVisible: false,
+            newtypeName: '',
+        });
+    }
+
+    //新增品牌pop确定按钮的逻辑
+    brandPopOk(){
+        if(!this.state.newbrandName){
+            message.warning('请输入品牌名称');
+            return;
+        }
+        Request.synPost('/part/addBrand',{
+            createUser: 1,
+            brandName: this.state.newbrandName
+        });
+        message.success('新增成功',1.5);
+        let brandArray = Request.synPost('/part/listPartBrand');
+        let brands = [];
+        for (let item of brandArray) {
+            const obj = {
+                value: item.id,
+                label: item.name,
+            }
+            brands.push(obj);
+        }
+        this.setState({
+            brands,
+            newbrandVisible: false,
+            newbrandName: '',
+        });
+    }
+
+    //点击删除按钮的逻辑
+    handleFittingDel(id){
+        Request.synPost('/part/delete',{id});
+        message.success('删除成功',1.5);
+        this.handleSearch(this.state.condition, this.state.currentPageNum,this.state.pageSize);
     }
 
     render() {
@@ -461,12 +526,7 @@ class Fitting extends React.Component {
                             title={newTypePop}
                             okText="提交"
                             cancelText="取消"
-                            onConfirm={()=> {
-                                this.setState({
-                                    newtypeVisible: false,
-                                    newtypeName: '',
-                                });
-                            }}
+                            onConfirm={this.typePopOk.bind(this)}
                             onCancel={()=> {
                                 this.setState({
                                     newtypeVisible: false,
@@ -502,12 +562,7 @@ class Fitting extends React.Component {
                             title={newBrandPop}
                             okText="提交"
                             cancelText="取消"
-                            onConfirm={()=> {
-                                this.setState({
-                                    newbrandVisible: false,
-                                    newbrandName: '',
-                                });
-                            }}
+                            onConfirm={this.brandPopOk.bind(this)}
                             onCancel={()=> {
                                 this.setState({
                                     newbrandVisible: false,

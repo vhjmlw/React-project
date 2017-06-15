@@ -45,7 +45,9 @@ class BillInfo extends React.Component {
         backVisible: false,
         recoverVisible: false,
         dataObj: {},
-        serviceArr: []
+        serviceArr: [],
+        unit: '',
+        key: '',
     }
 
     componentDidMount() {
@@ -55,15 +57,20 @@ class BillInfo extends React.Component {
         let serviceArr = [];
         if(channelProduct){
             const productObj = Request.synPost('/product/detailByChannelProduct',{channelProduct});
-            const array = productObj.servicePartDtos;
-            for(let item of array){
-                let str = '';
-                str += item.serviceName + '(';
-                for(let part of item.partDtos){
-                    str += part.partCateName + part.partBrandName + part.partName + part.num+part.unit+' ';
+            if(productObj){
+                const array = productObj.servicePartDtos;
+                if(array && array.length>0){
+                    for(let item of array){
+                        let str = '';
+                        str += item.serviceName + '(';
+                        for(let part of item.partDtos){
+                            str += part.partCateName + part.partBrandName + part.partName + part.num+part.unit+' ';
+                        }
+                        str += ')';
+                        serviceArr.push(str);
+                    }
                 }
-                str += ')';
-                serviceArr.push(str);
+
             }
         }
         this.setState({
@@ -108,6 +115,12 @@ class BillInfo extends React.Component {
         }
 
         const tag = `${popType[0]} ${popBrand[0]} ${popName[0]} ${popStandard[0]} ${popAmount}*${popPrice}元`;
+
+        //以下代码控制不能添加相同的两项
+        if(this.state.tags.indexOf(tag)>-1){
+            message.warning('不能添加相同的两项');
+            return;
+        }
         tags.push(tag);
         this.setState({
             tags,
@@ -140,6 +153,25 @@ class BillInfo extends React.Component {
         dateFormate += dateStr.substr(0,4)+'-'+dateStr.substr(4,2)+'-'+dateStr.substr(6,2);
         dateFormate += ' '+dateStr.substr(8,2)+':'+dateStr.substr(10,2)+':'+dateStr.substr(12,2);
         return dateFormate;
+    }
+
+/*    handleTagClose(removedTag){
+        console.log(removedTag);
+        const tags = this.state.tags.filter((tag)=>{
+            return tag != removedTag;
+        });
+        this.setState({tags});
+    }*/
+
+    //点击气泡确定按钮的逻辑
+    handleTagPopOk(){
+        const tags = this.state.tags.filter((tag)=>{
+            return tag != this.state.key;
+        });
+        this.setState({
+            tags,
+            key: ''
+        });
     }
 
     render() {
@@ -201,7 +233,7 @@ class BillInfo extends React.Component {
                         min={0}
                         value={this.state.popAmount}
                         onChange={(value)=>{this.setState({popAmount:value})}}
-                    />个
+                    /><span>{this.state.unit}</span>
                 </FormItem>
                 <FormItem
                     label="价格"
@@ -295,9 +327,28 @@ class BillInfo extends React.Component {
                     <div>
                         {this.state.tags.map((tag) => {
                             const tagElem = (
-                                <Tag key={tag} closable={true} afterClose={() => this.handleTagClose(tag)}>
-                                    {tag}
-                                </Tag>
+                                <Popconfirm
+                                    title={<h3>确定删除 ?</h3>}
+                                    okText="确定"
+                                    cancelText="取消"
+                                    placement="right"
+                                    visible={this.state.key===tag}
+                                    onConfirm={this.handleTagPopOk.bind(this)}
+                                    onCancel={()=>{this.setState({key:''})}}
+                                >
+                                    <Tag
+                                        key={tag}
+                                        closable={true}
+                                        onClose={(e)=>{
+                                            e.preventDefault();
+                                            this.setState({key:tag});
+                                        }}
+                                        /*afterClose={() => this.handleTagClose(tag)}*/
+                                    >
+                                        {tag}
+                                    </Tag>
+                                </Popconfirm>
+
                             );
                             return tagElem;
                         })}

@@ -3,7 +3,7 @@ import {Button, Form, Popconfirm, Tag, Cascader, InputNumber, message, Modal} fr
 import Request from './util/Request';
 const FormItem = Form.Item;
 
-const popTypes = [{
+/*const popTypes = [{
     value: '类型一',
     label: '类型一',
 },{
@@ -30,7 +30,7 @@ const popStandards = [{
 },{
     value: '类型二',
     label: '类型二',
-}];
+}];*/
 
 class BillInfo extends React.Component {
     state = {

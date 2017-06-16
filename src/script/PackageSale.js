@@ -6,8 +6,8 @@ const FormItem = Form.Item;
 const Option = Select.Option;
 
 const formItemLayout = {
-    labelCol: { span: 7 },
-    wrapperCol: { span: 17 },
+    labelCol: { span: 8 },
+    wrapperCol: { span: 16 },
 }
 const packageData = ['产品一','产品二','产品三','产品四','产品五'];
 
@@ -17,14 +17,17 @@ class PackageSale extends React.Component {
             title: '渠道编号',
             dataIndex: 'code',
             key: 'code',
+            width: '25%',
         }, {
             title: '名称',
             dataIndex: 'name',
             key: 'name',
+            width: '25%',
         }, {
             title: '产品',
             dataIndex: 'packageAndNumber',
             key: 'packageAndNumber',
+            width: '25%',
         }, {
             title: '操作',
             key: 'Action',
@@ -39,8 +42,9 @@ class PackageSale extends React.Component {
                         cancelText="取消"
                         visible={this.state.key===record.key&&this.state.which==='modify'}
                     >
-                        <a onClick={this.handleModifyClick(record)}>修改</a>&nbsp;&nbsp;&nbsp;
+                        <a onClick={this.handleModifyClick(record)}>修改</a>
                     </Popconfirm>
+                    <span className="ant-divider"/>
                     <Popconfirm
                         placement="bottomRight"
                         onConfirm={this.handlePackageOK.bind(this)}
@@ -64,7 +68,8 @@ class PackageSale extends React.Component {
         date: '',
         number: '',
         which: '',
-        channels: []
+        channels: [],
+        price: '',
     }
 
     componentDidMount() {
@@ -85,7 +90,7 @@ class PackageSale extends React.Component {
     handleModifyClick(record){
         return ()=>{
             this.setState({
-                channel:record.channel,
+                channel:record.code,
                 name:record.name,
                 key:record.key,
                 which: 'modify',
@@ -153,6 +158,7 @@ class PackageSale extends React.Component {
         const pkg = this.state.package;
         const date = this.state.date;
         const number = Number(this.state.number);
+        const price = this.state.price;
         console.log(pkg,date,number);
         if(!pkg){
             message.warning('请选择产品');
@@ -166,6 +172,10 @@ class PackageSale extends React.Component {
             message.warning('请输入数量');
             return;
         }
+        if(!price){
+            message.warning('请输入价格');
+            return;
+        }
         const packageAndNumber = pkg + number + '份';
         const saleList = JSON.parse(window.localStorage.getItem('saleList'));
         for(let item of saleList){
@@ -176,25 +186,25 @@ class PackageSale extends React.Component {
         }
         window.localStorage.setItem('saleList',JSON.stringify(saleList));
         this.setState({
-            packageVisible: false,
             packageAndNumber: '',
             package: '',
             date: '',
             number: '',
             key: 0,
             which: '',
+            price: '',
         });
     }
 
     handlePackageCancel(){
         this.setState({
-            packageVisible: false,
             packageAndNumber: '',
             package: '',
             date: '',
             number: '',
             key: 0,
             which: '',
+            price: '',
         });
     }
 
@@ -205,10 +215,16 @@ class PackageSale extends React.Component {
             message.error('请输入渠道编号');
             return;
         } else if(!name){
-            message.error('请输入姓名');
+            message.error('请输入渠道名称');
             return;
         } else {
-
+            Request.synPost('/channel/add',{
+                name: this.state.name,
+                code: this.state.channel,
+                userId: 1,
+            });
+            message.success('添加成功',1);
+            this.search();
             this.setState({
                 addVisible: false,
                 channel: '',
@@ -228,20 +244,32 @@ class PackageSale extends React.Component {
     handleModifyOK(){
         const channel = this.state.channel;
         const name = this.state.name;
+        const channelId = this.state.key;
         if(!channel){
-            message.error('请输入渠道编号');
+            message.warning('请输入渠道编号');
             return;
         } else if(!name){
-            message.error('请输入姓名');
+            message.warning('请输入渠道名称');
             return;
         } else {
-
+            Request.synPost('/channel/modify',{
+                name,
+                code: channel,
+                modifyUser: 1,
+                id: channelId,
+            });
+            this.search();
+            this.setState({
+                which: '',
+                key: 0,
+                name: '',
+                channel: '',
+            });
         }
     }
 
     handleModifyCancel(){
         this.setState({
-            modifyVisible: false,
             channel: '',
             name: '',
             key: 0,
@@ -269,7 +297,7 @@ class PackageSale extends React.Component {
                     hasFeedback
                 >
                     <Input
-                        placeholder="请输入姓名"
+                        placeholder="请输入渠道名称"
                         value={this.state.name}
                         onChange={this.handleNameChange.bind(this)}
                     />
@@ -327,6 +355,17 @@ class PackageSale extends React.Component {
                         onChange={this.handleNumberChange.bind(this)}
                     />份
                 </FormItem>
+                <FormItem
+                    {...formItemLayout}
+                    label="价格"
+                >
+                    <InputNumber
+                        min={0}
+                        value={this.state.price}
+                        style={{ width: '65%', marginRight: '3%' }}
+                        onChange={(value)=>{this.setState({price:value})}}
+                    />元
+                </FormItem>
             </Form>
         );
         return confirm;
@@ -345,10 +384,15 @@ class PackageSale extends React.Component {
                         cancelText="取消"
                         visible={this.state.addVisible}
                     >
-                        <Button type="primary" onClick={()=>this.setState({addVisible:true})}>添加</Button>
+                        <Button type="primary" onClick={()=>{this.setState({addVisible:true})}}>添加</Button>
                     </Popconfirm>
                 </div>
-                <Table columns={this.state.columns} dataSource={this.state.channels}/>
+                <Table
+                    columns={this.state.columns}
+                    dataSource={this.state.channels}
+                    pagination={false}
+                    scroll={{y: 700}}
+                />
             </div>
         );
     }

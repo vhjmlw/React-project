@@ -1,6 +1,7 @@
 import { Tabs, Form, Input, Button, Select, Tag, Popconfirm, message, InputNumber } from 'antd';
 import React from 'react';
 import Request from "./util/Request";
+import $ from 'jquery';
 
 const TabPane = Tabs.TabPane;
 const FormItem = Form.Item;
@@ -42,10 +43,29 @@ class PackageInfoForm extends React.Component {
                     message.warning("请添加服务!");
                 } else {
                     values.services = this.state.selectServices;
-                    let id = Request.synPost("product/create", values);
+                    $.ajax({
+                        url: '/product/create',
+                        type: 'POST',
+                        data: JSON.stringify(values),
+                        datatype: 'json',
+                        contentType: 'application/json',
+                        success: (response)=>{
+                            if(response.code==='200'&&response.data){
+                                message.success('添加成功',1.5,()=>{
+                                    this.props.changeRoute(null,'App/PackageList')
+                                });
+                            } else {
+                                message.warning('请求异常');
+                            }
+                        },
+                        error: (err)=>{
+                            throw err;
+                        }
+                    });
+                    /*let id = Request.synPost("product/create", values);
                     if (id) {
                         message.success("添加成功!", 1, ()=>this.props.changeRoute(null,'App/PackageList'));
-                    }
+                    }*/
                 }
             }
         });

@@ -63,6 +63,9 @@ const statuses = [{
     value: 3,
     label: '已收单',
 },{
+    value: 8,
+    label: '停用',
+},{
     value: 9,
     label: '删除',
 }];
@@ -147,7 +150,7 @@ class BillList extends React.Component {
                     <Popconfirm
                         title={allotPop}
                         visible={this.state.key===record.key}
-                        onConfirm={()=>{console.log('hello')}}
+                        onConfirm={()=>{this.allotBill(record)}}
                         onCancel={()=>{this.setState({key:0,popChannel:[]})}}
                     >
                         <a onClick={()=>{this.setState({key:record.key})}}>分配</a>
@@ -213,6 +216,13 @@ class BillList extends React.Component {
         services: [],
         popChannel: [],
         key: 0,
+    }
+
+    allotBill(record){
+        const serviceUser = this.state.popChannel;
+        const workOrderId = record.key;
+        const status = record.status;
+
     }
 
     componentDidMount() {

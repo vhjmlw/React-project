@@ -1,11 +1,12 @@
 import React from 'react';
-import {Input, Table, Button, Form, Row, Col, Cascader, DatePicker} from 'antd';
+import {Input, Table, Button, Form, Row, Col, Cascader, DatePicker, Popconfirm} from 'antd';
 import moment from 'moment';
 import Request from './util/Request';
+import BillInfo from './BillInfo';
 const FormItem = Form.Item;
 const {RangePicker} = DatePicker;
 
-const dataSource = [{
+/*const dataSource = [{
     key: '1',
     server: '尤玉溪',
     plateNum: '苏NYR808',
@@ -41,7 +42,7 @@ const dataSource = [{
     address: '苏州市姑苏区人民路152号',
     channel: '上门',
     status: '待服务',
-}];
+}];*/
 const servers = [{
     value: '尤玉溪',
     label: '尤玉溪',
@@ -50,37 +51,46 @@ const servers = [{
     label: '贺师俊',
 }];
 const statuses = [{
-    value: '已服务',
+    value: 0,
+    label: '新建',
+},{
+    value: 1,
+    label: '待服务',
+},{
+    value: 2,
     label: '已服务',
 },{
-    value: '待服务',
-    label: '待服务',
+    value: 3,
+    label: '已收单',
+},{
+    value: 9,
+    label: '删除',
 }];
-const channels = [{
+/*const channels = [{
     value: '上门',
     label: '上门',
 },{
     value: '自取',
     label: '自取',
-}];
+}];*/
 
 class BillList extends React.Component {
 
     state = {
         columns: [{
-            title: '技师',
-            dataIndex: 'server',
-            key: 'server',
-        }, {
             title: '客户车牌',
             dataIndex: 'plateNum',
             key: 'plateNum',
+        }, {
+            title: '客户姓名',
+            dataIndex: 'customer',
+            key: 'customer',
         }, {
             title: '客户手机号',
             dataIndex: 'phoneNum',
             key: 'phoneNum',
         }, {
-            title: '做单日期',
+            title: '服务日期',
             dataIndex: 'date',
             key: 'date',
         }, {
@@ -88,7 +98,7 @@ class BillList extends React.Component {
             dataIndex: 'address',
             key: 'address',
         }, {
-            title: '收卡渠道',
+            title: '发卡渠道',
             dataIndex: 'channel',
             key: 'channel',
         }, {
@@ -96,16 +106,92 @@ class BillList extends React.Component {
             dataIndex: 'status',
             key: 'status',
         }, {
+            title: '技师',
+            dataIndex: 'server',
+            key: 'server',
+        }, {
             title: '操作',
             key: 'action',
-            render: (text, record)=> {
-                return (
-                    <span>
-                        <a href="#/App/BillInfo">收单</a>
-                        <span className="ant-divider"/>
-                        <a href="javascript:;">重新分配</a>
-                    </span>
+            render: (text, record, index)=> {
+                //点击分配弹出气泡的HTML内容
+                const allotPop = (
+                    <div>
+                        <h3 style={{marginBottom:'25px'}}>分配技师</h3>
+                        <FormItem
+                            label="技师"
+                            labelCol={{span:8}}
+                            wrapperCol={{span:16}}
+                        >
+                            <Cascader
+                                options={servers}
+                                placeholder=''
+                                value={this.state.popChannel}
+                                onChange={(value)=>{this.setState({popChannel:value})}}
+                            />
+                        </FormItem>
+                    </div>
                 );
+                //重新分配的HTML内容
+                const afresh = (
+                    <Popconfirm
+                        title={allotPop}
+                        visible={this.state.key===record.key}
+                        onConfirm={()=>{console.log('确定');}}
+                        onCancel={()=>{this.setState({key:0,popChannel:[]})}}
+                    >
+                        <a onClick={()=>{this.setState({key:record.key})}}>重新分配</a>
+                    </Popconfirm>
+                );
+                //分配的HTML内容
+                const allot = (
+                    <Popconfirm
+                        title={allotPop}
+                        visible={this.state.key===record.key}
+                        onConfirm={()=>{console.log('hello')}}
+                        onCancel={()=>{this.setState({key:0,popChannel:[]})}}
+                    >
+                        <a onClick={()=>{this.setState({key:record.key})}}>分配</a>
+                    </Popconfirm>
+                );
+                //收单的HTML内容
+                const over = (
+                    <a onClick={()=>{this.changeShowDetail.bind(this)(record.key)}}>收单</a>
+                );
+                if (record.status === '新建') {
+                    return (
+                        <span>
+                            {allot}
+                        </span>
+                    );
+                } else if (record.status === '待服务') {
+                    return (
+                        <span>
+                            {over}
+                            <span className="ant-divider"/>
+                            {afresh}
+                        </span>
+                    );
+                } else if (record.status === '已收单') {
+                    return (
+                        <span>
+                            {over}
+                        </span>
+                    );
+                } else {//暂时添加的else，稍后删除
+                    return (
+                        <span>
+                            {over}
+                        </span>
+                    );
+                }
+                /*return (
+                    <span>
+                        {over}
+                        <span className="ant-divider"/>
+                        {/!*如果有技师，则显示重新分配；如果没有技师，则显示分配*!/}
+                        {/!*{record.server?afresh:allot}*!/}
+                    </span>
+                );*/
             }
         }],
         condition: {
@@ -121,12 +207,50 @@ class BillList extends React.Component {
         pageSize: 10,
         totalNum: 1,
         dataSource: [],
+        showDetail: false,
+        detailId: '',
+        channels: [],
+        services: [],
+        popChannel: [],
+        key: 0,
     }
 
     componentDidMount() {
-        this.handleSearch(this.state.condition,1,this.state.pageSize);
+        const dataArray = Request.synPost('/channel/list');
+        let channels = [];
+        if (dataArray && dataArray.length > 0) {
+            for (let item of dataArray) {
+                let obj = {
+                    value: item.id,
+                    label: item.name,
+                }
+                channels.push(obj);
+            }
+        }
+
+        const serverArray = Request.synPost('/technician/findByRegionIdAndLeaderId', {
+            regionId: '',
+            leaderId: 1,
+        });
+        let servers = [];
+        if (serverArray && serverArray.length > 0) {
+            for (let item of serverArray) {
+                let obj = {
+                    value: item.userId,
+                    label: item.name,
+                }
+                servers.push(obj);
+            }
+        }
+
+        this.setState({
+            servers,
+            channels
+        });
+        this.handleSearch(this.state.condition, 1, this.state.pageSize);
     }
 
+    //更改服务日期的逻辑
     handleDateChange(datas, dataStrings){
         const startDate = dataStrings[0];
         const endDate = dataStrings[1];
@@ -136,6 +260,12 @@ class BillList extends React.Component {
         this.setState({condition});
     }
 
+    //点击查询按钮的逻辑
+    clickSearch(){
+        this.handleSearch(this.state.condition, 1, this.state.pageSize);
+    }
+
+    //重置按钮的逻辑
     handleReset(e){
         e.preventDefault();
         this.setState({
@@ -151,23 +281,36 @@ class BillList extends React.Component {
         });
     }
 
+    //后台请求回来的字段转换为相对应的前端的字段
     backToFront(backArray,statusDescribtion){
+        const desArr = statusDescribtion.split('，');
+        const desObj = {};
+        for(let item of desArr){
+            const arr = item.split(":");
+            desObj[arr[0]] = arr[1];
+        }
         let frontArray = [];
         for(let item of backArray){
+            let date = '';
+            const serviceDate = item.serviceDate;
+            if(serviceDate){
+                date += serviceDate.substr(0,4)+'-'+serviceDate.substr(4,2)+'-'+serviceDate.substr(6,2);
+                date += ' '+serviceDate.substr(8,2)+':'+serviceDate.substr(10,2)+':'+serviceDate.substr(12,2);
+            }
             let obj = {
                 key: item.workOrderId,
                 server: item.serviceUserName,
+                customer: item.customerName,
                 plateNum: item.plate,
                 phoneNum: item.phone,
-                date: item.createDate,
+                date: date,
                 address: item.address,
                 channel: item.channelName,
-                status: item.status
+                status: desObj[item.status]
             }
             frontArray.push(obj);
         }
         return frontArray;
-
     }
 
     //封装的查询的逻辑
@@ -181,7 +324,7 @@ class BillList extends React.Component {
         const channelId = condition.channel[0];
         const currentPage = currentPageNum;
 
-        const dataObj = Request.synPost('workOder/list',{
+        const dataObj = Request.synPost('workOrder/list',{
             serviceUserId,
             status,
             serviceDateBegin,
@@ -203,7 +346,33 @@ class BillList extends React.Component {
         });
     }
 
+    //切换分页的逻辑
+    handlePageChange(page, pageSize){
+        this.handleSearch(this.state.condition, page, pageSize);
+    }
+
+    changeShowDetail(detailId){
+        this.setState({
+            showDetail: true,
+            detailId: detailId,
+        });
+    }
+
+    changeShowDetailToFalse(){
+        this.setState({
+            showDetail: false,
+            detailId: '',
+        });
+    }
+
     render() {
+        if(this.state.showDetail){
+            return <BillInfo
+                detailId={this.state.detailId}
+                changeShowDetailToFalse={this.changeShowDetailToFalse.bind(this)}
+            />
+        }
+
         const formItemLayout = {
             labelCol: {span: 8},
             wrapperCol: {span: 16}
@@ -296,12 +465,12 @@ class BillList extends React.Component {
                             </Col>
                             <Col span={8}>
                                 <FormItem
-                                    label="收卡渠道"
+                                    label="发卡渠道"
                                     {...formItemLayout}
                                 >
                                     <Cascader
-                                        options={channels}
-                                        placeholder="请选择收卡渠道"
+                                        options={this.state.channels}
+                                        placeholder="请选择发卡渠道"
                                         value={this.state.condition.channel}
                                         onChange={(value)=>{
                                             let condition = this.state.condition;
@@ -315,7 +484,7 @@ class BillList extends React.Component {
                     </Col>
                     <Col span={6}>
                         <Row type="flex" justify="center" gutter={16}>
-                            <Col><Button type="primary">查询</Button></Col>
+                            <Col><Button type="primary" onClick={this.clickSearch.bind(this)}>查询</Button></Col>
                             <Col><Button onClick={this.handleReset.bind(this)}>重置</Button></Col>
                         </Row>
                     </Col>

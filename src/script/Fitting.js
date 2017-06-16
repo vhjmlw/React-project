@@ -261,6 +261,26 @@ class Fitting extends React.Component {
     //新增选项Popconfirm确定按钮的逻辑
     newOk(e) {
         e.preventDefault();
+        if(!this.state.newtype.length){
+            message.warning('请输入类型');
+            return;
+        }
+        if(!this.state.newbrand.length){
+            message.warning('请输入品牌');
+            return;
+        }
+        if(!this.state.nameInput){
+            message.warning('请输入名称');
+            return;
+        }
+        if(!this.state.standardInput){
+            message.warning('请输入规格');
+            return;
+        }
+        if(!this.state.unitInput){
+            message.warning('请输入单位');
+            return;
+        }
         const data = Request.synPost('/part/create',{
             name: this.state.nameInput,
             cateId: this.state.newtype[0],
@@ -408,17 +428,6 @@ class Fitting extends React.Component {
                     />
                 </FormItem>
                 <FormItem
-                    label="单位"
-                    {...popFormLayout}
-                >
-                    <Input
-                        onChange={(e)=> {
-                            this.setState({unitInput: e.target.value})
-                        }}
-                        value={this.state.unitInput}
-                    />
-                </FormItem>
-                <FormItem
                     label="规格"
                     {...popFormLayout}
                 >
@@ -427,6 +436,17 @@ class Fitting extends React.Component {
                             this.setState({standardInput: e.target.value})
                         }}
                         value={this.state.standardInput}
+                    />
+                </FormItem>
+                <FormItem
+                    label="单位"
+                    {...popFormLayout}
+                >
+                    <Input
+                        onChange={(e)=> {
+                            this.setState({unitInput: e.target.value})
+                        }}
+                        value={this.state.unitInput}
                     />
                 </FormItem>
             </Form>

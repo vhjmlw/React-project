@@ -55,105 +55,168 @@ class ModalCustom extends React.Component {
         modalName: '',
         modalType: '',
         modalPrice: '',
-        disabled: true,
         key: '',
         serviceId: 0,
-        serviceData: {}
+        serviceData: {},
+        fittingDisabled:true,
+        otherDisabled:true,
+        standardAndUnit:{}
     }
 
     componentWillReceiveProps(nextProps) {
         const serviceId = nextProps.serviceId;
         let serviceData = {};
         let tags = [];
-        if(serviceId){
-            serviceData = Request.synPost('/service/detailByServiceId',{
-                id:serviceId
+        let modalName = '';
+        let modalType = '';
+        let modalPrice = '';
+        if (serviceId) {
+            serviceData = Request.synPost('/service/detailByServiceId', {
+                id: serviceId
             });
-            for(let item of serviceData.partDtos){
-                let tag = {
-                    tagStr: '',
-                    tagObj: {
-                        partId:item.partId,
-                        num:item.num
-                    }
-                };
-                tag.tagStr += item.partCateName + ' ' + item.partBrandName + ' ' + item.standard + ' ';
-                tag.tagStr += item.partName + ' ' + item.num + ' ' + item.unit;
-                tags.push(tag);
+            const partDtos = serviceData.partDtos;
+            if (partDtos && partDtos.length > 0) {
+                for (let item of partDtos) {
+                    let tag = {
+                        tagStr: '',
+                        tagObj: {
+                            partId: item.partId,
+                            num: item.num
+                        }
+                    };
+                    tag.tagStr += item.partCateName + ' ' + item.partBrandName + ' ' + item.standard + ' ';
+                    tag.tagStr += item.partName + ' ' + item.num + ' ' + item.unit;
+                    tags.push(tag);
+                }
             }
+            modalName = serviceData.serviceName;
+            modalType = serviceData.serviceCate;
+            modalPrice = serviceData.servicePrice;
         }
         this.setState({
             serviceId,
             serviceData,
             tags,
+            modalName,
+            modalType,
+            modalPrice
         });
     }
 
     //pop页面类型改变的逻辑
     handlePopTypeChange(value) {
-        const fittingObj = Request.synPost('part/listParts', {
+        //立此flag以作标记
+        const typeObj = Request.synPost('/part/listParts',{
+            brandId: this.state.popBrand[0],
             cateId: value[0],
-            brandId: this.state.popBrand[0]
         });
-        const fittingArray = fittingObj.data;
-        const popFittings = [];
-        let unitObj = {};
-        for (let item of fittingArray) {
-            const obj = {
-                value: item.id,
+        const typeData = typeObj.data;
+        const fittingArray = [];
+        for(let item of typeData){
+            let obj = {
+                value: item.partName,
                 label: item.partName
             }
-            popFittings.push(obj);
-            unitObj[item.id] = item.unit;
+            fittingArray.push(obj);
         }
-        this.setState({
-            popType: value,
-            popFittings,
-            unitObj,
-            disabled: popFittings.length ? false : true,
-        });
-        console.log(popFittings);
+        if(fittingArray.length>0){
+            this.setState({
+                popType:value,
+                popFittings:fittingArray,
+                fittingDisabled:false
+            });
+        } else {
+            this.setState({
+                popType:value,
+                popFitting:[],
+                fittingDisabled:true,
+                popStandard:[],
+                popUnit: '',
+                otherDisabled:true,
+                popAmount: '',
+            });
+        }
     }
 
     //pop页面品牌改变的逻辑
     handlePopBrandChange(value) {
-        const fittingObj = Request.synPost('part/listParts', {
+        const brandObj = Request.synPost('/part/listParts',{
+            brandId: value[0],
             cateId: this.state.popType[0],
-            brandId: value[0]
         });
-        const fittingArray = fittingObj.data;
-        const popFittings = [];
-        let unitObj = {};
-        for (let item of fittingArray) {
-            const obj = {
-                value: item.id,
-                label: item.partName
+        const brandData = brandObj.data;
+        const fittingArray = [];
+        for(let item of brandData){
+            let obj = {
+                value: item.partName,
+                label: item.partName,
             }
-            popFittings.push(obj);
-            unitObj[item.id] = item.unit;
+            fittingArray.push(obj);
         }
-        this.setState({
-            popBrand: value,
-            popFittings,
-            unitObj,
-            disabled: popFittings.length ? false : true,
-        });
-        console.log(popFittings);
-    }
-
-    //pop页面规格改变的逻辑
-    handlePopStandardChange(value) {
-        this.setState({popStandard: value});
+        if(fittingArray.length>0){
+            this.setState({
+                popBrand:value,
+                popFittings:fittingArray,
+                fittingDisabled:false,
+            });
+        } else {
+            this.setState({
+                popBrand:value,
+                popFitting: [],
+                fittingDisabled:true,
+                popStandard:[],
+                popUnit: '',
+                otherDisabled:true,
+                popAmount: '',
+            });
+        }
     }
 
     //pop页面配件改变的逻辑
     handlePopFittingChange(value) {
-        const fittingId = value[0];
-        const unitObj = this.state.unitObj;
-        const unit = unitObj[fittingId];
+        const fittingObj = Request.synPost('/part/listParts',{
+            brandId: this.state.popBrand[0],
+            cateId: this.state.popType[0],
+            name: value[0],
+        });
+        const fittingData = fittingObj.data;
+        const standardArray = [];
+        const standardAndUnit = {};//key为配件规格，value为配件单位，选择规格之后匹配到配件的单位
+        for(let item of fittingData){
+            if(item.standard){//如果该条数据standard字段不为空
+                let obj = {
+                    value: item.id,//value暂时先不用规格名字，可能需要使用 配件Id
+                    label: item.standard,
+                }
+                standardArray.push(obj);
+            }
+            standardAndUnit[item.id] = item.unit;
+        }
+        if(standardArray.length>0){
+            this.setState({
+                popFitting:value,
+                popStandards:standardArray,
+                otherDisabled:false,
+                standardAndUnit,
+            });
+        } else {
+            this.setState({
+                popFitting:value,
+                otherDisabled:true,
+                popStandard: [],
+                popAmount: '',
+                popUnit: '',
+            });
+        }
+    }
+
+    //pop页面规格改变的逻辑
+    handlePopStandardChange(value) {
+        const standardAndUnit = this.state.standardAndUnit;
+        const popUnit = standardAndUnit[value[0]];
         this.setState({
-            popFitting: value,
-            popUnit: unit
+            popStandard:value,
+            popUnit
         });
     }
 
@@ -167,16 +230,20 @@ class ModalCustom extends React.Component {
         const params = {
             name: this.state.modalName,
             price: this.state.modalPrice,
+            cate: this.state.modalType,
             createUser: 1,
             partRelModels: dataArray
         };
         let frontArray;
         let url;
+        let success;
         if(this.state.serviceId){
-            params.id = 1;
+            params.id = this.state.serviceId;
             url = '/service/modify';
+            success = '修改成功';
         } else {
             url = '/service/create';
+            success = '新增成功';
         }
         //使用jQuery中的Ajax模块发送数组的处理方法
         let result;
@@ -195,6 +262,7 @@ class ModalCustom extends React.Component {
             dataType: 'json',
             contentType: "application/json"//发送参数中包含数组
         });
+        message.success(success,1.5);
         frontArray = this.props.searchList();
         this.setState({
             popVisible: false,
@@ -245,7 +313,7 @@ class ModalCustom extends React.Component {
     //使用配件pop确定按钮的逻辑
     handlePopOK(e) {
         e.preventDefault();
-        const {popType, popBrand, popFitting, popAmount, tags, popUnit} = this.state;
+        const {popType, popBrand, popFitting, popAmount, tags, popUnit, popStandard} = this.state;
         if (popType.length === 0) {
             message.warning('请选择类型');
             return;
@@ -256,6 +324,10 @@ class ModalCustom extends React.Component {
         }
         if (popFitting.length === 0) {
             message.warning('请选择配件');
+            return;
+        }
+        if (popStandard.length === 0) {
+            message.warning('请选择规格');
             return;
         }
         if (!popAmount) {
@@ -276,18 +348,17 @@ class ModalCustom extends React.Component {
                 break;
             }
         }
-        let fitting;
-        for (let item of this.state.popFittings) {
-            if (item.value === popFitting[0]) {
-                fitting = item.label;
+        let standard;
+        for (let item of this.state.popStandards) {
+            if (item.value === popStandard[0]) {
+                standard = item.label;
                 break;
             }
         }
-
         const tag = {
-            tagStr: `${type} ${brand} ${fitting} ${popAmount}${popUnit}`,
+            tagStr: `${type} ${brand} ${popFitting} ${standard}${popAmount}${popUnit}`,
             tagObj: {
-                partId: popFitting[0],
+                partId: popStandard[0],
                 num: popAmount,
             }
         };
@@ -306,8 +377,13 @@ class ModalCustom extends React.Component {
             popType: [],
             popBrand: [],
             popFitting: [],
+            popStandard: [],
             popAmount: '',
             key: '',
+            popUnit: '',
+            fittingDisabled: true,
+            otherDisabled: true,
+            standardAndUnit:{}
         });
     }
 
@@ -319,8 +395,13 @@ class ModalCustom extends React.Component {
             popType: [],
             popBrand: [],
             popFitting: [],
+            popStandard: [],
             popAmount: '',
             key: '',
+            popUnit: '',
+            fittingDisabled: true,
+            otherDisabled: true,
+            standardAndUnit:{}
         });
     }
 
@@ -387,17 +468,6 @@ class ModalCustom extends React.Component {
                     />
                 </FormItem>
                 <FormItem
-                    label="规格"
-                    {...formPopLayout}
-                >
-                    <Cascader
-                        options={popStandards}
-                        value={this.state.popStandard}
-                        onChange={this.handlePopStandardChange.bind(this)}
-                        placeholder=''
-                    />
-                </FormItem>
-                <FormItem
                     label="配件"
                     {...formPopLayout}
                 >
@@ -406,7 +476,19 @@ class ModalCustom extends React.Component {
                         value={this.state.popFitting}
                         onChange={this.handlePopFittingChange.bind(this)}
                         placeholder=''
-                        disabled={this.state.disabled}
+                        disabled={this.state.fittingDisabled}
+                    />
+                </FormItem>
+                <FormItem
+                    label="规格"
+                    {...formPopLayout}
+                >
+                    <Cascader
+                        options={this.state.popStandards}
+                        value={this.state.popStandard}
+                        onChange={this.handlePopStandardChange.bind(this)}
+                        placeholder=''
+                        disabled={this.state.otherDisabled}
                     />
                 </FormItem>
                 <FormItem
@@ -419,7 +501,7 @@ class ModalCustom extends React.Component {
                         onChange={(value)=> {
                             this.setState({popAmount: value})
                         }}
-                        disabled={this.state.disabled}
+                        disabled={this.state.otherDisabled}
                     /><span>{this.state.popUnit}</span>
                 </FormItem>
             </Form>
@@ -442,7 +524,7 @@ class ModalCustom extends React.Component {
                         {...formItemLayout}
                     >
                         <Input
-                            value={this.state.serviceId?this.state.serviceData.serviceName:this.state.modalName}
+                            value={this.state.modalName}
                             onChange={(e)=> {
                                 this.setState({modalName: e.target.value});
                             }}
@@ -453,7 +535,7 @@ class ModalCustom extends React.Component {
                         {...formItemLayout}
                     >
                         <Input
-                            value={this.state.serviceId?this.state.serviceData.serviceCate:this.state.modalType}
+                            value={this.state.modalType}
                             onChange={(e)=> {
                                 this.setState({modalType: e.target.value});
                             }}
@@ -514,7 +596,7 @@ class ModalCustom extends React.Component {
                     >
                         <InputNumber
                             min={0}
-                            value={this.state.serviceId?this.state.serviceData.servicePrice:this.state.modalPrice}
+                            value={this.state.modalPrice}
                             onChange={(value)=> {
                                 this.setState({modalPrice: value});
                             }}

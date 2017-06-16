@@ -34,7 +34,7 @@ const popStandards = [{
 
 class BillInfo extends React.Component {
     state = {
-        tags: ['hello', 'world', 'hello world'],
+        tags: [],
         popVisible: false,
         popType: [],
         popBrand: [],
@@ -48,6 +48,14 @@ class BillInfo extends React.Component {
         serviceArr: [],
         unit: '',
         key: '',
+        popBrands: [],
+        popTypes: [],
+        popStandards: [],
+        popNames: [],
+        nameDisabled: true,
+        otherDisabled: true,
+        standardAndUnit: {},
+        totalPrice: 0,
     }
 
     componentDidMount() {
@@ -88,7 +96,7 @@ class BillInfo extends React.Component {
     //技师销售pop确定按钮的逻辑
     handlePopOK(e) {
         e.preventDefault();
-        const { popType, popBrand, popName, popStandard, popAmount, popPrice, tags } = this.state;
+        let { popTypes, popBrands, popType, popBrand, popName, popStandard, popAmount, popPrice, tags, unit, totalPrice } = this.state;
         if(popType.length===0){
            message.warning('请选择类型');
             return;
@@ -113,15 +121,50 @@ class BillInfo extends React.Component {
             message.warning('请输入价格');
             return;
         }
-
-        const tag = `${popType[0]} ${popBrand[0]} ${popName[0]} ${popStandard[0]} ${popAmount}*${popPrice}元`;
-
+        let type;
+        for(let item of popTypes){
+            if(item.value===popType[0]){
+                type = item.label;
+                break;
+            }
+        }
+        let brand;
+        for(let item of popBrands){
+            if(item.value===popBrand[0]){
+                brand = item.label;
+                break;
+            }
+        }
+        let standard;
+        for(let item of this.state.popStandards){
+            if(item.value === popStandard[0]){
+                standard = item.label;
+                break;
+            }
+        }
+        
+        const partId = this.state.popStandard[0];
+        const serverId = this.state.dataObj.serviceUser;
+        const amount = this.state.popAmount;
+        const detailId = this.props.detailId;
+        const price = this.state.popPrice;
+        Request.synPost('/technician/saleLog',{
+            partId,
+            technicianId: serverId,
+            num: amount,
+            orderId: detailId,
+            salePrice: price,
+            createUser: 1,
+        });
+        
+        const tag = `${type} ${brand} ${popName[0]} ${standard} ${popAmount}${unit} 共${popPrice}元`;
         //以下代码控制不能添加相同的两项
         if(this.state.tags.indexOf(tag)>-1){
             message.warning('不能添加相同的两项');
             return;
         }
         tags.push(tag);
+        totalPrice += popPrice;//计算出技师销售总价，在总价的基础之上再加上当前输入的价格popPrice
         this.setState({
             tags,
             popVisible: false,
@@ -131,6 +174,11 @@ class BillInfo extends React.Component {
             popStandard: [],
             popAmount: '',
             popPrice: '',
+            unit: '',
+            nameDisabled: true,
+            otherDisabled: true,
+            totalPrice,
+            standardAndUnit:{}
         });
     }
 
@@ -145,6 +193,10 @@ class BillInfo extends React.Component {
             popStandard: [],
             popAmount: '',
             popPrice: '',
+            unit: '',
+            nameDisabled: true,
+            otherDisabled: true,
+            standardAndUnit:{}
         });
     }
 
@@ -163,14 +215,170 @@ class BillInfo extends React.Component {
         this.setState({tags});
     }*/
 
-    //点击气泡确定按钮的逻辑
+    //点击tag气泡确定按钮，删除当前tag的逻辑
     handleTagPopOk(){
         const tags = this.state.tags.filter((tag)=>{
             return tag != this.state.key;
         });
+        let totalPrice = this.state.totalPrice;
+        const tag = this.state.key;
+        const regexp = /.+共(\d+)元/;
+        const priceArray = tag.match(regexp);
+        const price = Number(priceArray[1]);
+        totalPrice -= price;
         this.setState({
             tags,
-            key: ''
+            key: '',
+            totalPrice
+        });
+    }
+
+    //+号点击的逻辑
+    handlePlusClick(){
+        const brandArray = Request.synPost('/part/listPartBrand');
+        let popBrands = [];
+        for(let item of brandArray){
+            let obj = {
+                value: item.id,
+                label: item.name
+            }
+            popBrands.push(obj);
+        }
+        const typeArray = Request.synPost('/part/listPartCate');
+        let popTypes = [];
+        for(let item of typeArray){
+            let obj = {
+                value: item.id,
+                label: item.name
+            }
+            popTypes.push(obj);
+        }
+        this.setState({
+            popVisible: true,
+            popBrands,
+            popTypes
+        });
+    }
+
+    //pop页面类型改变的逻辑
+    handleTypeChange(value){
+        const typeObj = Request.synPost('/part/listParts',{
+            brandId: this.state.popBrand[0],
+            cateId: value[0],
+        });
+        const typeData = typeObj.data;
+        const nameArray = [];
+        for(let item of typeData){
+            let obj = {
+                value: item.partName,
+                label: item.partName
+            }
+            nameArray.push(obj);
+        }
+        if(nameArray.length>0){
+            this.setState({
+                popType:value,
+                popNames:nameArray,
+                nameDisabled:false
+            });
+        } else {
+            this.setState({
+                popType:value,
+                popName:[],
+                nameDisabled:true,
+                popStandard:[],
+                unit: '',
+                otherDisabled:true,
+                popAmount: '',
+                popPrice: '',
+            });
+        }
+
+    }
+
+    //pop页面品牌改变的逻辑
+    handleBrandChange(value){
+        const brandObj = Request.synPost('/part/listParts',{
+            brandId: value[0],
+            cateId: this.state.popType[0],
+        });
+        const brandData = brandObj.data;
+        const nameArray = [];
+        for(let item of brandData){
+            let obj = {
+                value: item.partName,
+                label: item.partName,
+            }
+            nameArray.push(obj);
+        }
+        if(nameArray.length>0){
+            this.setState({
+                popBrand:value,
+                popNames:nameArray,
+                nameDisabled:false,
+            });
+        } else {
+            this.setState({
+                popBrand:value,
+                popName: [],
+                nameDisabled:true,
+                popStandard:[],
+                unit: '',
+                otherDisabled:true,
+                popAmount: '',
+                popPrice: '',
+            });
+        }
+
+    }
+
+    //pop页面名称改变的逻辑
+    handleNameChange(value){
+        const fittingObj = Request.synPost('/part/listParts',{
+            brandId: this.state.popBrand[0],
+            cateId: this.state.popType[0],
+            name: value[0],
+        });
+        const fittingData = fittingObj.data;
+        const standardArray = [];
+        const standardAndUnit = {};//key为配件规格，value为配件单位，选择规格之后匹配到配件的单位
+        for(let item of fittingData){
+            if(item.standard){//如果该条数据standard字段不为空
+                let obj = {
+                    value: item.id,//value暂时先不用规格名字，可能需要使用 配件Id
+                    label: item.standard,
+                }
+                standardArray.push(obj);
+            }
+            standardAndUnit[item.id] = item.unit;
+        }
+        if(standardArray.length>0){
+            this.setState({
+                popName:value,
+                popStandards:standardArray,
+                otherDisabled:false,
+                standardAndUnit,
+            });
+        } else {
+            this.setState({
+                popName:value,
+                otherDisabled:true,
+                popStandard: [],
+                popAmount: '',
+                popPrice: '',
+                unit: '',
+            });
+        }
+        
+    }
+    
+    //pop页面规格改变的逻辑
+    handleStandardChange(value){
+        const standardAndUnit = this.state.standardAndUnit;
+        const unit = standardAndUnit[value[0]];
+        this.setState({
+            popStandard:value,
+            unit
         });
     }
 
@@ -186,10 +394,10 @@ class BillInfo extends React.Component {
                     {...formItemLayout}
                 >
                     <Cascader
-                        options={popTypes}
+                        options={this.state.popTypes}
                         placeholder=''
                         value={this.state.popType}
-                        onChange={(value)=>{this.setState({popType:value})}}
+                        onChange={this.handleTypeChange.bind(this)}
                     />
                 </FormItem>
                 <FormItem
@@ -197,10 +405,10 @@ class BillInfo extends React.Component {
                     {...formItemLayout}
                 >
                     <Cascader
-                        options={popBrands}
+                        options={this.state.popBrands}
                         placeholder=''
                         value={this.state.popBrand}
-                        onChange={(value)=>{this.setState({popBrand:value})}}
+                        onChange={this.handleBrandChange.bind(this)}
                     />
                 </FormItem>
                 <FormItem
@@ -208,10 +416,11 @@ class BillInfo extends React.Component {
                     {...formItemLayout}
                 >
                     <Cascader
-                        options={popNames}
+                        disabled={this.state.nameDisabled}
+                        options={this.state.popNames}
                         placeholder=''
                         value={this.state.popName}
-                        onChange={(value)=>{this.setState({popName:value})}}
+                        onChange={this.handleNameChange.bind(this)}
                     />
                 </FormItem>
                 <FormItem
@@ -219,10 +428,11 @@ class BillInfo extends React.Component {
                     {...formItemLayout}
                 >
                     <Cascader
-                        options={popStandards}
+                        disabled={this.state.otherDisabled}
+                        options={this.state.popStandards}
                         placeholder=''
                         value={this.state.popStandard}
-                        onChange={(value)=>{this.setState({popStandard:value})}}
+                        onChange={this.handleStandardChange.bind(this)}
                     />
                 </FormItem>
                 <FormItem
@@ -231,6 +441,7 @@ class BillInfo extends React.Component {
                 >
                     <InputNumber
                         min={0}
+                        disabled={this.state.otherDisabled}
                         value={this.state.popAmount}
                         onChange={(value)=>{this.setState({popAmount:value})}}
                     /><span>{this.state.unit}</span>
@@ -241,6 +452,7 @@ class BillInfo extends React.Component {
                 >
                     <InputNumber
                         min={0}
+                        disabled={this.state.otherDisabled}
                         value={this.state.popPrice}
                         onChange={(value)=>{this.setState({popPrice:value})}}
                     />元
@@ -362,7 +574,7 @@ class BillInfo extends React.Component {
                             visible={this.state.popVisible}
                         >
                             <Button type="primary" size="small"
-                                    onClick={()=>this.setState({popVisible: true})}>+</Button>
+                                    onClick={this.handlePlusClick.bind(this)}>+</Button>
                         </Popconfirm>
                     </div>
                 </FormItem>
@@ -370,7 +582,7 @@ class BillInfo extends React.Component {
                     label="技师销售合计"
                     {...formItemLayout}
                 >
-                    <span>300</span>元
+                    <span>{this.state.totalPrice}</span>元
                 </FormItem>
                 <FormItem>
                     <Modal

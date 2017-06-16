@@ -123,7 +123,7 @@ class BillList extends React.Component {
                             wrapperCol={{span:16}}
                         >
                             <Cascader
-                                options={this.state.channels}
+                                options={servers}
                                 placeholder=''
                                 value={this.state.popChannel}
                                 onChange={(value)=>{this.setState({popChannel:value})}}
@@ -132,7 +132,16 @@ class BillList extends React.Component {
                     </div>
                 );
                 //重新分配的HTML内容
-                const afresh = (<a href="javascript:;">重新分配</a>);
+                const afresh = (
+                    <Popconfirm
+                        title={allotPop}
+                        visible={this.state.key===record.key}
+                        onConfirm={()=>{console.log('确定');}}
+                        onCancel={()=>{this.setState({key:0,popChannel:[]})}}
+                    >
+                        <a onClick={()=>{this.setState({key:record.key})}}>重新分配</a>
+                    </Popconfirm>
+                );
                 //分配的HTML内容
                 const allot = (
                     <Popconfirm
@@ -144,14 +153,45 @@ class BillList extends React.Component {
                         <a onClick={()=>{this.setState({key:record.key})}}>分配</a>
                     </Popconfirm>
                 );
-                return (
-                    <span>
-                        <a onClick={()=>{this.changeShowDetail.bind(this)(record.key)}}>收单</a>
-                        <span className="ant-divider"/>
-                        {/*如果有技师，则显示重新分配；如果没有技师，则显示分配*/}
-                        {record.server?afresh:allot}
-                    </span>
+                //收单的HTML内容
+                const over = (
+                    <a onClick={()=>{this.changeShowDetail.bind(this)(record.key)}}>收单</a>
                 );
+                if (record.status === '新建') {
+                    return (
+                        <span>
+                            {allot}
+                        </span>
+                    );
+                } else if (record.status === '待服务') {
+                    return (
+                        <span>
+                            {over}
+                            <span className="ant-divider"/>
+                            {afresh}
+                        </span>
+                    );
+                } else if (record.status === '已收单') {
+                    return (
+                        <span>
+                            {over}
+                        </span>
+                    );
+                } else {//暂时添加的else，稍后删除
+                    return (
+                        <span>
+                            {over}
+                        </span>
+                    );
+                }
+                /*return (
+                    <span>
+                        {over}
+                        <span className="ant-divider"/>
+                        {/!*如果有技师，则显示重新分配；如果没有技师，则显示分配*!/}
+                        {/!*{record.server?afresh:allot}*!/}
+                    </span>
+                );*/
             }
         }],
         condition: {
@@ -170,6 +210,7 @@ class BillList extends React.Component {
         showDetail: false,
         detailId: '',
         channels: [],
+        services: [],
         popChannel: [],
         key: 0,
     }
@@ -177,15 +218,36 @@ class BillList extends React.Component {
     componentDidMount() {
         const dataArray = Request.synPost('/channel/list');
         let channels = [];
-        for(let item of dataArray){
-            let obj = {
-                label: item.name,
-                value: item.id,
+        if (dataArray && dataArray.length > 0) {
+            for (let item of dataArray) {
+                let obj = {
+                    value: item.id,
+                    label: item.name,
+                }
+                channels.push(obj);
             }
-            channels.push(obj);
         }
-        this.setState({channels});
-        this.handleSearch(this.state.condition,1,this.state.pageSize);
+
+        const serverArray = Request.synPost('/technician/findByRegionIdAndLeaderId', {
+            regionId: '',
+            leaderId: 1,
+        });
+        let servers = [];
+        if (serverArray && serverArray.length > 0) {
+            for (let item of serverArray) {
+                let obj = {
+                    value: item.userId,
+                    label: item.name,
+                }
+                servers.push(obj);
+            }
+        }
+
+        this.setState({
+            servers,
+            channels
+        });
+        this.handleSearch(this.state.condition, 1, this.state.pageSize);
     }
 
     //更改服务日期的逻辑

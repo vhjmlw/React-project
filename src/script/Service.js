@@ -27,13 +27,13 @@ const Option = Select.Option;
  createDate: '时间三',
  price: '报价三',
  }];*/
-const popStandards = [{
+/*const popStandards = [{
     value: '规格一',
     label: '规格一',
 }, {
     value: '规格二',
     label: '规格二'
-}];
+}];*/
 
 class ModalCustom extends React.Component {
 
@@ -105,34 +105,42 @@ class ModalCustom extends React.Component {
 
     //pop页面类型改变的逻辑
     handlePopTypeChange(value) {
-        //立此flag以作标记
-        const typeObj = Request.synPost('/part/listParts',{
+        const typeObj = Request.synPost('/part/listParts', {
             brandId: this.state.popBrand[0],
             cateId: value[0],
         });
         const typeData = typeObj.data;
         const fittingArray = [];
-        for(let item of typeData){
+        for (let item of typeData) {
             let obj = {
                 value: item.partName,
                 label: item.partName
             }
-            fittingArray.push(obj);
+            //添加到fittingArray数组的时候，去重，已经存在的值就不再添加了
+            let flag = true;
+            for (let part of fittingArray) {
+                if (part.value === item.partName) {
+                    flag = false;
+                }
+            }
+            if (flag) {
+                fittingArray.push(obj);
+            }
         }
-        if(fittingArray.length>0){
+        if (fittingArray.length > 0) {
             this.setState({
-                popType:value,
-                popFittings:fittingArray,
-                fittingDisabled:false
+                popType: value,
+                popFittings: fittingArray,
+                fittingDisabled: false
             });
         } else {
             this.setState({
-                popType:value,
-                popFitting:[],
-                fittingDisabled:true,
-                popStandard:[],
+                popType: value,
+                popFitting: [],
+                fittingDisabled: true,
+                popStandard: [],
                 popUnit: '',
-                otherDisabled:true,
+                otherDisabled: true,
                 popAmount: '',
             });
         }
@@ -145,13 +153,22 @@ class ModalCustom extends React.Component {
             cateId: this.state.popType[0],
         });
         const brandData = brandObj.data;
-        const fittingArray = [];
+        let fittingArray = [];
         for(let item of brandData){
             let obj = {
                 value: item.partName,
                 label: item.partName,
             }
-            fittingArray.push(obj);
+            //添加到fittingArray数组的时候，去重，已经存在的值就不再添加了
+            let flag = true;
+            for(let part of fittingArray){
+                if(part.value === item.partName){
+                    flag = false;
+                }
+            }
+            if(flag){
+                fittingArray.push(obj);
+            }
         }
         if(fittingArray.length>0){
             this.setState({

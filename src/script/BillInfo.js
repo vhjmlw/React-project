@@ -56,6 +56,7 @@ class BillInfo extends React.Component {
         otherDisabled: true,
         standardAndUnit: {},
         totalPrice: 0,
+        saleLog: {}
     }
 
     componentDidMount() {
@@ -81,9 +82,31 @@ class BillInfo extends React.Component {
 
             }
         }
+        const parts = Request.synPost('/technician/getSaleDetailByOrderId',{
+            id: detailId
+        });
+        let partArr = [];
+        let saleLog = {};
+        for(let item of parts){
+            let partStr = ``;
+            partStr += `${item.partCateName} ${item.partBrandName} ${item.partName} ${item.standard} ${item.num}${item.unit} 共${item.salePrice}元`;
+            partArr.push(partStr);
+            saleLog[item.saleLogId] = partStr;
+        }
+        let totalPrice = this.state.totalPrice;
+        const regexp = /.+共(\d+)元/;
+        for(let item of partArr){
+            const priceArray = item.match(regexp);
+            const price = Number(priceArray[1]);
+            totalPrice += price;
+        }
+        console.log(partArr);
         this.setState({
             dataObj,
-            serviceArr
+            serviceArr,
+            tags: partArr,
+            totalPrice,
+            saleLog
         });
     }
 
@@ -148,6 +171,13 @@ class BillInfo extends React.Component {
         const amount = this.state.popAmount;
         const detailId = this.props.detailId;
         const price = this.state.popPrice;
+        
+        const tag = `${type} ${brand} ${popName[0]} ${standard} ${popAmount}${unit} 共${popPrice}元`;
+        //以下代码控制不能添加相同的两项
+        if(this.state.tags.indexOf(tag)>-1){
+            message.warning('不能添加相同的两项');
+            return;
+        }
         Request.synPost('/technician/saleLog',{
             partId,
             technicianId: serverId,
@@ -156,13 +186,6 @@ class BillInfo extends React.Component {
             salePrice: price,
             createUser: 1,
         });
-        
-        const tag = `${type} ${brand} ${popName[0]} ${standard} ${popAmount}${unit} 共${popPrice}元`;
-        //以下代码控制不能添加相同的两项
-        if(this.state.tags.indexOf(tag)>-1){
-            message.warning('不能添加相同的两项');
-            return;
-        }
         tags.push(tag);
         totalPrice += popPrice;//计算出技师销售总价，在总价的基础之上再加上当前输入的价格popPrice
         this.setState({
@@ -217,6 +240,17 @@ class BillInfo extends React.Component {
 
     //点击tag气泡确定按钮，删除当前tag的逻辑
     handleTagPopOk(){
+        const saleLog = this.state.saleLog;
+        let saleId = '';
+        for(let key in saleLog){
+            if(saleLog[key] === this.state.key){
+                saleId = key;
+                break;
+            }
+        }
+        Request.synPost('/technician/deleteBySaleId',{
+            id: saleId
+        });
         const tags = this.state.tags.filter((tag)=>{
             return tag != this.state.key;
         });
@@ -273,7 +307,16 @@ class BillInfo extends React.Component {
                 value: item.partName,
                 label: item.partName
             }
-            nameArray.push(obj);
+            //添加到nameArray数组的时候，去重，已经存在的值就不再添加了
+            let flag = true;
+            for(let part of nameArray){
+                if(part.value === item.partName){
+                    flag = false;
+                }
+            }
+            if(flag){
+                nameArray.push(obj);
+            }
         }
         if(nameArray.length>0){
             this.setState({
@@ -309,7 +352,16 @@ class BillInfo extends React.Component {
                 value: item.partName,
                 label: item.partName,
             }
-            nameArray.push(obj);
+            //添加到nameArray数组的时候，去重，已经存在的值就不再添加了
+            let flag = true;
+            for(let part of nameArray){
+                if(part.value === item.partName){
+                    flag = false;
+                }
+            }
+            if(flag){
+                nameArray.push(obj);
+            }
         }
         if(nameArray.length>0){
             this.setState({
@@ -333,8 +385,8 @@ class BillInfo extends React.Component {
     }
 
     //pop页面名称改变的逻辑
-    handleNameChange(value){
-        const fittingObj = Request.synPost('/part/listParts',{
+    handleNameChange(value) {
+        const fittingObj = Request.synPost('/part/listParts', {
             brandId: this.state.popBrand[0],
             cateId: this.state.popType[0],
             name: value[0],
@@ -342,8 +394,8 @@ class BillInfo extends React.Component {
         const fittingData = fittingObj.data;
         const standardArray = [];
         const standardAndUnit = {};//key为配件规格，value为配件单位，选择规格之后匹配到配件的单位
-        for(let item of fittingData){
-            if(item.standard){//如果该条数据standard字段不为空
+        for (let item of fittingData) {
+            if (item.standard) {//如果该条数据standard字段不为空
                 let obj = {
                     value: item.id,//value暂时先不用规格名字，可能需要使用 配件Id
                     label: item.standard,
@@ -352,24 +404,24 @@ class BillInfo extends React.Component {
             }
             standardAndUnit[item.id] = item.unit;
         }
-        if(standardArray.length>0){
+        if (standardArray.length > 0) {
             this.setState({
-                popName:value,
-                popStandards:standardArray,
-                otherDisabled:false,
+                popName: value,
+                popStandards: standardArray,
+                otherDisabled: false,
                 standardAndUnit,
             });
         } else {
             this.setState({
-                popName:value,
-                otherDisabled:true,
+                popName: value,
+                otherDisabled: true,
                 popStandard: [],
                 popAmount: '',
                 popPrice: '',
                 unit: '',
             });
         }
-        
+
     }
     
     //pop页面规格改变的逻辑
@@ -380,6 +432,16 @@ class BillInfo extends React.Component {
             popStandard:value,
             unit
         });
+    }
+
+    //点击模态框确定按钮的逻辑
+    handleModalOk(){
+        const detailId = this.props.detailId;
+        Request.synPost('/workOrder/modify',{
+            workOrderId: detailId,
+            status: 3,
+        });
+        this.props.changeShowDetailToFalse();
     }
 
     render() {
@@ -601,7 +663,7 @@ class BillInfo extends React.Component {
                         visible={this.state.recoverVisible}
                         okText="确定"
                         cancelText="取消"
-                        onOk={()=>{this.setState({recoverVisible:false})}}
+                        onOk={this.handleModalOk.bind(this)}
                         onCancel={()=>{this.setState({recoverVisible:false})}}
                     >
                     </Modal>

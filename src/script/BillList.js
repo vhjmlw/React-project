@@ -43,13 +43,13 @@ const {RangePicker} = DatePicker;
     channel: '上门',
     status: '待服务',
 }];*/
-const servers = [{
+/*const servers = [{
     value: '尤玉溪',
     label: '尤玉溪',
 },{
     value: '贺师俊',
     label: '贺师俊',
-}];
+}];*/
 const statuses = [{
     value: 0,
     label: '新建',
@@ -62,9 +62,6 @@ const statuses = [{
 },{
     value: 3,
     label: '已收单',
-},{
-    value: 8,
-    label: '停用',
 },{
     value: 9,
     label: '删除',
@@ -126,7 +123,7 @@ class BillList extends React.Component {
                             wrapperCol={{span:16}}
                         >
                             <Cascader
-                                options={servers}
+                                options={this.state.servers}
                                 placeholder=''
                                 value={this.state.popChannel}
                                 onChange={(value)=>{this.setState({popChannel:value})}}
@@ -139,7 +136,7 @@ class BillList extends React.Component {
                     <Popconfirm
                         title={allotPop}
                         visible={this.state.key===record.key}
-                        onConfirm={()=>{console.log('确定');}}
+                        onConfirm={()=>{this.allotOk(record)}}
                         onCancel={()=>{this.setState({key:0,popChannel:[]})}}
                     >
                         <a onClick={()=>{this.setState({key:record.key})}}>重新分配</a>
@@ -150,7 +147,7 @@ class BillList extends React.Component {
                     <Popconfirm
                         title={allotPop}
                         visible={this.state.key===record.key}
-                        onConfirm={()=>{this.allotBill(record)}}
+                        onConfirm={()=>{this.allotOk(record)}}
                         onCancel={()=>{this.setState({key:0,popChannel:[]})}}
                     >
                         <a onClick={()=>{this.setState({key:record.key})}}>分配</a>
@@ -175,12 +172,6 @@ class BillList extends React.Component {
                         </span>
                     );
                 } else if (record.status === '已收单') {
-                    return (
-                        <span>
-                            {over}
-                        </span>
-                    );
-                } else {//暂时添加的else，稍后删除
                     return (
                         <span>
                             {over}
@@ -216,13 +207,33 @@ class BillList extends React.Component {
         services: [],
         popChannel: [],
         key: 0,
+        statusObj: {}
     }
 
-    allotBill(record){
-        const serviceUser = this.state.popChannel;
+    //立此flag先占个位置
+    allotOk(record){
+        const serviceUser = this.state.popChannel[0];
         const workOrderId = record.key;
-        const status = record.status;
-
+        const statusStr = record.status;
+        const statusObj = this.state.statusObj;
+        console.log(statusObj,serviceUser,workOrderId,status);
+        /*let status;
+        for(let key in statusObj){
+            if(statusObj[key]===statusStr){
+                status = key;
+                break;
+            }
+        }*/
+        Request.synPost('/workOrder/modify',{
+            serviceUser,
+            workOrderId,
+            status: 1,
+        });
+        this.setState({
+            key: 0,
+            popChannel:[]
+        });
+        this.handleSearch(this.state.condition,this.state.currentPageNum,this.state.pageSize);
     }
 
     componentDidMount() {
@@ -239,7 +250,7 @@ class BillList extends React.Component {
         }
 
         const serverArray = Request.synPost('/technician/findByRegionIdAndLeaderId', {
-            regionId: '',
+            regionId: 1,
             leaderId: 1,
         });
         let servers = [];
@@ -320,6 +331,7 @@ class BillList extends React.Component {
             }
             frontArray.push(obj);
         }
+        this.setState({statusObj:desObj});
         return frontArray;
     }
 
@@ -373,6 +385,7 @@ class BillList extends React.Component {
             showDetail: false,
             detailId: '',
         });
+        this.handleSearch(this.state.condition,this.state.currentPageNum,this.state.pageSize);
     }
 
     render() {
@@ -399,7 +412,7 @@ class BillList extends React.Component {
                                     {...formItemLayout}
                                 >
                                     <Cascader
-                                        options={servers}
+                                        options={this.state.servers}
                                         placeholder="请选择技师"
                                         value={this.state.condition.server}
                                         onChange={(value)=>{

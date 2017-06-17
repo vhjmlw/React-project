@@ -42,7 +42,17 @@ class PackageInfoForm extends React.Component {
                 if (this.state.selectServices.length === 0) {
                     message.warning("请添加服务!");
                 } else {
-                    values.services = this.state.selectServices;
+                    const services = this.state.selectServices;
+                    let serviceArr = [];
+                    for(let item of services){
+                        let obj = {
+                            num: item.num,
+                            serviceId: item.serviceId
+                        }
+                        serviceArr.push(obj);
+                    }
+                    values.services = serviceArr;
+                    values.createUser = 1;
                     $.ajax({
                         url: '/product/create',
                         type: 'POST',
@@ -50,7 +60,7 @@ class PackageInfoForm extends React.Component {
                         datatype: 'json',
                         contentType: 'application/json',
                         success: (response)=>{
-                            if(response.code==='200'&&response.data){
+                            if(response.code==='200' && response.data){
                                 message.success('添加成功',1.5,()=>{
                                     this.props.changeRoute(null,'App/PackageList')
                                 });

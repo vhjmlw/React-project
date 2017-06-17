@@ -8,12 +8,12 @@ const packageList = [
         packageName: '保养套餐1',
         packagePrice: '666',
         packageItem: '发动机清洗',
-        packageAccessory: '东风机滤一个',
+        packagePart: '东风机滤一个',
     },{
         packageName: '保养套餐1',
         packagePrice: '666',
         packageItem: '发动机清洗',
-        packageAccessory: '东风机滤一个',
+        packagePart: '东风机滤一个',
     },
 ];
 
@@ -36,8 +36,8 @@ class PackageList extends React.Component{
             width: '20%',
         }, {
             title: '配件',
-            dataIndex: 'packageAccessory',
-            key: 'packageAccessory',
+            dataIndex: 'packagePart',
+            key: 'packagePart',
             width: '20%',
         }, {
             title: '操作',
@@ -61,6 +61,41 @@ class PackageList extends React.Component{
             this.props.history.pushState(null,"/App/ModifyPackage");
         }
     }*/
+
+    componentDidMount() {
+        const productList = Request.synPost('/product/list');
+        const frontArray = this.backToFront(productList);
+        this.setState({
+            packageList: frontArray
+        });
+    }
+
+    backToFront(backArray){
+        let frontArray = [];
+        for(let item of backArray){
+            let obj = {
+                key: item.productId,
+                packageName: item.name,
+                packagePrice: '',
+                packageItem: '',
+                packagePart: '',
+            }
+            if(item.services && item.services.length > 0){
+                for(let service of item.services){
+                    obj.packageItem += service.serviceCate + service.serviceName + service.num + ' ';
+                    if(service.partDtos && service.partDtos.length > 0){
+                        obj.packagePart += service.serviceCate + '(';
+                        for(let part of service.partDtos){
+                            obj.packagePart += part.partCateName + part.partBrandName + part.partName + part.standard + part.num + part.unit + ' ';
+                        }
+                        obj.packagePart += ')';
+                    }
+                }
+            }
+            frontArray.push(obj);
+        }
+        return frontArray;
+    }
 
     showDetail(record) {
         const productInfo = Request.synPost('/product/detailByChannelProduct',{channelProduct:record.key});
@@ -158,7 +193,7 @@ class PackageList extends React.Component{
                 </div>
                 <Table
                     columns={this.state.columns}
-                    dataSource={packageList}
+                    dataSource={this.state.packageList}
                     pagination={false}
                     scroll={{y: 700}}
                 />

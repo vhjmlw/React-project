@@ -9,7 +9,7 @@ const formItemLayout = {
     labelCol: { span: 8 },
     wrapperCol: { span: 16 },
 }
-const packageData = ['产品一','产品二','产品三','产品四','产品五'];
+// const packageData = ['产品一','产品二','产品三','产品四','产品五'];
 
 class PackageSale extends React.Component {
     state = {
@@ -70,6 +70,7 @@ class PackageSale extends React.Component {
         which: '',
         channels: [],
         price: '',
+        productArr: []
     }
 
     componentDidMount() {
@@ -100,25 +101,41 @@ class PackageSale extends React.Component {
 
     handlePackageClick(record){
         return ()=>{
-                if(record.packageAndNumber){
-                    this.setState({
-                        packageAndNumber: record.packageAndNumber,
-                        package: record.package,
-                        date: record.date,
-                        number: record.number,
-                        key: record.key,
-                        which: 'package',
-                    });
-                } else {
-                    this.setState({
-                        packageAndNumber: '',
-                        package: '',
-                        date: '',
-                        number: '',
-                        key: record.key,
-                        which: 'package',
-                    });
+            /*if(record.packageAndNumber){
+                this.setState({
+                    packageAndNumber: record.packageAndNumber,
+                    package: record.package,
+                    date: record.date,
+                    number: record.number,
+                    key: record.key,
+                    which: 'package',
+                });
+            } else {
+                this.setState({
+                    packageAndNumber: '',
+                    package: '',
+                    date: '',
+                    number: '',
+                    key: record.key,
+                    which: 'package',
+                });
+            }*/
+            const productList = Request.synPost('/product/list');
+            let productArr = [];
+            if(productList && productList.length > 0){
+                for(let item of productList){
+                    let obj = {
+                        value: item.productId,
+                        label: item.name
+                    }
+                    productArr.push(obj);
                 }
+            }
+            this.setState({
+                productArr,
+                key: record.key,
+                which: 'package',
+            });
         }
     }
 
@@ -156,10 +173,11 @@ class PackageSale extends React.Component {
 
     handlePackageOK(){
         const pkg = this.state.package;
-        const date = this.state.date;
-        const number = Number(this.state.number);
+        const number = this.state.number;
         const price = this.state.price;
-        console.log(pkg,date,number);
+        const date = this.state.date;
+        const saleDate = date.replace(/[^0-9]/g,'');
+        console.log(pkg,date,number,price);
         if(!pkg){
             message.warning('请选择产品');
             return;
@@ -177,14 +195,22 @@ class PackageSale extends React.Component {
             return;
         }
         const packageAndNumber = pkg + number + '份';
-        const saleList = JSON.parse(window.localStorage.getItem('saleList'));
+        /*const saleList = JSON.parse(window.localStorage.getItem('saleList'));
         for(let item of saleList){
             if(item.key === this.state.key){
                 Object.assign(item,{packageAndNumber,package:pkg,date,number});
                 break;
             }
         }
-        window.localStorage.setItem('saleList',JSON.stringify(saleList));
+        window.localStorage.setItem('saleList',JSON.stringify(saleList));*/
+        Request.synPost('/channel/addProduct',{
+            num: number,
+            price: price,
+            channeId: this.state.key,
+            productId: pkg,
+            createUser: 1,
+            saleDate: saleDate,
+        });
         this.setState({
             packageAndNumber: '',
             package: '',
@@ -194,6 +220,7 @@ class PackageSale extends React.Component {
             which: '',
             price: '',
         });
+        this.search();
     }
 
     handlePackageCancel(){
@@ -317,7 +344,7 @@ class PackageSale extends React.Component {
     }
 
     packageConfirm(){
-        const packageOptions = packageData.map((item)=><Option value={item}>{item}</Option>);
+        const packageOptions = this.state.productArr.map((item)=><Option value={item.value}>{item.label}</Option>);
         const confirm = (
             <Form>
                 <FormItem

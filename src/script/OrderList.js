@@ -107,7 +107,7 @@ class OrderList extends React.Component {
 
     search(condition) {
         condition = Object.assign(this.state.condition, condition);
-        let pageData = Request.synPost("workOder/list", condition);
+        let pageData = Request.synPost("workOrder/list", condition);
         let data = this.backToFront(pageData.data);
         this.setState({
             showFlag: 1,

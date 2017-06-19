@@ -31,14 +31,14 @@ class OrderInfoForm extends React.Component {
         let products = Request.synPost("product/list");
         this.setState({
             serviceRegions: serviceRegions,
-            channels: this.convertValueLabel(channels),
-            products: this.convertValueLabel(products)
+            channels: this.convertValueLabel(channels, "channel"),
+            products: this.convertValueLabel(products, "product")
         });
     }
 
-    convertValueLabel(items) {
+    convertValueLabel(items, flag) {
         for (let item of items) {
-            item.value = item.id;
+            item.value = flag === "product" ? item.productId : item.id;
             item.label = item.name;
         }
         return items;
@@ -46,19 +46,27 @@ class OrderInfoForm extends React.Component {
 
     // 改变渠道事件
     changeChannel(channel) {
-        let products = Request.synPost("product/list", {channelId: channel});
+        let products = Request.synPost("product/list", {channelId: channel[0]});
         this.setState({
-            products: this.convertValueLabel(products),
-            selectedChannel: channel
+            products: this.convertValueLabel(products, "product"),
+            selectedChannel: channel[0]
         });
     }
 
     // 改变产品事件
     changeProduct(product) {
-        let channels = Request.synPost("channel/list", {status: 0, productId: product});
+        let channels = Request.synPost("channel/list", {status: 0, productId: product[0]});
         this.setState({
-            channels: this.convertValueLabel(channels),
-            selectedProduct: product
+            channels: this.convertValueLabel(channels, "channel"),
+            selectedProduct: product[0]
+        });
+
+    }
+
+    // 改变服务市场
+    changeServiceRegion(value) {
+        this.setState({
+            serviceRegion: value
         });
     }
 
@@ -66,7 +74,7 @@ class OrderInfoForm extends React.Component {
         let matchedAddresses = [];
         if (address) {
             let addressesObj = Request.synPost("address/matche", {
-                region: "江苏省",
+                region: "苏州",
                 query: address
             });
             if (addressesObj.message === "ok") {
@@ -268,27 +276,14 @@ class OrderInfoForm extends React.Component {
                 </FormItem>
                 <FormItem
                     {...formItemLayout}
-                    label="服务地址"
-                    hasFeedback
+                    label="服务市场"
                 >
-                    {getFieldDecorator('address', {
+                    {getFieldDecorator('serviceRegion', {
                         rules: [{
-                            required: true, message: '请填写服务地址'
+                            type: 'array', required: true, message: '请选择服务市场'
                         }],
                     })(
-                        <Select
-                            mode="combobox"
-                            placeholder="请填写服务地址"
-                            onChange={(value) => this.modifyAddress(value)}
-                            >
-                            {
-                                this.state.matchedAddresses.map((item, index) => {
-                                    return (
-                                        <Option key={index} value={item}>{item}</Option>
-                                    );
-                                })
-                            }
-                        </Select>
+                        <Cascader options={this.state.serviceRegions} onChange={this.changeServiceRegion.bind(this)} size="large" style={{width: '110px'}} placeholder="请选择服务市场"/>
                     )}
                 </FormItem>
                 <FormItem
@@ -303,14 +298,28 @@ class OrderInfoForm extends React.Component {
                 </FormItem>
                 <FormItem
                     {...formItemLayout}
-                    label="服务市场"
+                    label="服务地址"
+                    hasFeedback
                 >
-                    {getFieldDecorator('serviceRegion', {
+                    {getFieldDecorator('address', {
                         rules: [{
-                            type: 'array', required: true, message: '请选择服务市场'
+                            required: true, message: '请填写服务地址'
                         }],
                     })(
-                        <Cascader options={this.state.serviceRegions} size="large" style={{width: '110px'}} placeholder="请选择服务市场"/>
+                        <Select
+                            disabled={this.state.serviceRegion}
+                            mode="combobox"
+                            placeholder="请填写服务地址"
+                            onChange={(value) => this.modifyAddress(value)}
+                            >
+                            {
+                                this.state.matchedAddresses.map((item, index) => {
+                                    return (
+                                        <Option key={index} value={item}>{item}</Option>
+                                    );
+                                })
+                            }
+                        </Select>
                     )}
                 </FormItem>
                 <FormItem

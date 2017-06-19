@@ -339,12 +339,14 @@ class BillList extends React.Component {
     handleSearch(condition, currentPageNum, pageSize){
         const serviceUserId = condition.server[0];
         const status = condition.status[0];
-        const serviceDateBegin = condition.startDate;
-        const serviceDateEnd = condition.endDate;
         const plate = condition.plateNum;
         const phone = condition.phoneNum;
         const channelId = condition.channel[0];
         const currentPage = currentPageNum;
+        let serviceDateBegin = condition.startDate;
+        serviceDateBegin = serviceDateBegin.replace(/[^0-9]/g,'');
+        let serviceDateEnd = condition.endDate;
+        serviceDateEnd = serviceDateEnd.replace(/[^0-9]/g,'');
 
         const dataObj = Request.synPost('workOrder/list',{
             serviceUserId,

@@ -78,8 +78,15 @@ class PackageSale extends React.Component {
     }
 
     search() {
-        let channels = Request.synPost("channel/list", {status: 0}).map((item) => {
+        let channels = Request.synPost("/channel/listByNameAndCode").map((item) => {
             item.key = item.id;
+            let productStr = '';
+            if(item.productSales && item.productSales.length > 0){
+                for(let product of item.productSales){
+                    productStr += product.productName + product.num + '份 ';
+                }
+            }
+            item.packageAndNumber = productStr;
             return item;
         });
         this.setState({

@@ -3,7 +3,7 @@ import React from "react";
 import Request from './util/Request';
 const FormItem = Form.Item;
 
-const packageList = [
+/*const packageList = [
     {
         packageName: '保养套餐1',
         packagePrice: '666',
@@ -15,7 +15,7 @@ const packageList = [
         packageItem: '发动机清洗',
         packagePart: '东风机滤一个',
     },
-];
+];*/
 
 class PackageList extends React.Component{
     state = {
@@ -76,13 +76,13 @@ class PackageList extends React.Component{
             let obj = {
                 key: item.productId,
                 packageName: item.name,
-                packagePrice: '',
+                packagePrice: item.price,
                 packageItem: '',
                 packagePart: '',
             }
             if(item.services && item.services.length > 0){
                 for(let service of item.services){
-                    obj.packageItem += service.serviceCate + service.serviceName + service.num + ' ';
+                    obj.packageItem += service.serviceCate + service.serviceName + service.num + '次 ';
                     if(service.partDtos && service.partDtos.length > 0){
                         obj.packagePart += service.serviceCate + '(';
                         for(let part of service.partDtos){
@@ -98,19 +98,20 @@ class PackageList extends React.Component{
     }
 
     showDetail(record) {
-        const productInfo = Request.synPost('/product/detailByChannelProduct',{channelProduct:record.key});
+        const productInfo = Request.synPost('/product/findDetailByProductId',{productId:record.key});
         let serviceArray = [];
-        if(productInfo.servicePartDtos && productInfo.servicePartDtos.length > 0){
-            for(let service of productInfo.servicePartDtos){
+        if(productInfo.services && productInfo.services.length > 0){
+            for(let serviceItem of productInfo.services){
                 let serviceStr = ``;
-                serviceStr += `${service.serviceCate} ${service.serviceName} ${service.servicePrice} (`;
-                if(service.partDtos && service.partDtos.length > 0){
-                    for(let part of service.partDtos){
+                serviceStr += `${serviceItem.serviceCate} ${serviceItem.serviceName} ${serviceItem.servicePrice}元`;
+                if(serviceItem.partDtos && serviceItem.partDtos.length > 0){
+                    serviceStr += `(`;
+                    for(let part of serviceItem.partDtos){
                         serviceStr += `${part.partCateName}${part.partBrandName}${part.partName}`;
                         serviceStr += `${part.standard}${part.num}${part.unit} `;
                     }
+                    serviceStr += `)`;
                 }
-                serviceStr += `)`;
                 serviceArray.push(serviceStr);
             }
         }
@@ -150,7 +151,7 @@ class PackageList extends React.Component{
                     label="名称"
                     {...formItemLayout}
                 >
-                    <span>{this.state.productInfo.channelName}</span>
+                    <span>{this.state.productInfo.name}</span>
                 </FormItem>
                 <FormItem
                     label="代码"
@@ -162,7 +163,7 @@ class PackageList extends React.Component{
                     label="价格"
                     {...formItemLayout}
                 >
-                    <span>{this.state.productInfo.channelPrice}</span>
+                    <span>{this.state.productInfo.price}</span>
                 </FormItem>
                 <FormItem
                     label="服务"

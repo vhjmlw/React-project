@@ -237,7 +237,7 @@ class BillList extends React.Component {
     }
 
     componentDidMount() {
-        const dataArray = Request.synPost('/channel/list');
+        const dataArray = Request.synPost('/channel/listByNameAndCode');
         let channels = [];
         if (dataArray && dataArray.length > 0) {
             for (let item of dataArray) {

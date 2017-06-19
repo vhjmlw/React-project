@@ -51,7 +51,7 @@ class PackageInfoForm extends React.Component {
                         }
                         serviceArr.push(obj);
                     }
-                    values.services = serviceArr;
+                    values.serviceLists = serviceArr;
                     values.createUser = 1;
                     $.ajax({
                         url: '/product/create',
@@ -106,7 +106,7 @@ class PackageInfoForm extends React.Component {
             for (let selectService of selectServices) {
                 if (selectService.serviceId == this.state.currentService) {
                     selectService.num = this.state.currentServiceNum;
-                    selectService.desc = this.state.serviceMap[this.state.currentService] + " X " + this.state.currentServiceNum;
+                    selectService.desc = this.state.serviceMap[this.state.currentService] + " * " + this.state.currentServiceNum;
                     flag = false;
                     break;
                 }
@@ -115,7 +115,7 @@ class PackageInfoForm extends React.Component {
                 selectServices.push({
                     serviceId: this.state.currentService,
                     num: this.state.currentServiceNum,
-                    desc: this.state.serviceMap[this.state.currentService] + " X " + this.state.currentServiceNum
+                    desc: this.state.serviceMap[this.state.currentService] + " * " + this.state.currentServiceNum
                 })
             }
             this.setState({

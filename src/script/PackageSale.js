@@ -17,17 +17,17 @@ class PackageSale extends React.Component {
             title: '渠道编号',
             dataIndex: 'code',
             key: 'code',
-            width: '25%',
+            width: '15%',
         }, {
             title: '名称',
             dataIndex: 'name',
             key: 'name',
-            width: '25%',
+            width: '15%',
         }, {
-            title: '产品',
+            title: '产品销售',
             dataIndex: 'packageAndNumber',
             key: 'packageAndNumber',
-            width: '25%',
+            width: '60%',
         }, {
             title: '操作',
             key: 'Action',
@@ -80,13 +80,31 @@ class PackageSale extends React.Component {
     search() {
         let channels = Request.synPost("/channel/listByNameAndCode").map((item) => {
             item.key = item.id;
-            let productStr = '';
+            let productStr = [];
+            let saleDate = [];
             if(item.productSales && item.productSales.length > 0){
-                for(let product of item.productSales){
-                    productStr += product.productName + product.num + '份 ';
+                for (let product of item.productSales) {
+                    if (product.productName && product.num) {
+                        let saleDate = product.saleDate;
+                        saleDate = saleDate?saleDate.substr(0,4) + '-' + saleDate.substr(4,2) + '-' + saleDate.substr(6,2):'';
+                        let productHTML = (
+                            <span style={{
+                                border: '1px solid #f79992',
+                                marginRight: '5px',
+                                marginBottom: '5px',
+                                padding:'3px',
+                                borderRadius:'5px',
+                                display: 'inline-block'
+                            }}>
+                                {saleDate + ' ' + product.productName + ' ' + product.num + '份 '}
+                            </span>
+                        );
+                        productStr.push(productHTML);
+                    }
                 }
             }
             item.packageAndNumber = productStr;
+            item.saleDate = saleDate;
             return item;
         });
         this.setState({
@@ -246,10 +264,10 @@ class PackageSale extends React.Component {
         const channel = this.state.channel;
         const name = this.state.name;
         if(!channel){
-            message.error('请输入渠道编号');
+            message.warning('请输入渠道编号');
             return;
         } else if(!name){
-            message.error('请输入渠道名称');
+            message.warning('请输入渠道名称');
             return;
         } else {
             Request.synPost('/channel/add',{

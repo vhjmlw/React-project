@@ -3,6 +3,7 @@ import {Input, Table, Button, Form, Row, Col, Cascader, DatePicker, Popconfirm} 
 import moment from 'moment';
 import Request from './util/Request';
 import BillInfo from './BillInfo';
+import $ from 'jquery';
 const FormItem = Form.Item;
 const {RangePicker} = DatePicker;
 
@@ -161,6 +162,8 @@ class BillList extends React.Component {
                     return (
                         <span>
                             {allot}
+                            <span className="ant-divider"/>
+                            <a onClick={()=>{this.downloadOrder([record.key])}}>下载</a>
                         </span>
                     );
                 } else if (record.status === '待服务') {
@@ -169,12 +172,16 @@ class BillList extends React.Component {
                             {over}
                             <span className="ant-divider"/>
                             {afresh}
+                            <span className="ant-divider"/>
+                            <a onClick={()=>{this.downloadOrder([record.key])}}>下载</a>
                         </span>
                     );
                 } else if (record.status === '已收单') {
                     return (
                         <span>
                             {over}
+                            <span className="ant-divider"/>
+                            <a onClick={()=>{this.downloadOrder([record.key])}}>下载</a>
                         </span>
                     );
                 }
@@ -207,7 +214,9 @@ class BillList extends React.Component {
         services: [],
         popChannel: [],
         key: 0,
-        statusObj: {}
+        statusObj: {},
+        selectedRowKeys: [],
+        loading: false,
     }
 
     //立此flag先占个位置
@@ -250,7 +259,7 @@ class BillList extends React.Component {
         }
 
         const serverArray = Request.synPost('/technician/findByRegionIdAndLeaderId', {
-            regionId: 1,
+            regionId: 2,
             leaderId: 1,
         });
         let servers = [];
@@ -316,7 +325,6 @@ class BillList extends React.Component {
             const serviceDate = item.serviceDate;
             if(serviceDate){
                 date += serviceDate.substr(0,4)+'-'+serviceDate.substr(4,2)+'-'+serviceDate.substr(6,2);
-                date += ' '+serviceDate.substr(8,2)+':'+serviceDate.substr(10,2)+':'+serviceDate.substr(12,2);
             }
             let obj = {
                 key: item.workOrderId,
@@ -390,6 +398,29 @@ class BillList extends React.Component {
         this.handleSearch(this.state.condition,this.state.currentPageNum,this.state.pageSize);
     }
 
+    onSelectChange(selectedRowKeys){
+        console.log('selectedRowKeys changed: ', selectedRowKeys);
+        this.setState({ selectedRowKeys });
+    }
+
+    downloadOrder(orderArr){
+        $.ajax({
+            url: 'downLoad/saveToLocalServer',
+            type: 'POST',
+            data: JSON.stringify(orderArr),
+            dataType: 'json',
+            contentType: "application/json",
+            success: (response)=>{
+                if(response.code === '200'){
+                    window.open('http://192.168.1.187:8080/downLoad/serviceExcel?timeTemp='+response.data,"_blank");
+                }
+            },
+            error: (err)=>{
+                throw err;
+            }
+        });
+    }
+
     render() {
         if(this.state.showDetail){
             return <BillInfo
@@ -402,6 +433,12 @@ class BillList extends React.Component {
             labelCol: {span: 8},
             wrapperCol: {span: 16}
         }
+        const { selectedRowKeys } = this.state;
+        const rowSelection = {
+            selectedRowKeys,
+            onChange: this.onSelectChange.bind(this),
+        }
+        const hasSelected = selectedRowKeys.length > 0;
 
         return (
             <div>
@@ -511,12 +548,20 @@ class BillList extends React.Component {
                         <Row type="flex" justify="center" gutter={16}>
                             <Col><Button type="primary" onClick={this.clickSearch.bind(this)}>查询</Button></Col>
                             <Col><Button onClick={this.handleReset.bind(this)}>重置</Button></Col>
+                            <Col>
+                                <Button
+                                    type="primary"
+                                    onClick={()=>{this.downloadOrder(this.state.selectedRowKeys)}}
+                                    disabled={!hasSelected}
+                                >下载工单</Button>
+                            </Col>
                         </Row>
                     </Col>
                 </Row>
                 <Table
                     columns={this.state.columns}
                     dataSource={this.state.dataSource}
+                    rowSelection={rowSelection}
                     pagination={{
                         current: this.state.currentPageNum,
                         pageSize: this.state.pageSize,

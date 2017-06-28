@@ -17,7 +17,8 @@ class PackageInfoForm extends React.Component {
         currentService: "",
         currentServiceCate: "",
         currentServiceNum: 0,
-        serviceSelectVisible: false
+        serviceSelectVisible: false,
+        currentTag: '',
     };
 
     componentDidMount() {
@@ -53,6 +54,7 @@ class PackageInfoForm extends React.Component {
                     }
                     values.serviceLists = serviceArr;
                     values.createUser = 1;
+                    values.cate = values.price;//接口文档中没有price，cate应该就是price？
                     $.ajax({
                         url: '/product/create',
                         type: 'POST',
@@ -120,7 +122,7 @@ class PackageInfoForm extends React.Component {
             }
             this.setState({
                 selectServices: selectServices,
-                serviceSelectVisible: false
+                serviceSelectVisible: false,
             });
         } else {
             message.warning("请填写完整信息!");
@@ -130,12 +132,13 @@ class PackageInfoForm extends React.Component {
     deleteService(item) {
         let selectSerivices = this.state.selectServices;
         for (let index in selectSerivices) {
-            if (item.id == selectSerivices[index].id) {
+            if (item.serviceId == selectSerivices[index].serviceId) {
                 selectSerivices.splice(index, 1);
             }
         }
         this.setState({
-            selectSerivices: selectSerivices
+            selectSerivices: selectSerivices,
+            currentTag: '',
         });
     }
 
@@ -185,7 +188,6 @@ class PackageInfoForm extends React.Component {
                 {...formItemLayout}
                 >
                     <Select
-                        style={{ width: 90 }}
                         onChange={(value)=>{
                             this.selectServiceCate(value);
                         }}
@@ -201,7 +203,6 @@ class PackageInfoForm extends React.Component {
                 >
                     <Select
                         value={this.state.currentService}
-                        style={{ width: 90 }}
                         onChange={(value)=>{
                             this.selectService(value);
                         }}
@@ -222,7 +223,7 @@ class PackageInfoForm extends React.Component {
                             onChange={(value) => {
                                 this.changeServiceNum(value);
                             }}
-                            style={{ width: '65%', marginRight: '3%' }}
+                            style={{ width: '70%', marginRight: '3%' }}
                         />
                         次
                     </span>
@@ -278,9 +279,28 @@ class PackageInfoForm extends React.Component {
                     <div>
                         {this.state.selectServices.map((selectService, index) => {
                             const tagElem = (
-                                <Tag key={index} closable={true} afterClose={() => this.deleteService(selectService)}>
-                                    {selectService.desc}
-                                </Tag>
+                                <Popconfirm
+                                    title={<h3>确定删除 ?</h3>}
+                                    okText="确定"
+                                    cancelText="取消"
+                                    placement="right"
+                                    visible={this.state.currentTag === selectService.serviceId}
+                                    onConfirm={() => this.deleteService(selectService)}
+                                    onCancel={()=> {
+                                        this.setState({currentTag: ''})
+                                    }}
+                                >
+                                    <Tag
+                                        key={index}
+                                        closable={true}
+                                        onClose={(e)=> {
+                                            e.preventDefault();
+                                            this.setState({currentTag: selectService.serviceId});
+                                        }}
+                                    >
+                                        {selectService.desc}
+                                    </Tag>
+                                </Popconfirm>
                             );
                             return tagElem;
                         })}

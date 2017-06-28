@@ -15,7 +15,7 @@ const statuses = [
     {value: '3', label: '已收单'}
 ];
 
-const columns = [{
+/*const columns = [{
     title: '客户姓名',
     dataIndex: 'customerName',
     key: 'customerName',
@@ -55,18 +55,61 @@ const columns = [{
                     <a onClick={() => {
 
                     }}>详情</a>
-                    &nbsp;&nbsp;&nbsp;
+                    <span className="ant-divider" />
                     <a onClick={() => {
 
                     }}>编辑</a>
-                    &nbsp;&nbsp;&nbsp;
+                    <span className="ant-divider" />
                     <a href="javascript:alert('打印页面');">打印</a>
                 </span>)
     },
-}];
+}];*/
 
 class OrderList extends React.Component {
     state = {
+        columns: [{
+            title: '客户姓名',
+            dataIndex: 'customerName',
+            key: 'customerName',
+        }, {
+            title: '车牌',
+            dataIndex: 'plate',
+            key: 'plate',
+        }, {
+            title: '电话',
+            dataIndex: 'phone',
+            key: 'phone',
+        }, {
+            title: '服务产品',
+            dataIndex: 'productName',
+            key: 'productName',
+        }, {
+            title: '发卡渠道',
+            dataIndex: 'channelName',
+            key: 'channelName',
+        }, {
+            title: '服务市场',
+            dataIndex: 'serviceRegionName',
+            key: 'serviceRegionName',
+        }, {
+            title: '服务时间',
+            dataIndex: 'serviceDate',
+            key: 'serviceDate',
+        }, {
+            title: '状态',
+            dataIndex: 'status',
+            key: 'status',
+        }, {
+            title: '操作',
+            key: 'action',
+            render: (text, record) => {
+                return (<span>
+                    <a onClick={this.handleInfo.bind(this)(record)}>详情</a>
+                    <span className="ant-divider"/>
+                    <a onClick={this.handleModify.bind(this)(record)}>编辑</a>
+                </span>)
+            },
+        }],
         showFlag: 1,
         showDetailId: null,
         channels: [],
@@ -81,7 +124,7 @@ class OrderList extends React.Component {
             phone: "",
             status: "",
             serviceUserId: "",
-            serviceRegion: "",
+            serviceRegionName: "",
             channelId: "",
             productId: "",
             pageSize: 10,
@@ -96,7 +139,7 @@ class OrderList extends React.Component {
     componentDidMount() {
         let serviceRegions = Request.synPost("serviceRegion/list");
         let products = Request.synPost("product/list");
-        let channels = Request.synPost("channel/list", {status: 1});
+        let channels = Request.synPost("channel/listByNameAndCode");
         this.setState({
             serviceRegions: serviceRegions,
             channels: channels,
@@ -105,9 +148,10 @@ class OrderList extends React.Component {
         this.search({});
     }
 
+    //查询的逻辑
     search(condition) {
         condition = Object.assign(this.state.condition, condition);
-        let pageData = Request.synPost("workOder/list", condition);
+        let pageData = Request.synPost("/workOrder/list", condition);
         let data = this.backToFront(pageData.data);
         this.setState({
             showFlag: 1,
@@ -120,6 +164,7 @@ class OrderList extends React.Component {
         });
     }
 
+    //点击分页的逻辑
     handlePageChange(page, pageSize) {
         this.search({
             currentPage: page,
@@ -127,200 +172,209 @@ class OrderList extends React.Component {
         });
     }
 
+    //后端请求返回的字段转换为前端字段
     backToFront(data) {
         let result = [];
         for (let item of data) {
             item.serviceDate = item.serviceDate.substring(0, 4) + "-" + item.serviceDate.substring(4, 6) + "-" + item.serviceDate.substring(6, 8);
-            item.status = statuses.map((e)=>{
+            item.key = item.workOrderId;
+            /*item.status = statuses.map((e)=>{
                 if (item.status == e.value) {
                     return e.label;
                 }
-            })[0];
+            })[0];*/
+            for(let status of statuses){
+                if(item.status == status.value){
+                    item.status = status.label;
+                }
+            }
             result.push(item);
         }
         return result;
     }
 
+    //点击详情的逻辑
     handleInfo(record) {
-        return function () {
-            let customInfo = null;
-            let carInfo = null;
-            let serviceInfo = null;
-            let totalInfo = {};
-            const customerId = record.key;
-            const carId = record.carId;
-            const maintainId = record.maintainId;
-            fetch(`v1/customer/${customerId}`).then((response)=> {
-                return response.json();
-            }).then((json)=> {
-                console.log(json);
-                if (json.code === '200') {
-                    customInfo = json.data;
-                    customInfo.customComment = json.data.remark;
-                    return fetch(`v1/car/${carId}`);
-                } else {
-                    message.warning(json.message);
-                }
-            }).then((response)=> {
-                return response.json();
-            }).then((json)=> {
-                console.log(json);
-                if (json.code === "200") {
-                    carInfo = json.data;//data为null??
-                    carInfo.carComment = json.data.remark;
-                    return fetch(`v1/maintain/${maintainId}`);
-                } else {
-                    message.warning(json.message);
-                }
-            }).then((response)=> {
-                return response.json();
-            }).then((json)=> {
-                console.log(json);
-                if (json.code === '200') {
-                    serviceInfo = json.data;
-                    serviceInfo.serviceComment = json.data.remark;
-                    Object.assign(totalInfo, customInfo, carInfo, serviceInfo);
-
-                    totalInfo.engineFilterBrand = carInfo.engineFilterBrand;
-                    totalInfo.engineOilBrand = carInfo.engineOilBrand;
-                    console.log(totalInfo);
-                    totalInfo = this.backToFront(totalInfo);
-                    console.log(totalInfo);
-                    if (totalInfo) {
-                        Modal.info({
-                            title: '',
-                            okText: '确定',
-                            width: '550px',
-                            onOk: function () {
-                                console.log('OK')
-                            },
-                            onCancel: function () {
-                                console.log('cancle')
-                            },//虽然用不到取消按钮，但是还是要设置onCancel事件，如果不设置onCancel的话，点击按钮会报错
-                            maskClosable: true,
-                            content: (
-                                <div>
-                                    <table>
-                                        <caption><h2>客户信息</h2></caption>
-                                        <tbody>
-                                        <tr>
-                                            <td>电话</td>
-                                            <td>{totalInfo.phoneNumber}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>姓名</td>
-                                            <td>{totalInfo.name}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>性别</td>
-                                            <td>{totalInfo.sex}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>车牌</td>
-                                            <td>{totalInfo.plateNumber}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>验证码</td>
-                                            <td>{totalInfo.captcha}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>产品类型</td>
-                                            <td>{totalInfo.product[0]}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>发卡渠道</td>
-                                            <td>{totalInfo.cardChannel[0]}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>备注</td>
-                                            <td>{totalInfo.customComment}</td>
-                                        </tr>
-                                        </tbody>
-                                    </table>
-                                    <table>
-                                        <caption><h2>车辆信息</h2></caption>
-                                        <tbody>
-                                        <tr>
-                                            <td>品牌</td>
-                                            <td>{totalInfo.brand[0]}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>车型</td>
-                                            <td>{totalInfo.cartype[0]}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>排量</td>
-                                            <td>{totalInfo.displacement[0]}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>年份</td>
-                                            <td>{totalInfo.purchaseDate}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>机油品牌</td>
-                                            <td>{totalInfo.oilBrand.join('/')}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>机滤品牌</td>
-                                            <td>{totalInfo.filterBrand}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>备注</td>
-                                            <td>{totalInfo.carComment}</td>
-                                        </tr>
-                                        </tbody>
-                                    </table>
-                                    <table>
-                                        <caption><h2>服务信息</h2></caption>
-                                        <tbody>
-                                        <tr>
-                                            <td>区域</td>
-                                            <td>{totalInfo.address[0]}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>服务地址</td>
-                                            <td>{totalInfo.address.join('/')}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>详细地址</td>
-                                            <td>{totalInfo.detailAddress}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>服务时间</td>
-                                            <td>{totalInfo.serviceDate}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>状态</td>
-                                            <td>{totalInfo.state}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>备注</td>
-                                            <td>{totalInfo.serviceComment}</td>
-                                        </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            ),
-                        });
-                    }
-                } else {
-                    message.warning(json.message);
-                }
-            }).catch((error)=> {
-                throw error;
-            });
+        return ()=> {
+            const workOrderInfo = Request.synPost('workOrder/getDetailByWorkOrderId', {id: record.key});
+            const formItemLayout = {
+                labelCol: {span: 8},
+                wrapperCol: {span: 16}
+            };
+            if (workOrderInfo) {
+                const serviceDate = workOrderInfo.serviceDate;
+                let date = '';
+                date += serviceDate.substr(0,4) + '-' + serviceDate.substr(4,2) + '-' + serviceDate.substr(6,2);
+                // date += ' ' + serviceDate.substr(8,2) + ':' + serviceDate.substr(10,2) + ':' + serviceDate.substr(12,2);
+                Modal.info({
+                    title: '',
+                    okText: '确定',
+                    width: '450px',
+                    onOk: function () {
+                        console.log('OK')
+                    },
+                    onCancel: function () {
+                        console.log('cancle')
+                    },//虽然用不到取消按钮，但是还是要设置onCancel事件，如果不设置onCancel的话，点击按钮会报错
+                    maskClosable: true,
+                    content: (
+                        <div className="modal-workOrder-Info">
+                            <Form>
+                                <FormItem
+                                    label="电话"
+                                    {...formItemLayout}
+                                >
+                                    <span>{workOrderInfo.phone}</span>
+                                </FormItem>
+                                <FormItem
+                                    label="姓名"
+                                    {...formItemLayout}
+                                >
+                                    <span>{workOrderInfo.customerName}</span>
+                                </FormItem>
+                                <FormItem
+                                    label="性别"
+                                    {...formItemLayout}
+                                >
+                                    <span>{workOrderInfo.sex==1?'男':'女'}</span>
+                                </FormItem>
+                                <FormItem
+                                    label="车牌"
+                                    {...formItemLayout}
+                                >
+                                    <span>{workOrderInfo.plate}</span>
+                                </FormItem>
+                                <FormItem
+                                    label="验证码"
+                                    {...formItemLayout}
+                                >
+                                    <span>{workOrderInfo.verifyCode}</span>
+                                </FormItem>
+                                <FormItem
+                                    label="发卡渠道"
+                                    {...formItemLayout}
+                                >
+                                    <span>{workOrderInfo.channelName}</span>
+                                </FormItem>
+                                <FormItem
+                                    label="服务产品"
+                                    {...formItemLayout}
+                                >
+                                    <span>{workOrderInfo.productName}</span>
+                                </FormItem>
+                                <FormItem
+                                    label="车型"
+                                    {...formItemLayout}
+                                >
+                                    <span>{workOrderInfo.modalDes}</span>
+                                </FormItem>
+                                <FormItem
+                                    label="服务地址"
+                                    {...formItemLayout}
+                                >
+                                    <span>{workOrderInfo.address}</span>
+                                </FormItem>
+                                <FormItem
+                                    label="服务时间"
+                                    {...formItemLayout}
+                                >
+                                    <span>{date}</span>
+                                </FormItem>
+                                <FormItem
+                                    label="服务市场"
+                                    {...formItemLayout}
+                                >
+                                    <span>{workOrderInfo.serviceRegionName}</span>
+                                </FormItem>
+                                <FormItem
+                                    label="备注"
+                                    {...formItemLayout}
+                                >
+                                    <span>{workOrderInfo.remark}</span>
+                                </FormItem>
+                            </Form>
+                            {/*<table>
+                                <caption><h2>客户信息</h2></caption>
+                                <tbody>
+                                <tr>
+                                    <td>电话</td>
+                                    <td>{workOrderInfo.phone}</td>
+                                </tr>
+                                <tr>
+                                    <td>姓名</td>
+                                    <td>{workOrderInfo.customerName}</td>
+                                </tr>
+                                <tr>
+                                    <td>性别</td>
+                                    <td>{workOrderInfo.sex}</td>
+                                </tr>
+                                <tr>
+                                    <td>车牌</td>
+                                    <td>{workOrderInfo.plate}</td>
+                                </tr>
+                                <tr>
+                                    <td>验证码</td>
+                                    <td>{workOrderInfo.verifyCode}</td>
+                                </tr>
+                                <tr>
+                                    <td>发卡渠道</td>
+                                    <td>{workOrderInfo.channelName}</td>
+                                </tr>
+                                <tr>
+                                    <td>服务产品</td>
+                                    <td>{workOrderInfo.productName}</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                            <table>
+                                <caption><h2>车辆信息</h2></caption>
+                                <tbody>
+                                <tr>
+                                    <td>车型</td>
+                                    <td>{workOrderInfo.modalDes}</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                            <table>
+                                <caption><h2>服务信息</h2></caption>
+                                <tbody>
+                                <tr>
+                                    <td>服务地址</td>
+                                    <td>{workOrderInfo.address}</td>
+                                </tr>
+                                <tr>
+                                    <td>服务时间</td>
+                                    <td>{workOrderInfo.serviceDate}</td>
+                                </tr>
+                                <tr>
+                                    <td>服务市场</td>
+                                    <td>{workOrderInfo.serviceRegionName}</td>
+                                </tr>
+                                <tr>
+                                    <td>备注</td>
+                                    <td>{workOrderInfo.remark}</td>
+                                </tr>
+                                </tbody>
+                            </table>*/}
+                        </div>
+                    ),
+                });
+            }
         }
 
     };
 
+    //点击编辑的逻辑
     handleModify(record) {
-        return function () {
-            const modifyInfoUrl = `/App/ModifyInfo?customerId=${record.key}&carId=${record.carId}&maintainId=${record.maintainId}`;
-            this.props.history.pushState(null, modifyInfoUrl);
-            window.localStorage.setItem('totalInfo', JSON.stringify(record));
+        return ()=> {
+            this.setState({
+                showDetailId: record.key,
+                showFlag: 2,
+            });
         }
     }
 
+    //点击新增的逻辑
     handleAddClick(event) {
         this.setState({
             showFlag: 2,
@@ -351,6 +405,7 @@ class OrderList extends React.Component {
         return newArray;
     }
 
+    //更改查询条件
     changeCondition(obj) {
         let condition = this.state.condition;
         condition = Object.assign(condition, obj);
@@ -361,32 +416,61 @@ class OrderList extends React.Component {
 
     render() {
         if (this.state.showFlag === 2) {
-            return <OrderInfo
-                showDetailId={this.state.showDetailId}
-                back={
-                    ()=>{
-                        let condtion = {};
-                        if (this.state.showDetailId === null) {
-                            condtion = {
-                                createDateBegin: "",
-                                createDateEnd: "",
-                                serviceDateBegin: "",
-                                serviceDateEnd: "",
-                                plate: "",
-                                phone: "",
-                                status: "",
-                                serviceUserId: "",
-                                serviceRegionName: "",
-                                channelId: "",
-                                productId: "",
-                                pageSize: 10,
-                                currentPage: 1,
-                            }
-                            this.search(condtion);
+            return (
+                <OrderInfo
+                    showDetailId={this.state.showDetailId}
+                    back={
+                        ()=> {
+                            {/*let condition = {};
+                             if (this.state.showDetailId === null) {
+                             condition = {
+                             createDateBegin: "",
+                             createDateEnd: "",
+                             serviceDateBegin: "",
+                             serviceDateEnd: "",
+                             plate: "",
+                             phone: "",
+                             status: "",
+                             serviceUserId: "",
+                             serviceRegionName: "",
+                             channelId: "",
+                             productId: "",
+                             pageSize: 10,
+                             currentPage: 1,
+                             }
+                             } else {
+                             condition = this.state.condition;
+                             }*/}
+                            this.search(this.state.condition);
                         }
                     }
-                }
-            />;
+                    commit={
+                        ()=>{
+                            let condition = {};
+                            if (this.state.showDetailId === null) {
+                                condition = {
+                                    createDateBegin: "",
+                                    createDateEnd: "",
+                                    serviceDateBegin: "",
+                                    serviceDateEnd: "",
+                                    plate: "",
+                                    phone: "",
+                                    status: "",
+                                    serviceUserId: "",
+                                    serviceRegionName: "",
+                                    channelId: "",
+                                    productId: "",
+                                    pageSize: 10,
+                                    currentPage: 1,
+                                }
+                            } else {
+                                condition = this.state.condition;
+                            }
+                            this.search(condition);
+                        }
+                    }
+                />
+            );
         }
 
         const formItemLayout = {
@@ -477,10 +561,10 @@ class OrderList extends React.Component {
                                 style={{ width: 120 }}
                                 onChange={(value)=>{
                                     this.changeCondition({
-                                        serviceRegion: value
+                                        serviceRegionName: value
                                     })
                                 }}
-                                value={this.state.condition.serviceRegion}
+                                value={this.state.condition.serviceRegionName}
                             >
                                 <Option value="">请选择</Option>
                                 {(()=> {
@@ -568,7 +652,7 @@ class OrderList extends React.Component {
                                 {(()=> {
                                     return this.state.products.map((item, index) => {
                                         return (
-                                            <Option key={index} value={item.id}>{item.name}</Option>
+                                            <Option key={index} value={item.productId}>{item.name}</Option>
                                         );
                                     });
                                 })()}
@@ -577,7 +661,6 @@ class OrderList extends React.Component {
                     </Col>
                 </Row>
                 <div className="clearfix">
-                    <Button type="primary">打印工单</Button>
                     <Button type="primary" onClick={this.handleAddClick.bind(this)}>新增</Button>
                     <Button type="primary" onClick={()=>this.search({pageSize: 10, currentPage: 1})}>查询</Button>
                     <Button type="primary" onClick={()=>{
@@ -591,7 +674,7 @@ class OrderList extends React.Component {
                                 phone: "",
                                 status: "",
                                 serviceUserId: "",
-                                serviceRegion: "",
+                                serviceRegionName: "",
                                 channelId: "",
                                 productId: "",
                                 pageSize: 10,
@@ -601,7 +684,7 @@ class OrderList extends React.Component {
                     }}>重置</Button>
                 </div>
                 <Table
-                    columns={columns}
+                    columns={this.state.columns}
                     dataSource={this.state.data}
                     pagination={{
                         current: this.state.currentPage,

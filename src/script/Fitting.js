@@ -1,5 +1,5 @@
 import React from 'react';
-import {Table, Input, Button, Form, Popconfirm, Row, Col, Cascader, Select, message} from 'antd';
+import {Table, Input, InputNumber, Button, Form, Popconfirm, Row, Col, Cascader, Select, message} from 'antd';
 const FormItem = Form.Item;
 const Option = Select.Option;
 import Request from './util/Request';
@@ -53,6 +53,10 @@ class Fitting extends React.Component {
 
     state = {
         columns: [{
+            title: '配件编号',
+            dataIndex: 'serialNumber',
+            key: 'serialNumber',
+        }, {
             title: '类型',
             dataIndex: 'type',
             key: 'type',
@@ -108,8 +112,11 @@ class Fitting extends React.Component {
             type: [],
             brand: [],
             fitting: '',
+            serialNumber: '',
         },
         dataSource: [],
+        InputNumber: 0,
+        seriesNumberInput: '',
     }
 
     componentDidMount() {
@@ -203,12 +210,21 @@ class Fitting extends React.Component {
         this.setState({condition});
     }
 
+    //查询字段 配件编号 更改时的逻辑
+    handleSerialNumberChange(e){
+        e.preventDefault();
+        let condition = this.state.condition;
+        condition.serialNumber = e.target.value;
+        this.setState({condition});
+    }
+
     //将从后台获取的字段转换为对应的前端的字段，传入一个数组返回一个数组
     backToFront(backArray){
         let frontArray = [];
         for(let item of backArray){
             const front = {
                 key: item.id,
+                serialNumber: item.serialNumber,
                 type: item.cateName || '',
                 brand: item.brandName || '',
                 name: item.partName || '',
@@ -225,11 +241,13 @@ class Fitting extends React.Component {
         const name = condition.fitting;
         const brandId = condition.brand[0];
         const cateId = condition.type[0];
+        const serialNumber = condition.serialNumber;
         const currentPage = currentPageNum;
         const dataObj = Request.synPost('/part/listParts',{
             name,
             brandId,
             cateId,
+            serialNumber,
             currentPage,
             pageSize
         });
@@ -255,6 +273,7 @@ class Fitting extends React.Component {
         condition.type = [];
         condition.brand = [];
         condition.fitting = '';
+        condition.serialNumber = '';
         this.setState({condition});
     }
 
@@ -281,6 +300,14 @@ class Fitting extends React.Component {
             message.warning('请输入单位');
             return;
         }
+        if(!this.state.seriesNumberInput){
+            message.warning('请输入配件编号');
+            return;
+        }
+        if(this.state.seriesNumberInput.length > 10){
+            message.warning('配件编号不能超过10个字符');
+            return;
+        }
         const data = Request.synPost('/part/create',{
             name: this.state.nameInput,
             cateId: this.state.newtype[0],
@@ -288,6 +315,8 @@ class Fitting extends React.Component {
             unit: this.state.unitInput,
             standard: this.state.standardInput,
             createUser: 1,
+            price: this.state.priceInput,
+            serialNumber: this.state.seriesNumberInput,
         });
         console.log(`配件ID${data}`);
         message.success('新增成功',1.5);
@@ -298,6 +327,8 @@ class Fitting extends React.Component {
             unitInput: '',
             standardInput: '',
             nameInput: '',
+            priceInput: 0,
+            seriesNumberInput: '',
         });
         this.handleSearch(this.state.condition, this.state.currentPageNum,this.state.pageSize);
     }
@@ -311,6 +342,9 @@ class Fitting extends React.Component {
             newbrand: [],
             unitInput: '',
             standardInput: '',
+            nameInput: '',
+            priceInput: 0,
+            seriesNumberInput: '',
         });
     }
 
@@ -396,7 +430,7 @@ class Fitting extends React.Component {
                 </div>
                 <FormItem
                     label="类型"
-                    {...popFormLayout}
+                    {...formItemLayout}
                 >
                     <Cascader
                         placeholder=''
@@ -407,7 +441,7 @@ class Fitting extends React.Component {
                 </FormItem>
                 <FormItem
                     label="品牌"
-                    {...popFormLayout}
+                    {...formItemLayout}
                 >
                     <Cascader
                         placeholder=''
@@ -418,7 +452,7 @@ class Fitting extends React.Component {
                 </FormItem>
                 <FormItem
                     label="名称"
-                    {...popFormLayout}
+                    {...formItemLayout}
                 >
                     <Input
                         onChange={(e)=> {
@@ -429,7 +463,7 @@ class Fitting extends React.Component {
                 </FormItem>
                 <FormItem
                     label="规格"
-                    {...popFormLayout}
+                    {...formItemLayout}
                 >
                     <Input
                         onChange={(e)=> {
@@ -440,13 +474,36 @@ class Fitting extends React.Component {
                 </FormItem>
                 <FormItem
                     label="单位"
-                    {...popFormLayout}
+                    {...formItemLayout}
                 >
                     <Input
                         onChange={(e)=> {
                             this.setState({unitInput: e.target.value})
                         }}
                         value={this.state.unitInput}
+                    />
+                </FormItem>
+                <FormItem
+                    label="价格"
+                    {...formItemLayout}
+                >
+                    <InputNumber
+                        min={0}
+                        onChange={(value)=> {
+                            this.setState({priceInput: value})
+                        }}
+                        value={this.state.priceInput}
+                    />元
+                </FormItem>
+                <FormItem
+                    label="配件编号"
+                    {...formItemLayout}
+                >
+                    <Input
+                        onChange={(e)=> {
+                            this.setState({seriesNumberInput: e.target.value})
+                        }}
+                        value={this.state.seriesNumberInput}
                     />
                 </FormItem>
             </Form>
@@ -492,7 +549,7 @@ class Fitting extends React.Component {
             <div>
                 <Row gutter={16}>
                     <Col
-                        span={6}
+                        span={5}
                     >
                         <FormItem
                             label="类型"
@@ -507,7 +564,7 @@ class Fitting extends React.Component {
                         </FormItem>
                     </Col>
                     <Col
-                        span={6}
+                        span={5}
                     >
                         <FormItem
                             label="品牌"
@@ -532,6 +589,20 @@ class Fitting extends React.Component {
                                 placeholder='请输入配件名称'
                                 value={this.state.condition.fitting}
                                 onChange={this.handleFittingChange.bind(this)}
+                            />
+                        </FormItem>
+                    </Col>
+                    <Col
+                        span={6}
+                    >
+                        <FormItem
+                            label="配件编号"
+                            {...formItemLayout}
+                        >
+                            <Input
+                                placeholder='请输入配件编号'
+                                value={this.state.condition.serialNumber}
+                                onChange={this.handleSerialNumberChange.bind(this)}
                             />
                         </FormItem>
                     </Col>

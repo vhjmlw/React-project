@@ -1,12 +1,33 @@
-import {Form, Input, Cascader, Select, Row, Col, Button, Steps, DatePicker, message, Modal, Radio} from 'antd';
+import {Form, Input, Cascader, Select, Row, Col, Button, DatePicker, message, Modal, Radio} from 'antd';
 import React from 'react';
 import Request from "./util/Request";
 import CarModalSelect from "./CarModalSelect";
+import moment from 'moment';
 
-const Step = Steps.Step;
 const FormItem = Form.Item;
 const Option = Select.Option;
 const RadioGroup = Radio.Group;
+let currentValue;
+let timeout;
+const serviceRegions = [{
+    value: 1,
+    label: '苏州',
+}, {
+    value: 2,
+    label: '无锡',
+}, {
+    value: 3,
+    label: '常州',
+}, {
+    value: 4,
+    label: '南京',
+}, {
+    value: 5,
+    label: '南通',
+}, {
+    value: 6,
+    label: '江阴',
+}];
 
 class OrderInfoForm extends React.Component {
 
@@ -18,22 +39,49 @@ class OrderInfoForm extends React.Component {
         products: [],
         matchedAddresses: [],
         selectedChannel: "",
-        selectedProduct: ""
+        selectedProduct: "",
+        modalVisible: false,
     };
 
     componentDidMount() {
-        let serviceRegions = Request.synPost("serviceRegion/list");
+        /*let serviceRegions = Request.synPost("serviceRegion/list");
         for (let serviceRegion of serviceRegions) {
             serviceRegion.value = serviceRegion.id;
             serviceRegion.label = serviceRegion.name;
-        }
-        let channels = Request.synPost("channel/list", {status: 0});
+        }*/
+        let channels = Request.synPost("channel/listByNameAndCode");
         let products = Request.synPost("product/list");
         this.setState({
-            serviceRegions: serviceRegions,
+            // serviceRegions: serviceRegions,
             channels: this.convertValueLabel(channels),
-            products: this.convertValueLabel(products)
+            products: this.convertProductValueLabel(products)
         });
+
+        if(this.props.showDetailId){
+            const workOrderInfo = Request.synPost('workOrder/getDetailByWorkOrderId',{id:this.props.showDetailId});
+            let serviceDate;
+            if(workOrderInfo.serviceDate){
+                serviceDate = moment(workOrderInfo.serviceDate,'YYYYMMDD');
+            } else {
+                serviceDate = null;
+            }
+            this.props.form.setFieldsValue({
+                phone: workOrderInfo.phone,
+                customerName: workOrderInfo.customerName,
+                sex: workOrderInfo.sex,
+                plate: workOrderInfo.plate,
+                verifyCode: workOrderInfo.verifyCode,
+                channelId: [workOrderInfo.channelId],
+                productId: [workOrderInfo.productId],
+                modalDes: workOrderInfo.modalDes,
+                serviceRegion: [workOrderInfo.serviceRegion],
+                address: workOrderInfo.address,
+                serviceDate: serviceDate,
+                comment: workOrderInfo.remark,
+            });
+            this.setState({modalId:workOrderInfo.modalId});
+        }
+
     }
 
     convertValueLabel(items) {
@@ -43,58 +91,106 @@ class OrderInfoForm extends React.Component {
         }
         return items;
     }
+    convertProductValueLabel(items){
+        for (let item of items) {
+            item.value = item.productId;
+            item.label = item.name;
+        }
+        return items;
+    }
 
     // 改变渠道事件
     changeChannel(channel) {
-        let products = Request.synPost("product/list", {channelId: channel});
+        let products = Request.synPost("product/list", {channelId: channel[0]});
         this.setState({
-            products: this.convertValueLabel(products),
+            products: this.convertProductValueLabel(products),
             selectedChannel: channel
         });
     }
 
     // 改变产品事件
     changeProduct(product) {
-        let channels = Request.synPost("channel/list", {status: 0, productId: product});
+        let channels = Request.synPost("channel/findByProductId", {productId: product[0]});
         this.setState({
             channels: this.convertValueLabel(channels),
             selectedProduct: product
         });
     }
 
+    //服务地址改变的逻辑
     modifyAddress(address) {
-        let matchedAddresses = [];
-        if (address) {
-            let addressesObj = Request.synPost("address/matche", {
-                region: "江苏省",
-                query: address
-            });
-            if (addressesObj.message === "ok") {
-                matchedAddresses = addressesObj.result.map((item)=>{
-                    return item.name;
-                })
-            }
-        }
-        console.log(matchedAddresses);
-        this.setState({
-            matchedAddresses: matchedAddresses
-        });
+        this.requestAddress(address);
+        this.props.form.setFieldsValue({address});
     }
 
+    //请求服务地址的逻辑，控制函数节流
+    requestAddress(value) {
+        if (timeout) {
+            clearTimeout(timeout);
+            timeout = null;
+        }
+        currentValue = value;
+
+        const fake = ()=> {
+            let matchedAddresses = [];
+            if (value) {
+                const serviceRegion = this.props.form.getFieldValue('serviceRegion');
+                let regionLabel = '';
+                for(let item of serviceRegions){
+                    if(item.value === serviceRegion[0]){
+                        regionLabel = item.label;
+                        break;
+                    }
+                }
+                if(regionLabel === '江阴'){
+                    regionLabel = '无锡';
+                }
+
+                let addressesObj = Request.synPost("address/matche", {
+                    region: regionLabel || '苏州',
+                    query: value
+                });
+                if(currentValue === value){
+                    if (addressesObj.message === "ok") {
+                        matchedAddresses = addressesObj.result.map((item)=>{
+                            return item.name;
+                        })
+                    }
+                }
+            }
+            this.setState({
+                matchedAddresses: matchedAddresses,
+            });
+        }
+        timeout = setTimeout(fake, 300);
+    }
+
+    //点击提交按钮的逻辑
     handleSubmit(e) {
         e.preventDefault();
         this.props.form.validateFieldsAndScroll((err, values) => {
             if (!err) {
-                values.modalId = this.state.modalId;
-                values.serviceDate = values.serviceDate.format('YYYYMMDDHHmmss');
+                console.log('接收到提交的表单数据',values);
+                values.modalId = this.state.modalId;//先占个位置，稍后处理
+                values.sex = values.sex;
+                values.serviceDate = values.serviceDate.format('YYYYMMDD');
                 values.status = 0;
                 values.channelId = values.channelId[0];
                 values.productId = values.productId[0];
                 values.serviceRegion = values.serviceRegion[0];
-                let id = Request.synPost("workOder/create", values);
-                if (id) {
-                    this.props.back();
+                values.createUser = 1;
+                values.remark = values.comment;
+                if(this.props.showDetailId){
+                    values.workOrderId = this.props.showDetailId;
+                    Request.synPost('workOrder/modify', values);
+                    message.success('修改成功',1.5,()=>{this.props.commit()});
+                } else {
+                    let id = Request.synPost("workOrder/create", values);
+                    if (id) {
+                        message.success('新增成功',1.5,()=>{this.props.commit()});
+                    }
                 }
+
             }
         });
     }
@@ -169,8 +265,8 @@ class OrderInfoForm extends React.Component {
                         }],
                     })(
                         <RadioGroup>
-                            <Radio value="1">男</Radio>
-                            <Radio value="2">女</Radio>
+                            <Radio value={1}>男</Radio>
+                            <Radio value={0}>女</Radio>
                         </RadioGroup>
                     )}
                 </FormItem>
@@ -226,7 +322,8 @@ class OrderInfoForm extends React.Component {
                                     this.changeChannel(value);
                                 }
                             }
-                            placeholder="请选择发卡渠道"/>
+                            placeholder="请选择发卡渠道"
+                        />
                     )}
                 </FormItem>
                 <FormItem
@@ -243,7 +340,8 @@ class OrderInfoForm extends React.Component {
                                     this.changeProduct(value);
                                 }
                             }
-                            placeholder="请选择服务产品"/>
+                            placeholder="请选择服务产品"
+                        />
                     )}
                 </FormItem>
 
@@ -268,6 +366,18 @@ class OrderInfoForm extends React.Component {
                 </FormItem>
                 <FormItem
                     {...formItemLayout}
+                    label="服务市场"
+                >
+                    {getFieldDecorator('serviceRegion', {
+                        rules: [{
+                            type: 'array', required: true, message: '请选择服务市场'
+                        }],
+                    })(
+                        <Cascader options={serviceRegions} size="large" style={{width: '110px'}} placeholder="请选择服务市场"/>
+                    )}
+                </FormItem>
+                <FormItem
+                    {...formItemLayout}
                     label="服务地址"
                     hasFeedback
                 >
@@ -277,10 +387,11 @@ class OrderInfoForm extends React.Component {
                         }],
                     })(
                         <Select
-                            mode="combobox"
+                            /*mode="combobox"*/
+                            combobox={true}
                             placeholder="请填写服务地址"
                             onChange={(value) => this.modifyAddress(value)}
-                            >
+                        >
                             {
                                 this.state.matchedAddresses.map((item, index) => {
                                     return (
@@ -303,18 +414,6 @@ class OrderInfoForm extends React.Component {
                 </FormItem>
                 <FormItem
                     {...formItemLayout}
-                    label="服务市场"
-                >
-                    {getFieldDecorator('serviceRegion', {
-                        rules: [{
-                            type: 'array', required: true, message: '请选择服务市场'
-                        }],
-                    })(
-                        <Cascader options={this.state.serviceRegions} size="large" style={{width: '110px'}} placeholder="请选择服务市场"/>
-                    )}
-                </FormItem>
-                <FormItem
-                    {...formItemLayout}
                     label="备注"
                     hasFeedback
                 >
@@ -324,10 +423,19 @@ class OrderInfoForm extends React.Component {
                 </FormItem>
                 <FormItem {...tailFormItemLayout}>
                     <Button type='primary' onClick={()=>{
-                        this.props.back();
+                        this.setState({modalVisible:true})
                     }} size="large">返回</Button>
                     <Button type="primary" htmlType="submit" size="large">提交</Button>
                 </FormItem>
+                <Modal
+                    title='确定返回 ？'
+                    width='300px'
+                    visible={this.state.modalVisible}
+                    okText="确定"
+                    cancelText="取消"
+                    onOk={()=>{this.props.back()}}
+                    onCancel={()=>{this.setState({modalVisible:false})}}
+                />
             </Form>
         );
     }

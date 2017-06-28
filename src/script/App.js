@@ -32,7 +32,7 @@ class App extends React.Component {
                     <div className="logo"/>
                     <Menu theme="dark" mode={this.state.mode} defaultSelectedKeys={['1']}>
                         <Menu.Item key="1">
-                            <Link to="/">
+                            <Link to="/App">
                                 <Icon type="user"/>
                                 <span className="nav-text">服务工单</span>
                             </Link>
@@ -65,6 +65,18 @@ class App extends React.Component {
                             <Link to="/App/BillList">
                                 <Icon type="bars" />
                                 <span className="nav-text">收单列表</span>
+                            </Link>
+                        </Menu.Item>
+                        <Menu.Item key="7">
+                            <Link to="/App/RunningStock">
+                                <Icon type="car" />
+                                <span className="nav-text">常备库</span>
+                            </Link>
+                        </Menu.Item>
+                        <Menu.Item key="8">
+                            <Link to="/App/TodayStock">
+                                <Icon type="shopping-cart" />
+                                <span className="nav-text">今日库</span>
                             </Link>
                         </Menu.Item>
                     </Menu>

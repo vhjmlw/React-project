@@ -12,6 +12,9 @@ import Fitting from './script/Fitting';
 import Service from './script/Service';
 import BillList from './script/BillList';
 import BillInfo from './script/BillInfo';
+import Login from './script/Login';
+import RunningStock from './script/RunningStock';
+import TodayStock from './script/TodayStock';
 import './style/common.css';
 import './index.css';
 import "./style/App.css";
@@ -20,7 +23,8 @@ import { Router, Route, hashHistory, IndexRoute, IndexRedirect} from 'react-rout
 ReactDOM.render(
     (<Router history={hashHistory}>
       <Route path="/">
-          <IndexRedirect to="/App" />
+          <IndexRedirect to="/Login" />
+          <Route path="Login" component={Login}/>
           <Route path="App" component={App}>
               <IndexRoute component={OrderList} />
               <Route path="OrderInfo" component={OrderInfo}/>
@@ -33,6 +37,8 @@ ReactDOM.render(
               <Route path="Service" component={Service}/>
               <Route path="BillList" component={BillList}/>
               <Route path="BillInfo" component={BillInfo}/>
+              <Route path="RunningStock" component={RunningStock}/>
+              <Route path="TodayStock" component={TodayStock}/>
           </Route>
       </Route>
   </Router>),

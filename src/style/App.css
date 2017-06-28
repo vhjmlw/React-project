@@ -193,3 +193,32 @@
 .ant-layout-content .BillInfo span,label {
     font-size: 13px;
 }
+
+/*OrderList页面Modal模态框的样式*/
+.modal-workOrder-Info .ant-form-item {
+    margin-bottom: 10px;
+}
+
+/*Login登录页面的样式*/
+.login-form {
+    max-width: 300px;
+}
+.login-form-button {
+    width: 100%;
+}
+.LoginCenter {
+    width: 300px;
+    margin: 0 auto;
+    position: absolute;
+    z-index: 11;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+}
+.LoginTitle {
+    text-align: center;
+    margin-bottom: 30px;
+}
+#canvasDiv canvas {
+    height: 945px;
+}

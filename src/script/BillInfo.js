@@ -1,6 +1,7 @@
 import React from 'react';
-import {Button, Form, Popconfirm, Tag, Cascader, InputNumber, message, Modal} from 'antd';
+import {Button, Form, Popconfirm, Tag, Cascader, InputNumber, message, Modal, Row, Col} from 'antd';
 import Request from './util/Request';
+import $ from 'jquery';
 const FormItem = Form.Item;
 
 /*const popTypes = [{
@@ -56,7 +57,20 @@ class BillInfo extends React.Component {
         otherDisabled: true,
         standardAndUnit: {},
         totalPrice: 0,
-        saleLog: {}
+        saleLog: {},
+        upgradeVisible: false,
+        partModal: [],
+        brandValue: [],
+        partOptionsDis: true,
+        partOptions: [],
+        partValue: [],
+        standardOptionsDis: true,
+        standardOptions: [],
+        standardValue: [],
+        upgradeParts: [],
+        upgradeTags: [],
+        currentTag: '',
+        diffPartPrice: 0,
     }
 
     componentDidMount() {
@@ -64,6 +78,7 @@ class BillInfo extends React.Component {
         const dataObj = Request.synPost('/workOrder/getDetailByWorkOrderId',{id:detailId});
         const channelProduct = dataObj.channelProduct;
         let serviceArr = [];
+        let partModal = [];
         if(channelProduct){
             const productObj = Request.synPost('/product/detailByChannelProduct',{channelProduct});
             if(productObj){
@@ -71,11 +86,26 @@ class BillInfo extends React.Component {
                 if(array && array.length>0){
                     for(let item of array){
                         let str = '';
-                        str += item.serviceName + '(';
-                        for(let part of item.partDtos){
-                            str += part.partCateName + part.partBrandName + part.partName + part.num+part.unit+' ';
+                        str += item.serviceCate + ' ' + item.serviceName;
+                        let flag = true;
+                        if(item.partDtos && item.partDtos.length > 0){
+                            str += '(';
+                            for(let part of item.partDtos){
+                                let partStr = '';
+                                partStr += part.partCateName + part.partBrandName + part.partName + part.standard + part.num+part.unit;
+                                str += partStr + ' ';
+                                //partModal数组去重
+                                for(let partObj of partModal){
+                                    if(partObj.partId === part.partId){
+                                        flag = false;
+                                    }
+                                }
+                                if(flag){
+                                    partModal.push({partStr:partStr,partCate:part.partCateName,partId:part.partId,partNum:part.num});
+                                }
+                            }
+                            str += ')';
                         }
-                        str += ')';
                         serviceArr.push(str);
                     }
                 }
@@ -101,12 +131,70 @@ class BillInfo extends React.Component {
             totalPrice += price;
         }
         console.log(partArr);
+
+        const brandArray = Request.synPost('/part/listPartBrand');
+        let popBrands = [];
+        if(brandArray && brandArray.length > 0){
+            for(let item of brandArray){
+                let obj = {
+                    value: item.id,
+                    label: item.name
+                }
+                popBrands.push(obj);
+            }
+        }
+        const typeArray = Request.synPost('/part/listPartCate');
+        let popTypes = [];
+        if(typeArray && typeArray.length > 0){
+            for(let item of typeArray){
+                let obj = {
+                    value: item.id,
+                    label: item.name
+                }
+                popTypes.push(obj);
+            }
+        }
+
+        const upgradePartArr = Request.synPost('upgradPart/listByWorkOrderId',{orderId:this.props.detailId});
+        let upgradeTags = [];
+        if(upgradePartArr && upgradePartArr.length > 0){
+            for(let item of upgradePartArr){
+                let num;
+                for(let oldPart of partModal){
+                    if(oldPart.partId == item.oldPartId){
+                        num = oldPart.partNum;
+                        break;
+                    }
+                }
+                let desc = ``;
+                desc += `${item.nowPartCateName} ${item.nowPartBrandName} ${item.nowPartName}`;
+                desc += ` ${item.nowPartStandard} ${num}${item.nowPartUnit}`;
+                let obj = {
+                    id: item.id,
+                    diffPrice: item.diffPrice,
+                    desc,
+                }
+                upgradeTags.push(obj);
+            }
+        }
+        let diffPartPrice = 0;
+        if(upgradeTags.length > 0){
+            for(let item of upgradeTags){
+                diffPartPrice += Number(item.diffPrice);
+            }
+        }
+
         this.setState({
             dataObj,
             serviceArr,
             tags: partArr,
             totalPrice,
-            saleLog
+            saleLog,
+            popBrands,
+            popTypes,
+            partModal,
+            upgradeTags,
+            diffPartPrice
         });
     }
 
@@ -269,28 +357,8 @@ class BillInfo extends React.Component {
 
     //+号点击的逻辑
     handlePlusClick(){
-        const brandArray = Request.synPost('/part/listPartBrand');
-        let popBrands = [];
-        for(let item of brandArray){
-            let obj = {
-                value: item.id,
-                label: item.name
-            }
-            popBrands.push(obj);
-        }
-        const typeArray = Request.synPost('/part/listPartCate');
-        let popTypes = [];
-        for(let item of typeArray){
-            let obj = {
-                value: item.id,
-                label: item.name
-            }
-            popTypes.push(obj);
-        }
         this.setState({
             popVisible: true,
-            popBrands,
-            popTypes
         });
     }
 
@@ -444,6 +512,204 @@ class BillInfo extends React.Component {
         this.props.changeShowDetailToFalse();
     }
 
+    upgradeClick(){
+        this.setState({upgradeVisible:true});
+    }
+
+    modalBrandChange(value,cateId,index){
+        const partData = Request.synPost('part/listParts',{cateId:cateId,brandId:value[0]});
+        const partArr = partData.data;
+        let partOptions = [];
+        if(partArr && partArr.length > 0){
+            for(let part of partArr){
+                let obj = {
+                    value: part.partName,
+                    label: part.partName,
+                }
+                partOptions.push(obj);
+            }
+        }
+        this.setState({
+            ['partOptions-'+index]:partOptions,
+            ['partOptionsDis-'+index]: false,
+            ['brandValue-'+index]:value
+        });
+    }
+
+    modalPartChange(value,cateId,index){
+        const partData = Request.synPost('part/listParts',{
+            cateId:cateId,
+            brandId:this.state.brandValue[0],
+            name: value[0]
+        });
+        const partArr = partData.data;
+        let standardOptions = [];
+        if(partArr && partArr.length > 0){
+            for(let item of partArr){
+                let obj = {
+                    value: item.id,
+                    label: item.standard,
+                }
+                standardOptions.push(obj);
+            }
+        }
+        this.setState({
+            ['standardOptions-'+index]:standardOptions,
+            ['standardOptionsDis-'+index]: false,
+            ['partValue-'+index]: value,
+        });
+    }
+
+    modalStandardChange(value,index,partId,partNum){
+        const upgradeParts = this.state.upgradeParts;
+        let flag = true;
+        for(let item of upgradeParts){
+            if(partId === item.oldPartId && value[0] === item.nowPartId){
+                flag = false;
+                break;
+            }
+        }
+        if(flag){
+            upgradeParts.push({
+                oldPartId:partId,
+                nowPartId:value[0],
+                num:partNum,
+                orderId:this.props.detailId,
+                createUser: 1,
+                technicianId: this.state.dataObj.serviceUser,
+            });
+        }
+        this.setState({
+            upgradeParts,
+            ['standardValue-'+index]: value,
+        });
+    }
+
+    upgradePart(){
+        const upgradeParts = this.state.upgradeParts;
+        console.log(upgradeParts);
+        $.ajax({
+            url: 'upgradPart/addUpgradParts',
+            data: JSON.stringify(upgradeParts),
+            type: 'POST',
+            dataType: 'json',
+            contentType: "application/json",
+            success: (response)=>{
+                console.log(JSON.stringify(response));
+                if(response.code === '200'){
+
+                    const upgradePartArr = Request.synPost('upgradPart/listByWorkOrderId',{orderId:this.props.detailId});
+                    let upgradeTags = [];
+                    if(upgradePartArr && upgradePartArr.length > 0){
+                        for(let item of upgradePartArr){
+                            let num;
+                            for(let oldPart of this.state.partModal){
+                                if(oldPart.partId == item.oldPartId){
+                                    num = oldPart.partNum;
+                                    break;
+                                }
+                            }
+                            let desc = ``;
+                            desc += `${item.nowPartCateName} ${item.nowPartBrandName} ${item.nowPartName}`;
+                            desc += ` ${item.nowPartStandard} ${num}${item.nowPartUnit}`;
+                            let obj = {
+                                id: item.id,
+                                diffPrice: item.diffPrice,
+                                desc,
+                            }
+                            upgradeTags.push(obj);
+                        }
+                    }
+                    let diffPartPrice = 0;
+                    if(upgradeTags.length > 0){
+                        for(let item of upgradeTags){
+                            diffPartPrice += Number(item.diffPrice);
+                        }
+                    }
+
+                    for(let index in this.state.partModal){
+                        this.setState({
+                            ['brandValue-'+index]: [],
+                            ['partValue-'+index]: [],
+                            ['standardValue-'+index]: [],
+                            ['partOptionsDis-'+index]: true,
+                            ['standardOptionsDis-'+index]: true,
+                        });
+                    }
+                    this.setState({upgradeTags,upgradeVisible:false,diffPartPrice});
+                } else {
+                    alert('请求异常，请重试');
+                }
+            },
+            error: (err)=>{
+                throw err;
+            }
+        });
+    }
+
+    cancelModal(){
+        for(let index in this.state.partModal){
+            this.setState({
+                ['brandValue-'+index]: [],
+                ['partValue-'+index]: [],
+                ['standardValue-'+index]: [],
+                ['partOptionsDis-'+index]: true,
+                ['standardOptionsDis-'+index]: true,
+            });
+        }
+        this.setState({upgradeVisible:false});
+    }
+
+    delUpgrade(id){
+        $.ajax({
+            url: 'upgradPart/deleteByPartdId',
+            type: 'POST',
+            data: {upgraPartdId:id},
+            dataType: 'json',
+            success: (response)=>{
+                if(response.code === '200'){
+
+                    const upgradePartArr = Request.synPost('upgradPart/listByWorkOrderId',{orderId:this.props.detailId});
+                    let upgradeTags = [];
+                    if(upgradePartArr && upgradePartArr.length > 0){
+                        for(let item of upgradePartArr){
+                            let num;
+                            for(let oldPart of this.state.partModal){
+                                if(oldPart.partId == item.oldPartId){
+                                    num = oldPart.partNum;
+                                    break;
+                                }
+                            }
+                            let desc = ``;
+                            desc += `${item.nowPartCateName} ${item.nowPartBrandName} ${item.nowPartName}`;
+                            desc += ` ${item.nowPartStandard} ${num}${item.nowPartUnit}`;
+                            let obj = {
+                                id: item.id,
+                                diffPrice: item.diffPrice,
+                                desc,
+                            }
+                            upgradeTags.push(obj);
+                        }
+                    }
+                    let diffPartPrice = 0;
+                    if(upgradeTags.length > 0){
+                        for(let item of upgradeTags){
+                            diffPartPrice += Number(item.diffPrice);
+                        }
+                    }
+
+                    this.setState({upgradeTags,upgradeVisible:false,diffPartPrice});
+
+                } else {
+                    message.error('请求异常');
+                }
+            },
+            error: (err)=>{
+                throw err;
+            }
+        });
+    }
+
     render() {
         const formItemLayout = {
             labelCol: {span: 8},
@@ -529,7 +795,7 @@ class BillInfo extends React.Component {
         const serviceDate = this.state.dataObj.serviceDate;
         let serviceDateFormate = '';
         if(serviceDate){
-            serviceDateFormate = this.dateFormate(serviceDate);
+            serviceDateFormate = this.dateFormate(serviceDate).substr(0,10);
         }
 
         return (
@@ -589,7 +855,7 @@ class BillInfo extends React.Component {
                     {this.state.serviceArr.map((item)=>{
                         return (
                             <div>
-                                <span>{item}</span><br/>
+                                <p>{item}</p>
                             </div>
                         );
                     })}
@@ -641,10 +907,58 @@ class BillInfo extends React.Component {
                     </div>
                 </FormItem>
                 <FormItem
+                    {...formItemLayout}
+                    label='配件升级'
+                >
+                    <div>
+                        {this.state.upgradeTags.map((tag) => {
+                            const tagElem = (
+                                <Popconfirm
+                                    title={<h3>确定删除 ?</h3>}
+                                    okText="确定"
+                                    cancelText="取消"
+                                    placement="right"
+                                    visible={this.state.currentTag===tag.id}
+                                    onConfirm={()=>{this.delUpgrade(tag.id)}}
+                                    onCancel={()=>{this.setState({currentTag:''})}}
+                                >
+                                    <Tag
+                                        key={tag.id}
+                                        closable={true}
+                                        onClose={(e)=>{
+                                            e.preventDefault();
+                                            this.setState({currentTag:tag.id});
+                                        }}
+                                        /*afterClose={() => this.handleTagClose(tag)}*/
+                                    >
+                                        {tag.desc}
+                                    </Tag>
+                                </Popconfirm>
+                            );
+                            return tagElem;
+                        })}
+                            <Button type="primary" size="small"
+                                    onClick={this.upgradeClick.bind(this)}
+                            >+</Button>
+                    </div>
+                </FormItem>
+                <FormItem
                     label="技师销售合计"
                     {...formItemLayout}
                 >
                     <span>{this.state.totalPrice}</span>元
+                </FormItem>
+                <FormItem
+                    label="配件升级差价合计"
+                    {...formItemLayout}
+                >
+                    <span>{this.state.diffPartPrice}</span>元
+                </FormItem>
+                <FormItem
+                    label="增值合计"
+                    {...formItemLayout}
+                >
+                    <span>{Number(this.state.totalPrice)+Number(this.state.diffPartPrice)}</span>元
                 </FormItem>
                 <FormItem>
                     <Modal
@@ -669,6 +983,86 @@ class BillInfo extends React.Component {
                     </Modal>
                     <Button type="primary" onClick={()=>{this.setState({recoverVisible:true})}}>收单</Button>
                     <Button type="primary" onClick={()=>{this.setState({backVisible:true})}}>返回</Button>
+                    <Modal
+                        visible={this.state.upgradeVisible}
+                        okText="确定"
+                        cancelText="取消"
+                        width={650}
+                        maskClosable={false}
+                        onOk={()=>{this.upgradePart()}}
+                        onCancel={()=>{this.cancelModal()}}
+                    >
+                        {   //part=={partStr:partStr,partCate:part.partCateName,partId:part.partId,partNum:part.num}
+                            this.state.partModal.map((part,index)=>{
+                            let cateId;
+                            for(let item of this.state.popTypes){
+                                if(item.label === part.partCate){
+                                    cateId = item.value;
+                                }
+                            }
+                            const brandData = Request.synPost('part/listParts',{cateId:cateId});
+                            const brands = brandData.data;
+                            let brandOptions = [];
+                            if(brands && brands.length > 0){
+                                for(let item of brands){
+                                    let flag = true;
+                                    let obj = {
+                                        value: '',
+                                        label: item.brandName,
+                                    }
+                                    for(let popBrand of this.state.popBrands){
+                                        if(popBrand.label === item.brandName){
+                                            obj.value = popBrand.value;
+                                        }
+                                    }
+                                    //brandOptions数组去重
+                                    for(let option of brandOptions){
+                                        if(option.value = obj.value){
+                                            flag = false;
+                                        }
+                                    }
+                                    if(flag){
+                                        brandOptions.push(obj);
+                                    }
+                                }
+                            }
+                            console.log(brandOptions);
+                            return (
+                                <Row gutter={10} type="flex" align="middle" style={{marginBottom:'10px'}}>
+                                    <Col span={8}>
+                                        {part.partStr}
+                                    </Col>
+                                    <Col span={2}>升级</Col>
+                                    <Col span={4}>
+                                        <Cascader
+                                            options={brandOptions}
+                                            placeholder='请选择品牌'
+                                            value={this.state['brandValue-'+index]}
+                                            onChange={(value)=>{this.modalBrandChange(value,cateId,index)}}
+                                        />
+                                    </Col>
+                                    <Col span={4}>
+                                        <Cascader
+                                            disabled={this.state['partOptionsDis-'+index]===false?false:true}
+                                            options={this.state['partOptions-'+index]}
+                                            placeholder='请选择配件'
+                                            value={this.state['partValue-'+index]}
+                                            onChange={(value)=>{this.modalPartChange(value,cateId,index)}}
+                                        />
+                                    </Col>
+                                    <Col span={4}>
+                                        <Cascader
+                                            disabled={this.state['standardOptionsDis-'+index]===false?false:true}
+                                            options={this.state['standardOptions-'+index]}
+                                            placeholder='请选择规格'
+                                            value={this.state['standardValue-'+index]}
+                                            onChange={(value)=>{this.modalStandardChange(value,index,part.partId,part.partNum)}}
+                                        />
+                                    </Col>
+                                </Row>
+                            );
+                        })}
+                    </Modal>
                 </FormItem>
             </Form>
         );

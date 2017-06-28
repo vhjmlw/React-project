@@ -23,22 +23,22 @@ class PackageList extends React.Component{
             title: '名称',
             dataIndex: 'packageName',
             key: 'packageName',
-            width: '20%',
+            width: '15%',
         }, {
             title: '价格',
             dataIndex: 'packagePrice',
             key: 'packagePrice',
-            width: '20%',
+            width: '15%',
         }, {
             title: '服务项目',
             dataIndex: 'packageItem',
             key: 'packageItem',
-            width: '20%',
+            width: '25%',
         }, {
             title: '配件',
             dataIndex: 'packagePart',
             key: 'packagePart',
-            width: '20%',
+            width: '30%',
         }, {
             title: '操作',
             key: 'action',
@@ -77,20 +77,35 @@ class PackageList extends React.Component{
                 key: item.productId,
                 packageName: item.name,
                 packagePrice: item.price,
-                packageItem: '',
-                packagePart: '',
+                packageItem: [],
+                packagePart: [],
             }
             if(item.services && item.services.length > 0){
+                let partArray = [];
                 for(let service of item.services){
-                    obj.packageItem += service.serviceCate + service.serviceName + service.num + '次 ';
+                    let packageItem = <p>{service.serviceCate + ' ' + service.serviceName + ' ' + service.num + '次 '}</p>;
+                    obj.packageItem .push(packageItem);
                     if(service.partDtos && service.partDtos.length > 0){
-                        obj.packagePart += service.serviceCate + '(';
+                        // obj.packagePart += service.serviceCate + '(';
                         for(let part of service.partDtos){
-                            obj.packagePart += part.partCateName + part.partBrandName + part.partName + part.standard + part.num + part.unit + ' ';
+                            // obj.packagePart += part.partCateName + part.partBrandName + part.partName + part.standard + part.num + part.unit;
+                            let partStr = '';
+                            partStr += part.partCateName + ' ' + part.partBrandName + ' ' + part.partName;
+                            partStr += ' ' + part.standard + ' ' + part.num + ' ' + part.unit;
+                            if(partArray.indexOf(partStr) === -1){
+                                partArray.push(partStr);
+                            }
                         }
-                        obj.packagePart += ')';
+                        // obj.packagePart += ')';
                     }
                 }
+                let packagePart = [];
+                if(partArray.length > 0){
+                    packagePart = partArray.map((item)=>{
+                        return (<p>{item}</p>);
+                    });
+                }
+                obj.packagePart = packagePart;
             }
             frontArray.push(obj);
         }
@@ -171,7 +186,7 @@ class PackageList extends React.Component{
                 >
                     {this.state.serviceArray.map((service)=>{
                         return (
-                            <h4>{service}</h4>
+                            <p>{service}</p>
                         );
                     })}
                 </FormItem>
@@ -182,7 +197,7 @@ class PackageList extends React.Component{
             <div className="antd-layout-OrderList">
                 <Modal
                     title={modalHTML}
-                    width={350}
+                    width={400}
                     visible={this.state.modalVisible}
                     okText="确定"
                     footer={[<Button type="primary" onClick={()=>{this.setState({modalVisible:false})}}>确定</Button>]}

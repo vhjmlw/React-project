@@ -1,6 +1,7 @@
 import React from 'react';
 import { Row, Col, Form, Input, Button, Cascader, Table, Select, Popconfirm, InputNumber, message } from 'antd';
 import Request from './util/Request';
+import $ from 'jquery';
 const FormItem = Form.Item;
 const Option = Select.Option;
 
@@ -44,7 +45,9 @@ class TodayStock extends React.Component {
             render: (text, record)=>{
                 const addPopConfirm = (
                     <Form>
-                        <h3>请输出入库数量</h3>
+                        <div style={{fontSize: '14px', marginBottom: '15px'}}>
+                            <span>请输入入库数量</span>
+                        </div>
                         <FormItem
                             label="数量"
                             labelCol={{span:8}}
@@ -60,7 +63,9 @@ class TodayStock extends React.Component {
                 );
                 const delPopConfirm = (
                     <Form>
-                        <h3>请输入出库数量</h3>
+                        <div style={{fontSize: '14px', marginBottom: '15px'}}>
+                            <span>请输入出库数量</span>
+                        </div>
                         <FormItem
                             label="数量"
                             labelCol={{span:8}}
@@ -90,7 +95,7 @@ class TodayStock extends React.Component {
                             title={delPopConfirm}
                             okText="确定"
                             cancelText="取消"
-                            onConfirm={()=>{console.log('确定')}}
+                            onConfirm={()=>{this.delStock(record)}}
                             onCancel={()=>{this.setState({delStockNum:0})}}
                         >
                             <a onClick={()=>{console.log('出库')}}>出库</a>
@@ -117,6 +122,14 @@ class TodayStock extends React.Component {
         dataSource: [],
         addStockNum: 0,
         delStockNum: 0,
+        initServer: [],
+        initCate: [],
+        initBrand: [],
+        initPart: [],
+        initPartArr: [],
+        initPartDisabled: true,
+        initNum: 0,
+        initPopVisible: false,
     }
 
     componentDidMount() {
@@ -171,12 +184,32 @@ class TodayStock extends React.Component {
         }
         const partId = record.partId;
         const technicianId = record.technicianId;
-        const response = Request.synPost('technicianInventory/addCommonStorage',{
+        const response = Request.synPost('technicianInventory/addTodayStorage',{
             partId,
             technicianId,
             num: addStockNum,
             userId: 1,
         });
+        this.setState({addStockNum:0});
+        this.handleSearch(this.state.condition, this.state.currentPageNum, this.state.pageSize);
+    }
+
+    //出库的逻辑
+    delStock(record){
+        const delStockNum = this.state.delStockNum;
+        if(!delStockNum){
+            message.warning('请输入出库数量');
+            return;
+        }
+        const partId = record.partId;
+        const technicianId = record.technicianId;
+        Request.synPost('technicianInventory/reduceOfTodayStorage',{
+            partId,
+            technicianId,
+            num: delStockNum,
+            userId: 1,
+        });
+        this.setState({delStockNum:0});
         this.handleSearch(this.state.condition, this.state.currentPageNum, this.state.pageSize);
     }
 
@@ -199,7 +232,7 @@ class TodayStock extends React.Component {
         const partBrandId = condition.brand[0];
         const partId = condition.part[0];
         const serialNumber = condition.serialNumber;
-        const regionId = 1;
+        const regionId = 2;
         const backData = Request.synPost('technicianInventory/listTodayStorage',{
             technicianId,
             partCateId,
@@ -228,7 +261,6 @@ class TodayStock extends React.Component {
         let frontArr = [];
         for(let item of backArr){
             let obj = {
-                key: item.serialNumber,
                 server: item.technicianName,
                 cate: item.partCateName,
                 brand: item.partBrandName,
@@ -237,6 +269,8 @@ class TodayStock extends React.Component {
                 serialNumber: item.serialNumber,
                 unit: item.unit,
                 handinventory: item.num,
+                partId: item.partId,
+                technicianId: item.technicianId
             }
             frontArr.push(obj);
         }
@@ -256,7 +290,7 @@ class TodayStock extends React.Component {
             for(let item of partDataArr){
                 let obj = {
                     value: item.id,
-                    label: item.partName + item.standard,
+                    label: item.partName + ' ' + item.standard,
                 }
                 partArr.push(obj);
             }
@@ -282,7 +316,7 @@ class TodayStock extends React.Component {
             for(let item of partDataArr){
                 let obj = {
                     value: item.id,
-                    label: item.partName + item.standard,
+                    label: item.partName + ' ' + item.standard,
                 }
                 partArr.push(obj);
             }
@@ -310,11 +344,184 @@ class TodayStock extends React.Component {
         });
     }
 
+    handleInitCateChange(value){
+        this.setState({initCate:value});
+        const partData = Request.synPost('part/listParts',{
+            brandId: this.state.initBrand[0],
+            cateId: value[0],
+        });
+        const partDataArr = partData.data;
+        let partArr = [];
+        if(partDataArr && partDataArr.length > 0){
+            for(let item of partDataArr){
+                let obj = {
+                    value: item.id,
+                    label: item.partName + ' ' + item.standard,
+                }
+                partArr.push(obj);
+            }
+        }
+        if(partArr.length > 0){
+            this.setState({initPartArr:partArr, initPartDisabled:false});
+        } else {
+            this.setState({initPartArr:partArr, initPartDisabled:true});
+        }
+    }
+
+    handleInitBrandChange(value){
+        this.setState({initBrand:value});
+        const partData = Request.synPost('part/listParts',{
+            brandId: value[0],
+            cateId: this.state.initCate[0],
+        });
+        const partDataArr = partData.data;
+        let partArr = [];
+        if(partDataArr && partDataArr.length > 0){
+            for(let item of partDataArr){
+                let obj = {
+                    value: item.id,
+                    label: item.partName + ' ' + item.standard,
+                }
+                partArr.push(obj);
+            }
+        }
+        if(partArr.length > 0){
+            this.setState({initPartArr:partArr, initPartDisabled:false});
+        } else {
+            this.setState({initPartArr:partArr, initPartDisabled:true});
+        }
+    }
+
+    initAddStock(){
+        const partId = this.state.initPart[0];
+        const technicianId = this.state.initServer[0];
+        const num = this.state.initNum;
+        if(!technicianId){
+            message.warning('请选择技师');
+            return;
+        }
+        if(!partId){
+            message.warning('请选择配件名称');
+            return;
+        }
+        if(!num){
+            message.warning('请输入数量');
+            return;
+        }
+        $.ajax({
+            url: 'technicianInventory/addTodayStorage',
+            type: 'POST',
+            data: {
+                partId,
+                technicianId,
+                num,
+                userId:1
+            },
+            dataType: 'json',
+            success: (response)=>{
+                if(response.code === '200'){
+                    message.success('入库成功',1.5);
+                    this.setState({
+                        initServer: [],
+                        initCate: [],
+                        initBrand: [],
+                        initPart: [],
+                        initPartArr: [],
+                        initPartDisabled: true,
+                        initNum: 0,
+                        initPopVisible: false,
+                    });
+                    this.handleSearch(this.state.condition, this.state.currentPageNum, this.state.pageSize);
+                } else {
+                    message.warning('请求异常，请重试');
+                }
+            },
+            error: (err)=>{
+                throw err;
+            }
+        });
+    }
+
+    initCancel(){
+        this.setState({
+            initServer: [],
+            initCate: [],
+            initBrand: [],
+            initPart: [],
+            initPartArr: [],
+            initPartDisabled: true,
+            initNum: 0,
+            initPopVisible: false,
+        });
+
+    }
+
     render(){
         const formItemLayout = {
             labelCol: {span: 8},
             wrapperCol: {span: 16},
         };
+
+        const initPopconfirm = (
+            <Form>
+                <FormItem
+                    label="技师"
+                    {...formItemLayout}
+                >
+                    <Cascader
+                        placeholder='请选择技师'
+                        options={this.state.serverArr}
+                        value={this.state.initServer}
+                        onChange={(value)=>{this.setState({initServer:value})}}
+                    />
+                </FormItem>
+                <FormItem
+                    label="配件类别"
+                    {...formItemLayout}
+                >
+                    <Cascader
+                        placeholder='请选择配件类别'
+                        options={this.state.cateArr}
+                        value={this.state.initCate}
+                        onChange={(value)=>{this.handleInitCateChange(value)}}
+                    />
+                </FormItem>
+                <FormItem
+                    label="配件品牌"
+                    {...formItemLayout}
+                >
+                    <Cascader
+                        placeholder='请选择配件品牌'
+                        options={this.state.brandArr}
+                        value={this.state.initBrand}
+                        onChange={(value)=>{this.handleInitBrandChange(value)}}
+                    />
+                </FormItem>
+                <FormItem
+                    label="配件名称"
+                    {...formItemLayout}
+                >
+                    <Cascader
+                        placeholder='请选择配件名称'
+                        disabled={this.state.initPartDisabled}
+                        options={this.state.initPartArr}
+                        value={this.state.initPart}
+                        onChange={(value)=>{this.setState({initPart:value})}}
+                    />
+                </FormItem>
+                <FormItem
+                    label="数量"
+                    labelCol={{span:8}}
+                    wrapperCol={{span:16}}
+                >
+                    <InputNumber
+                        min={0}
+                        value={this.state.initNum}
+                        onChange={(value)=>{this.setState({initNum:value})}}
+                    />
+                </FormItem>
+            </Form>
+        );
 
         return(
             <div>
@@ -399,7 +606,18 @@ class TodayStock extends React.Component {
                     </Col>
                     <Col span={6} offset={12}>
                         <Button type="primary" onClick={(e)=> {this.resetSearch(e)}}>重置</Button>
-                        <Button type="primary" onClick={(e)=>{console.log('query')}}>查询</Button>
+                        <Button type="primary" onClick={(e)=>{this.handleSearch(this.state.condition,1,10)}}>查询</Button>
+                        <Popconfirm
+                            title={initPopconfirm}
+                            placement="bottomRight"
+                            okText="确定"
+                            cancelText="取消"
+                            onConfirm={this.initAddStock.bind(this)}
+                            onCancel={this.initCancel.bind(this)}
+                            visible={this.state.initPopVisible}
+                        >
+                            <Button type="primary" onClick={(e)=> {this.setState({initPopVisible:true})}}>入库</Button>
+                        </Popconfirm>
                     </Col>
                 </Row>
                 <Table

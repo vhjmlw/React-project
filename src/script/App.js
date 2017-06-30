@@ -22,6 +22,34 @@ class App extends React.Component {
     }
 
     render() {
+        let key = '';
+        key = window.location.hash.match(/#\/([a-zA-Z/]+)(\?.+|$)/)[1];
+        switch(key){
+            case 'App':
+                key = '1';
+                break;
+            case 'App/PackageList':
+                key = '2';
+                break;
+            case 'App/PackageSale':
+                key = '3';
+                break;
+            case 'App/Fitting':
+                key = '4';
+                break;
+            case 'App/Service':
+                key = '5';
+                break;
+            case 'App/BillList':
+                key = '6';
+                break;
+            case 'App/RunningStock':
+                key = '7';
+                break;
+            case 'App/TodayStock':
+                key = '8';
+                break;
+        }
         return (
             <Layout>
                 <Sider
@@ -30,7 +58,7 @@ class App extends React.Component {
                     onCollapse={this.onCollapse}
                 >
                     <div className="logo"/>
-                    <Menu theme="dark" mode={this.state.mode} defaultSelectedKeys={['1']}>
+                    <Menu theme="dark" mode={this.state.mode} defaultSelectedKeys={[key]}>
                         <Menu.Item key="1">
                             <Link to="/App">
                                 <Icon type="user"/>

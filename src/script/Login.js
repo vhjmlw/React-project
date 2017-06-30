@@ -64,7 +64,7 @@ class LoginForm extends React.Component {
                                 username: userData.username,
                                 password: userData.password,
                             });
-                            this.props.history.pushState(null,'App');
+                            this.props.changeRoute(null,'App');
                             //先占个位置
                         } else {
                             message.error('用户名或密码错误');
@@ -162,7 +162,7 @@ class Login extends React.Component {
                         <h1>优典养车</h1>
                     </div>
                     <div>
-                        <LoginClass changeRoute={this.props.history.pushState}/>
+                        <LoginClass changeRoute={this.props.history.pushState} />
                     </div>
                 </div>
                 <div id="canvasDiv" style={{width:'100%', height:'100%'}}></div>

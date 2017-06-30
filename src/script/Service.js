@@ -239,7 +239,31 @@ class ModalCustom extends React.Component {
 
     //新增modal确定按钮的逻辑
     handleModalOk() {
+        const modalName = this.state.modalName;
+        const modalType = this.state.modalType;
+        const modalPrice = this.state.modalPrice;
         const tags = this.state.tags;
+        if(!modalName){
+            message.warning('请输入服务名称');
+            return;
+        }
+        if(!modalType){
+            message.warning('请输入服务类型');
+            return;
+        }
+        if(modalType.length >= 6){
+            message.warning('服务类型不能超过5个字符');
+            return;
+        }
+        if(!tags.length){
+            message.warning('请选择配件');
+            return;
+        }
+        if(!modalPrice){
+            message.warning('请输入价格');
+            return;
+        }
+
         let dataArray = [];
         for (let tag of tags) {
             dataArray.push(tag.tagObj);
@@ -319,12 +343,50 @@ class ModalCustom extends React.Component {
     }
 
     //点击tag气泡确定按钮的逻辑
-    handleTagPopOk() {
-        const tags = this.state.tags.filter(tag => tag.tagStr !== this.state.key);
+    handleTagPopOk(tag) {
+        const partId = tag.tagObj.partId;
+        const serviceId = this.state.serviceId;
+        $.ajax({
+            url: 'service/deletePartRel',
+            type: 'POST',
+            dataType: 'json',
+            data: {partId,serviceId},
+            success: (response)=>{
+                if(response.code === '200'){
+                    let tags = [];
+                    const serviceData = Request.synPost('/service/detailByServiceId', {
+                        id: serviceId
+                    });
+                    const partDtos = serviceData.partDtos;
+                    if (partDtos && partDtos.length > 0) {
+                        for (let item of partDtos) {
+                            let tag = {
+                                tagStr: '',
+                                tagObj: {
+                                    partId: item.partId,
+                                    num: item.num
+                                }
+                            };
+                            tag.tagStr += item.partCateName + ' ' + item.partBrandName + ' ' + item.standard + ' ';
+                            tag.tagStr += item.partName + ' ' + item.num + ' ' + item.unit;
+                            tags.push(tag);
+                        }
+                    }
+                    this.setState({tags});
+                    //先占个位置，稍后填坑
+                }
+            },
+            error: (err)=>{
+                throw err;
+            }
+        });
+
+        /*const tags = this.state.tags.filter(tag => tag.tagStr !== this.state.key);
         this.setState({
             tags,
             key: ''
-        });
+        });*/
+
     }
 
     //使用配件pop确定按钮的逻辑
@@ -572,7 +634,7 @@ class ModalCustom extends React.Component {
                                         cancelText="取消"
                                         placement="right"
                                         visible={this.state.key === tag.tagStr}
-                                        onConfirm={this.handleTagPopOk.bind(this)}
+                                        onConfirm={()=>{this.handleTagPopOk(tag)}}
                                         onCancel={()=> {
                                             this.setState({key: ''})
                                         }}

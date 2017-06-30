@@ -4,35 +4,6 @@ import Request from './util/Request';
 import $ from 'jquery';
 const FormItem = Form.Item;
 
-/*const popTypes = [{
-    value: '类型一',
-    label: '类型一',
-},{
-    value: '类型二',
-    label: '类型二',
-}];
-const popBrands = [{
-    value: '类型一',
-    label: '类型一',
-},{
-    value: '类型二',
-    label: '类型二',
-}];
-const popNames = [{
-    value: '类型一',
-    label: '类型一',
-},{
-    value: '类型二',
-    label: '类型二',
-}];
-const popStandards = [{
-    value: '类型一',
-    label: '类型一',
-},{
-    value: '类型二',
-    label: '类型二',
-}];*/
-
 class BillInfo extends React.Component {
     state = {
         tags: [],
@@ -71,6 +42,7 @@ class BillInfo extends React.Component {
         upgradeTags: [],
         currentTag: '',
         diffPartPrice: 0,
+        brandOptionsArr: []
     }
 
     componentDidMount() {
@@ -184,6 +156,48 @@ class BillInfo extends React.Component {
             }
         }
 
+        //part=={partStr:partStr,partCate:part.partCateName,partId:part.partId,partNum:part.num}
+        const brandOptionsArr = partModal.map((part,index)=>{
+            let cateId;
+            for(let item of popTypes){
+                if(item.label === part.partCate){
+                    cateId = item.value;
+                }
+            }
+            const brandData = Request.synPost('part/listParts',{cateId:cateId});
+            const brands = brandData.data;
+            let brandOptions = [];
+            if(brands && brands.length > 0){
+                for(let item of brands){
+                    let flag = true;
+                    let obj = {
+                        value: '',
+                        label: item.brandName,
+                    }
+                    for(let popBrand of popBrands){
+                        if(popBrand.label === item.brandName){
+                            obj.value = popBrand.value;
+                        }
+                    }
+                    //brandOptions数组去重
+                    for(let option of brandOptions){
+                        if(option.value === obj.value){
+                            flag = false;
+                        }
+                    }
+                    if(flag){
+                        brandOptions.push(obj);
+                    }
+                }
+            }
+            console.log(brandOptions);
+            let obj = {
+                brandOptions,
+                part
+            }
+            return obj;
+        })
+
         this.setState({
             dataObj,
             serviceArr,
@@ -194,7 +208,8 @@ class BillInfo extends React.Component {
             popTypes,
             partModal,
             upgradeTags,
-            diffPartPrice
+            diffPartPrice,
+            brandOptionsArr
         });
     }
 
@@ -318,7 +333,7 @@ class BillInfo extends React.Component {
         return dateFormate;
     }
 
-/*    handleTagClose(removedTag){
+    /*handleTagClose(removedTag){
         console.log(removedTag);
         const tags = this.state.tags.filter((tag)=>{
             return tag != removedTag;
@@ -992,76 +1007,62 @@ class BillInfo extends React.Component {
                         onOk={()=>{this.upgradePart()}}
                         onCancel={()=>{this.cancelModal()}}
                     >
-                        {   //part=={partStr:partStr,partCate:part.partCateName,partId:part.partId,partNum:part.num}
-                            this.state.partModal.map((part,index)=>{
+                        {
+                        /*
+                        part=={partStr:partStr,partCate:part.partCateName,partId:part.partId,partNum:part.num};
+                        let obj = {
+                            brandOptions:{value: '',label: ''},
+                            part
+                        }*/
+                        this.state.brandOptionsArr.map((obj,index)=>{
                             let cateId;
                             for(let item of this.state.popTypes){
-                                if(item.label === part.partCate){
+                                if(item.label === obj.part.partCate){
                                     cateId = item.value;
                                 }
                             }
-                            const brandData = Request.synPost('part/listParts',{cateId:cateId});
-                            const brands = brandData.data;
-                            let brandOptions = [];
-                            if(brands && brands.length > 0){
-                                for(let item of brands){
-                                    let flag = true;
-                                    let obj = {
-                                        value: '',
-                                        label: item.brandName,
-                                    }
-                                    for(let popBrand of this.state.popBrands){
-                                        if(popBrand.label === item.brandName){
-                                            obj.value = popBrand.value;
-                                        }
-                                    }
-                                    //brandOptions数组去重
-                                    for(let option of brandOptions){
-                                        if(option.value = obj.value){
-                                            flag = false;
-                                        }
-                                    }
-                                    if(flag){
-                                        brandOptions.push(obj);
-                                    }
-                                }
-                            }
-                            console.log(brandOptions);
                             return (
-                                <Row gutter={10} type="flex" align="middle" style={{marginBottom:'10px'}}>
+                                <Row gutter={10} type="flex" align="middle" style={{marginBottom: '10px'}}>
                                     <Col span={8}>
-                                        {part.partStr}
+                                        {obj.part.partStr}
                                     </Col>
                                     <Col span={2}>升级</Col>
                                     <Col span={4}>
                                         <Cascader
-                                            options={brandOptions}
+                                            options={obj.brandOptions}
                                             placeholder='请选择品牌'
-                                            value={this.state['brandValue-'+index]}
-                                            onChange={(value)=>{this.modalBrandChange(value,cateId,index)}}
+                                            value={this.state['brandValue-' + index]}
+                                            onChange={(value)=> {
+                                                this.modalBrandChange(value, cateId, index)
+                                            }}
                                         />
                                     </Col>
                                     <Col span={4}>
                                         <Cascader
-                                            disabled={this.state['partOptionsDis-'+index]===false?false:true}
-                                            options={this.state['partOptions-'+index]}
+                                            disabled={this.state['partOptionsDis-' + index] === false ? false : true}
+                                            options={this.state['partOptions-' + index]}
                                             placeholder='请选择配件'
-                                            value={this.state['partValue-'+index]}
-                                            onChange={(value)=>{this.modalPartChange(value,cateId,index)}}
+                                            value={this.state['partValue-' + index]}
+                                            onChange={(value)=> {
+                                                this.modalPartChange(value, cateId, index)
+                                            }}
                                         />
                                     </Col>
                                     <Col span={4}>
                                         <Cascader
-                                            disabled={this.state['standardOptionsDis-'+index]===false?false:true}
-                                            options={this.state['standardOptions-'+index]}
+                                            disabled={this.state['standardOptionsDis-' + index] === false ? false : true}
+                                            options={this.state['standardOptions-' + index]}
                                             placeholder='请选择规格'
-                                            value={this.state['standardValue-'+index]}
-                                            onChange={(value)=>{this.modalStandardChange(value,index,part.partId,part.partNum)}}
+                                            value={this.state['standardValue-' + index]}
+                                            onChange={(value)=> {
+                                                this.modalStandardChange(value, index, obj.part.partId, obj.part.partNum)
+                                            }}
                                         />
                                     </Col>
                                 </Row>
                             );
-                        })}
+                        })
+                        }
                     </Modal>
                 </FormItem>
             </Form>

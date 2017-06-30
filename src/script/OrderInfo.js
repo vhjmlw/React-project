@@ -134,7 +134,7 @@ class OrderInfoForm extends React.Component {
         const fake = ()=> {
             let matchedAddresses = [];
             if (value) {
-                const serviceRegion = this.props.form.getFieldValue('serviceRegion');
+                const serviceRegion = this.props.form.getFieldValue('serviceRegion') || [];
                 let regionLabel = '';
                 for(let item of serviceRegions){
                     if(item.value === serviceRegion[0]){
@@ -152,9 +152,8 @@ class OrderInfoForm extends React.Component {
                 });
                 if(currentValue === value){
                     if (addressesObj.message === "ok") {
-                        matchedAddresses = addressesObj.result.map((item)=>{
-                            return item.name;
-                        })
+                        matchedAddresses = addressesObj.result;
+                        console.log(matchedAddresses)
                     }
                 }
             }
@@ -395,7 +394,7 @@ class OrderInfoForm extends React.Component {
                             {
                                 this.state.matchedAddresses.map((item, index) => {
                                     return (
-                                        <Option key={index} value={item}>{item}</Option>
+                                        <Option key={item.uid} value={item.name + item.district}>{item.name + item.district}</Option>
                                     );
                                 })
                             }

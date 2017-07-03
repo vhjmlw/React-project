@@ -153,7 +153,6 @@ class OrderInfoForm extends React.Component {
                 if(currentValue === value){
                     if (addressesObj.message === "ok") {
                         matchedAddresses = addressesObj.result;
-                        console.log(matchedAddresses)
                     }
                 }
             }
@@ -206,6 +205,21 @@ class OrderInfoForm extends React.Component {
            modalId: modalId,
            modalDes: modalDes
         });
+    }
+
+    detailAddress(value,option){
+        const addressObj = Request.synPost('address/getDetail',{uid:value});
+        if(addressObj && addressObj.message === 'ok') {
+            const detailAddress = addressObj.result.name + addressObj.result.address;
+            console.log(detailAddress,option);
+            // const option = (<Option key={item.uid} value={item.uid}>{item.district + item.name}</Option>);
+            const matchedAddresses = [{
+                uid: detailAddress,
+                district: addressObj.result.name,
+                name: addressObj.result.address
+            }];
+            this.setState(matchedAddresses);
+        }
     }
 
     render() {
@@ -389,12 +403,14 @@ class OrderInfoForm extends React.Component {
                             /*mode="combobox"*/
                             combobox={true}
                             placeholder="请填写服务地址"
-                            onChange={(value) => this.modifyAddress(value)}
+                            filterOption={false}
+                            onSearch={(value) => this.modifyAddress(value)}
+                            onSelect={(value,option)=>{this.detailAddress(value,option)}}
                         >
                             {
                                 this.state.matchedAddresses.map((item, index) => {
                                     return (
-                                        <Option key={item.uid} value={item.name + item.district}>{item.name + item.district}</Option>
+                                        <Option key={item.uid} value={item.uid}>{item.district + item.name}</Option>
                                     );
                                 })
                             }

@@ -41,6 +41,8 @@ class OrderInfoForm extends React.Component {
         selectedChannel: "",
         selectedProduct: "",
         modalVisible: false,
+        detailAddress: '',
+        verifyStatus: 0,
     };
 
     componentDidMount() {
@@ -120,7 +122,7 @@ class OrderInfoForm extends React.Component {
     //服务地址改变的逻辑
     modifyAddress(address) {
         this.requestAddress(address);
-        this.props.form.setFieldsValue({address});
+        // this.props.form.setFieldsValue({address});
     }
 
     //请求服务地址的逻辑，控制函数节流
@@ -178,6 +180,9 @@ class OrderInfoForm extends React.Component {
                 values.serviceRegion = values.serviceRegion[0];
                 values.createUser = 1;
                 values.remark = values.comment;
+                values.addressCode = values.address;
+                values.address = this.state.detailAddress;
+                values.verifyStatus = this.state.verifyStatus;
                 if(this.props.showDetailId){
                     values.workOrderId = this.props.showDetailId;
                     Request.synPost('workOrder/modify', values);
@@ -214,11 +219,12 @@ class OrderInfoForm extends React.Component {
             console.log(detailAddress,option);
             // const option = (<Option key={item.uid} value={item.uid}>{item.district + item.name}</Option>);
             const matchedAddresses = [{
-                uid: detailAddress,
-                district: addressObj.result.name,
-                name: addressObj.result.address
+                uid: addressObj.result.uid,
+                district: addressObj.result.name || '',
+                name: addressObj.result.address || ''
             }];
-            this.setState(matchedAddresses);
+            this.setState({matchedAddresses,detailAddress});
+            // this.props.form.setFieldsValue({address:option.props.children});
         }
     }
 
@@ -317,7 +323,21 @@ class OrderInfoForm extends React.Component {
                             )}
                         </Col>
                         <Col span={12}>
-                            <Button size="default">校验</Button>
+                            {/*<Button size="default">校验</Button>*/}
+                            <Button
+                                size="default"
+                                style={{margin:0,float:'left'}}
+                                type={this.state.verifyStatus === 1?'primary':''}
+                                /*className={this.state.verifyStatus === 1 ? 'ant-btn ant-btn-primary' : 'ant-btn'}*/
+                                onClick={()=>{this.setState({verifyStatus:1})}}
+                            >验证成功</Button>
+                            <Button
+                                size="default"
+                                style={{margin:0,float:'right'}}
+                                type={this.state.verifyStatus === 9?'primary':''}
+                                /*className={this.state.verifyStatus === 9 ? 'ant-btn ant-btn-primary' : 'ant-btn'}*/
+                                onClick={()=>{this.setState({verifyStatus:9})}}
+                            >验证失败</Button>
                         </Col>
                     </Row>
                 </FormItem>
@@ -404,6 +424,7 @@ class OrderInfoForm extends React.Component {
                             combobox={true}
                             placeholder="请填写服务地址"
                             filterOption={false}
+                            optionLabelProp='children'
                             onSearch={(value) => this.modifyAddress(value)}
                             onSelect={(value,option)=>{this.detailAddress(value,option)}}
                         >

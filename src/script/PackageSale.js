@@ -1,4 +1,4 @@
-import { Table, Button, Popconfirm, Form, message, Input, Select, DatePicker, InputNumber } from 'antd';
+import { Table, Button, Popconfirm, Form, message, Input, Select, DatePicker, InputNumber, Modal } from 'antd';
 import React from 'react';
 import moment from 'moment';
 import Request from "./util/Request";
@@ -70,11 +70,64 @@ class PackageSale extends React.Component {
         which: '',
         channels: [],
         price: '',
-        productArr: []
+        productArr: [],
+        verifyMode: '',
     }
 
     componentDidMount() {
         this.search();
+    }
+
+    productSaleClick(product){
+        const formItemLayout = {
+            labelCol: {span: 8},
+            wrapperCol: {span: 16}
+        };
+        Modal.info({
+            okText: '确定',
+            onOk: ()=> {
+                console.log('OK')
+            },
+            onCancel: ()=> {
+                console.log('cancle')
+            },//虽然用不到取消按钮，但是还是要设置onCancel事件，如果不设置onCancel的话，点击按钮会报错
+            maskClosable: true,
+            content: (
+                <Form>
+                    <FormItem
+                        label="产品"
+                        {...formItemLayout}
+                    >
+                        <span>{'产品一号'}</span>
+                    </FormItem>
+                    <FormItem
+                        label="销售日期"
+                        {...formItemLayout}
+                    >
+                        <span>{'2017-07-03'}</span>
+                    </FormItem>
+                    <FormItem
+                        label="数量"
+                        {...formItemLayout}
+                    >
+                        <span>{'5'}</span>
+                    </FormItem>
+                    <FormItem
+                        label="价格"
+                        {...formItemLayout}
+                    >
+                        <span>{'999'}</span>
+                    </FormItem>
+                    <FormItem
+                        label="验证方式"
+                        {...formItemLayout}
+                    >
+                        <span>{'内部验证'}</span>
+                        <Button style={{display:'inline-block',marginLeft:'15px'}} size='small' type="primary">验证码下载</Button>
+                    </FormItem>
+                </Form>
+            ),
+        });
     }
 
     search() {
@@ -92,11 +145,13 @@ class PackageSale extends React.Component {
                                 border: '1px solid #f79992',
                                 marginRight: '5px',
                                 marginBottom: '5px',
-                                padding:'3px',
-                                borderRadius:'5px',
+                                padding: '3px',
+                                borderRadius: '5px',
                                 display: 'inline-block'
                             }}>
-                                {saleDate + ' ' + product.productName + ' ' + product.num + '份 '}
+                                <a href="javascript:;" onClick={()=>{this.productSaleClick(product)}}>
+                                    {saleDate + ' ' + product.productName + ' ' + product.num + '份 '}
+                                </a>
                             </span>
                         );
                         productStr.push(productHTML);
@@ -244,6 +299,7 @@ class PackageSale extends React.Component {
             key: 0,
             which: '',
             price: '',
+            verifyMode: '',
         });
         this.search();
     }
@@ -257,6 +313,7 @@ class PackageSale extends React.Component {
             key: 0,
             which: '',
             price: '',
+            verifyMode: '',
         });
     }
 
@@ -331,7 +388,7 @@ class PackageSale extends React.Component {
 
     addConfirm(){
         const confirm = (
-            <Form>
+            <Form style={{marginLeft:'-20px'}}>
                 <FormItem
                     {...formItemLayout}
                     label='渠道编号'
@@ -371,7 +428,7 @@ class PackageSale extends React.Component {
     packageConfirm(){
         const packageOptions = this.state.productArr.map((item)=><Option value={item.value}>{item.label}</Option>);
         const confirm = (
-            <Form>
+            <Form style={{marginLeft:'-20px',width:'210px'}}>
                 <FormItem
                     {...formItemLayout}
                     label="产品"
@@ -417,6 +474,19 @@ class PackageSale extends React.Component {
                         style={{ width: '65%', marginRight: '3%' }}
                         onChange={(value)=>{this.setState({price:value})}}
                     />元
+                </FormItem>
+                <FormItem
+                    {...formItemLayout}
+                    label="验证方式"
+                >
+                    <Select
+                        style={{ width: 120 }}
+                        value={this.state.verifyMode}
+                        onChange={(value)=>{this.setState({verifyMode:value})}}
+                    >
+                        <Option key='1' value='1'>内部验证</Option>
+                        <Option key='0' value='0'>外部验证</Option>
+                    </Select>
                 </FormItem>
             </Form>
         );

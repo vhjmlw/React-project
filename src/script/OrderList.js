@@ -206,6 +206,18 @@ class OrderList extends React.Component {
                 let date = '';
                 date += serviceDate.substr(0,4) + '-' + serviceDate.substr(4,2) + '-' + serviceDate.substr(6,2);
                 // date += ' ' + serviceDate.substr(8,2) + ':' + serviceDate.substr(10,2) + ':' + serviceDate.substr(12,2);
+                let verifyStatus = '';
+                switch (workOrderInfo.verifyStatus){
+                    case 0:
+                        verifyStatus = '未验证';
+                        break;
+                    case 1:
+                        verifyStatus = '验证成功';
+                        break;
+                    case 9:
+                        verifyStatus = '验证失败';
+                        break;
+                }
                 Modal.info({
                     title: '',
                     okText: '确定',
@@ -249,6 +261,12 @@ class OrderList extends React.Component {
                                     {...formItemLayout}
                                 >
                                     <span>{workOrderInfo.verifyCode}</span>
+                                </FormItem>
+                                <FormItem
+                                    label="验证状态"
+                                    {...formItemLayout}
+                                >
+                                    <span>{verifyStatus}</span>
                                 </FormItem>
                                 <FormItem
                                     label="发卡渠道"

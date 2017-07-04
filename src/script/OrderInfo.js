@@ -67,23 +67,36 @@ class OrderInfoForm extends React.Component {
             } else {
                 serviceDate = null;
             }
-            this.props.form.setFieldsValue({
-                phone: workOrderInfo.phone,
-                customerName: workOrderInfo.customerName,
-                sex: workOrderInfo.sex,
-                plate: workOrderInfo.plate,
-                verifyCode: workOrderInfo.verifyCode,
-                channelId: [workOrderInfo.channelId],
-                productId: [workOrderInfo.productId],
-                modalDes: workOrderInfo.modalDes,
-                serviceRegion: [workOrderInfo.serviceRegion],
-                address: workOrderInfo.address,
-                serviceDate: serviceDate,
-                comment: workOrderInfo.remark,
-            });
-            this.setState({modalId:workOrderInfo.modalId});
+            if(workOrderInfo){
+                this.props.form.setFieldsValue({
+                    phone: workOrderInfo.phone,
+                    customerName: workOrderInfo.customerName,
+                    sex: workOrderInfo.sex,
+                    plate: workOrderInfo.plate,
+                    verifyCode: workOrderInfo.verifyCode,
+                    channelId: [workOrderInfo.channelId],
+                    productId: [workOrderInfo.productId],
+                    modalDes: workOrderInfo.modalDes,
+                    serviceRegion: [workOrderInfo.serviceRegion],
+                    address: workOrderInfo.addressCode,
+                    serviceDate: serviceDate,
+                    comment: workOrderInfo.remark,
+                });
+                const matchedAddresses = [{
+                    uid: workOrderInfo.addressCode,
+                    district: '',
+                    name: workOrderInfo.address
+                }];
+                this.setState({
+                    modalId:workOrderInfo.modalId,
+                    verifyStatus:workOrderInfo.verifyStatus,
+                    detailAddress: workOrderInfo.address,
+                    matchedAddresses,
+                    carId: workOrderInfo.carId,
+                    customerId: workOrderInfo.customerId,
+                });
+            }
         }
-
     }
 
     convertValueLabel(items) {
@@ -185,6 +198,8 @@ class OrderInfoForm extends React.Component {
                 values.verifyStatus = this.state.verifyStatus;
                 if(this.props.showDetailId){
                     values.workOrderId = this.props.showDetailId;
+                    values.carId = this.state.carId;
+                    values.customerId = this.state.customerId;
                     Request.synPost('workOrder/modify', values);
                     message.success('修改成功',1.5,()=>{this.props.commit()});
                 } else {
@@ -193,7 +208,6 @@ class OrderInfoForm extends React.Component {
                         message.success('新增成功',1.5,()=>{this.props.commit()});
                     }
                 }
-
             }
         });
     }

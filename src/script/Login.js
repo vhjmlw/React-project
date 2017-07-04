@@ -3,6 +3,7 @@ import { Form, Icon, Input, Button, Checkbox, message } from 'antd';
 import Particle from 'zhihu-particle';
 import Request from './util/Request';
 import $ from 'jquery';
+import CookieUtil from './util/CookieUtil';
 const FormItem = Form.Item;
 
 class LoginForm extends React.Component {
@@ -64,8 +65,23 @@ class LoginForm extends React.Component {
                                 username: userData.username,
                                 password: userData.password,
                             });
-                            this.props.changeRoute(null,'App');
-                            //先占个位置
+
+                            switch(userData.role){
+                                case '客服':
+                                case '客服主管':
+                                    this.props.changeRoute(null,'App');
+                                    break;
+                                case '运营':
+                                    this.props.changeRoute(null,'App/PackageList');
+                                    break;
+                                case '技师':
+                                case '技师主管':
+                                    this.props.changeRoute(null,'App/BillList');
+                                    break;
+                                case '仓管':
+                                    this.props.changeRoute(null,'App/Fitting');
+                                    break;
+                            }
                         } else {
                             message.error('用户名或密码错误');
                         }

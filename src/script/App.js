@@ -1,8 +1,20 @@
 import {Layout, Menu, Icon} from 'antd';
 import {Link} from "react-router";
 import React from "react";
+import CookieUtil from './util/CookieUtil';
 const {Header, Footer, Sider} = Layout;
 const SubMenu = Menu.SubMenu;
+
+const functionLinks = [
+    {link:'/App/OrderList',iconType:'user',name:'服务工单'},
+    {link:'/App/PackageList',iconType:'gift',name:'产品'},
+    {link:'/App/PackageSale',iconType:'filter',name:'渠道'},
+    {link:'/App/Fitting',iconType:'tool',name:'配件'},
+    {link:'/App/Service',iconType:'customer-service',name:'服务'},
+    {link:'/App/BillList',iconType:'bars',name:'收单列表'},
+    {link:'/App/RunningStock',iconType:'car',name:'常备库'},
+    {link:'/App/TodayStock',iconType:'shopping-cart',name:'今日库'},
+];
 
 //content标签中的表格
 //这里是表格的列，columns数组中的一个JSON对象就是一列
@@ -12,6 +24,7 @@ class App extends React.Component {
     state = {
         collapsed: false,
         mode: 'inline',
+        links: [],
     };
     onCollapse = (collapsed) => {
         console.log(collapsed);
@@ -21,9 +34,55 @@ class App extends React.Component {
         });
     }
 
+    componentDidMount() {
+        let role = CookieUtil.getCookie('role');
+        let links = [];
+        switch(role) {
+            case '客服':
+                links = [
+                    functionLinks[0],
+                ];
+                break;
+            case '运营':
+                links = [
+                    functionLinks[1],
+                    functionLinks[2],
+                ];
+                break;
+            case '技师':
+                links = [
+                    functionLinks[5],
+                ];
+                break;
+            case '仓管':
+                links = [
+                    functionLinks[3],
+                ];
+                break;
+            case '客户主管':
+                links = [
+                    functionLinks[0],
+                ];
+                break;
+            case '技师主管':
+                links = [
+                    functionLinks[4],
+                    functionLinks[5],
+                    functionLinks[6],
+                    functionLinks[7],
+                ];
+                break;
+        }
+        this.setState({links});
+    }
+
     render() {
         let key = '';
-        key = window.location.hash.match(/#\/([a-zA-Z/]+)(\?.+|$)/)[1];
+        const pathName = window.location.hash.match(/#\/([a-zA-Z/]+)(\?.+|$)/);
+        if(pathName){
+            key = pathName[1];
+        }
+        console.log(key,666);
         switch(key){
             case 'App':
                 key = '1';
@@ -50,6 +109,17 @@ class App extends React.Component {
                 key = '8';
                 break;
         }
+        let items = this.state.links.map((item,index)=>{
+            return (
+                <Menu.Item key={index}>
+                    <Link to={item.link}>
+                        <Icon type={item.iconType} />
+                        <span className="nav-text">{item.name}</span>
+                    </Link>
+                </Menu.Item>
+            );
+        });
+
         return (
             <Layout>
                 <Sider
@@ -59,6 +129,7 @@ class App extends React.Component {
                 >
                     <div className="logo"/>
                     <Menu theme="dark" mode={this.state.mode} defaultSelectedKeys={[key]}>
+                        {/*{items}*/}
                         <Menu.Item key="1">
                             <Link to="/App">
                                 <Icon type="user"/>

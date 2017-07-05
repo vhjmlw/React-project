@@ -4,6 +4,7 @@ import Request from "./util/Request"
 import OrderInfo from "./OrderInfo";
 import {browserHistory, Link} from "react-router";
 import moment from 'moment';
+import CookieUtil from './util/CookieUtil';
 const Option = Select.Option;
 const FormItem = Form.Item;
 const {RangePicker} = DatePicker;
@@ -14,56 +15,6 @@ const statuses = [
     {value: '2', label: '已服务'},
     {value: '3', label: '已收单'}
 ];
-
-/*const columns = [{
-    title: '客户姓名',
-    dataIndex: 'customerName',
-    key: 'customerName',
-}, {
-    title: '车牌',
-    dataIndex: 'plate',
-    key: 'plate',
-}, {
-    title: '电话',
-    dataIndex: 'phone',
-    key: 'phone',
-}, {
-    title: '服务产品',
-    dataIndex: 'productName',
-    key: 'productName',
-}, {
-    title: '发卡渠道',
-    dataIndex: 'channelName',
-    key: 'channelName',
-}, {
-    title: '服务市场',
-    dataIndex: 'serviceRegion',
-    key: 'serviceRegion',
-}, {
-    title: '服务时间',
-    dataIndex: 'serviceDate',
-    key: 'serviceDate',
-}, {
-    title: '状态',
-    dataIndex: 'status',
-    key: 'status',
-}, {
-    title: '操作',
-    key: 'action',
-    render: (text, record) => {
-        return (<span>
-                    <a onClick={() => {
-
-                    }}>详情</a>
-                    <span className="ant-divider" />
-                    <a onClick={() => {
-
-                    }}>编辑</a>
-                    <span className="ant-divider" />
-                    <a href="javascript:alert('打印页面');">打印</a>
-                </span>)
-    },
-}];*/
 
 class OrderList extends React.Component {
     state = {
@@ -150,6 +101,12 @@ class OrderList extends React.Component {
 
     //查询的逻辑
     search(condition) {
+        const role = CookieUtil.getCookie('role');
+        const createUserId = CookieUtil.getCookie('id');
+        if(role === '客服'){
+            condition.createUserId = createUserId;
+        }
+
         condition = Object.assign(this.state.condition, condition);
         let pageData = Request.synPost("/workOrder/list", condition);
         let data = this.backToFront(pageData.data);
@@ -311,69 +268,6 @@ class OrderList extends React.Component {
                                     <span>{workOrderInfo.remark}</span>
                                 </FormItem>
                             </Form>
-                            {/*<table>
-                                <caption><h2>客户信息</h2></caption>
-                                <tbody>
-                                <tr>
-                                    <td>电话</td>
-                                    <td>{workOrderInfo.phone}</td>
-                                </tr>
-                                <tr>
-                                    <td>姓名</td>
-                                    <td>{workOrderInfo.customerName}</td>
-                                </tr>
-                                <tr>
-                                    <td>性别</td>
-                                    <td>{workOrderInfo.sex}</td>
-                                </tr>
-                                <tr>
-                                    <td>车牌</td>
-                                    <td>{workOrderInfo.plate}</td>
-                                </tr>
-                                <tr>
-                                    <td>验证码</td>
-                                    <td>{workOrderInfo.verifyCode}</td>
-                                </tr>
-                                <tr>
-                                    <td>发卡渠道</td>
-                                    <td>{workOrderInfo.channelName}</td>
-                                </tr>
-                                <tr>
-                                    <td>服务产品</td>
-                                    <td>{workOrderInfo.productName}</td>
-                                </tr>
-                                </tbody>
-                            </table>
-                            <table>
-                                <caption><h2>车辆信息</h2></caption>
-                                <tbody>
-                                <tr>
-                                    <td>车型</td>
-                                    <td>{workOrderInfo.modalDes}</td>
-                                </tr>
-                                </tbody>
-                            </table>
-                            <table>
-                                <caption><h2>服务信息</h2></caption>
-                                <tbody>
-                                <tr>
-                                    <td>服务地址</td>
-                                    <td>{workOrderInfo.address}</td>
-                                </tr>
-                                <tr>
-                                    <td>服务时间</td>
-                                    <td>{workOrderInfo.serviceDate}</td>
-                                </tr>
-                                <tr>
-                                    <td>服务市场</td>
-                                    <td>{workOrderInfo.serviceRegionName}</td>
-                                </tr>
-                                <tr>
-                                    <td>备注</td>
-                                    <td>{workOrderInfo.remark}</td>
-                                </tr>
-                                </tbody>
-                            </table>*/}
                         </div>
                     ),
                 });

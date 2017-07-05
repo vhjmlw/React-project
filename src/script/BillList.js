@@ -4,6 +4,7 @@ import moment from 'moment';
 import Request from './util/Request';
 import BillInfo from './BillInfo';
 import $ from 'jquery';
+import CookieUtil from './util/CookieUtil';
 const FormItem = Form.Item;
 const {RangePicker} = DatePicker;
 
@@ -345,6 +346,13 @@ class BillList extends React.Component {
 
     //封装的查询的逻辑
     handleSearch(condition, currentPageNum, pageSize){
+        const role = CookieUtil.getCookie('role');
+        const id = CookieUtil.getCookie('id');
+        let serverId = '';
+        if(role === '技师'){
+            serverId = id;
+        }
+        //先占个位置，稍后完善
         const serviceUserId = condition.server[0];
         const status = condition.status[0];
         const plate = condition.plateNum;

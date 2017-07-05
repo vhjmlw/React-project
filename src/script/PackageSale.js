@@ -2,6 +2,7 @@ import { Table, Button, Popconfirm, Form, message, Input, Select, DatePicker, In
 import React from 'react';
 import moment from 'moment';
 import Request from "./util/Request";
+import $ from 'jquery';
 const FormItem = Form.Item;
 const Option = Select.Option;
 
@@ -78,56 +79,76 @@ class PackageSale extends React.Component {
         this.search();
     }
 
-    productSaleClick(product){
-        const formItemLayout = {
-            labelCol: {span: 8},
-            wrapperCol: {span: 16}
-        };
-        Modal.info({
-            okText: '确定',
-            onOk: ()=> {
-                console.log('OK')
-            },
-            onCancel: ()=> {
-                console.log('cancle')
-            },//虽然用不到取消按钮，但是还是要设置onCancel事件，如果不设置onCancel的话，点击按钮会报错
-            maskClosable: true,
-            content: (
-                <Form>
-                    <FormItem
-                        label="产品"
-                        {...formItemLayout}
-                    >
-                        <span>{'产品一号'}</span>
-                    </FormItem>
-                    <FormItem
-                        label="销售日期"
-                        {...formItemLayout}
-                    >
-                        <span>{'2017-07-03'}</span>
-                    </FormItem>
-                    <FormItem
-                        label="数量"
-                        {...formItemLayout}
-                    >
-                        <span>{'5'}</span>
-                    </FormItem>
-                    <FormItem
-                        label="价格"
-                        {...formItemLayout}
-                    >
-                        <span>{'999'}</span>
-                    </FormItem>
-                    <FormItem
-                        label="验证方式"
-                        {...formItemLayout}
-                    >
-                        <span>{'内部验证'}</span>
-                        <Button style={{display:'inline-block',marginLeft:'15px'}} size='small' type="primary">验证码下载</Button>
-                    </FormItem>
-                </Form>
-            ),
-        });
+    downloadVerify(id){
+        window.open('http://192.168.1.187:8080/channel/downLoadVerify?id='+id,"_blank");
+    }
+
+    productSaleClick(id){
+        const detailObj = Request.synPost('channel/detailById',{id});
+        if(detailObj){
+            let saleDate = detailObj.saleDate;
+            saleDate = saleDate.substr(0,4) + '-' + saleDate.substr(4,2) + '-' + saleDate.substr(6,2);
+            let display = 'none';
+            if(detailObj.verifyType == 0){
+                display = 'inline-block';
+            }
+
+            const formItemLayout = {
+                labelCol: {span: 8},
+                wrapperCol: {span: 16}
+            };
+            Modal.info({
+                okText: '确定',
+                onOk: ()=> {
+                    console.log('OK')
+                },
+                onCancel: ()=> {
+                    console.log('cancle')
+                },//虽然用不到取消按钮，但是还是要设置onCancel事件，如果不设置onCancel的话，点击按钮会报错
+                maskClosable: true,
+                content: (
+                    <Form>
+                        <FormItem
+                            label="产品"
+                            {...formItemLayout}
+                        >
+                            <span>{detailObj.productName}</span>
+                        </FormItem>
+                        <FormItem
+                            label="销售日期"
+                            {...formItemLayout}
+                        >
+                            <span>{saleDate}</span>
+                        </FormItem>
+                        <FormItem
+                            label="数量"
+                            {...formItemLayout}
+                        >
+                            <span>{detailObj.num}</span>
+                        </FormItem>
+                        <FormItem
+                            label="价格"
+                            {...formItemLayout}
+                        >
+                            <span>{detailObj.price}</span>
+                        </FormItem>
+                        <FormItem
+                            label="验证方式"
+                            {...formItemLayout}
+                        >
+                            <span>{detailObj.verifyType == 0?'内部验证':'外部验证'}</span>
+                            <Button
+                                style={{display:display,marginLeft:'15px'}}
+                                size='small'
+                                type="primary"
+                                onClick={()=>{this.downloadVerify(id)}}
+                            >验证码下载</Button>
+                        </FormItem>
+                    </Form>
+                ),
+            });
+        }
+
     }
 
     search() {
@@ -149,7 +170,7 @@ class PackageSale extends React.Component {
                                 borderRadius: '5px',
                                 display: 'inline-block'
                             }}>
-                                <a href="javascript:;" onClick={()=>{this.productSaleClick(product)}}>
+                                <a href="javascript:;" onClick={()=>{this.productSaleClick(product.saleLogId)}}>
                                     {saleDate + ' ' + product.productName + ' ' + product.num + '份 '}
                                 </a>
                             </span>
@@ -256,6 +277,7 @@ class PackageSale extends React.Component {
         const number = this.state.number;
         const price = this.state.price;
         const date = this.state.date;
+        const verifyMode = this.state.verifyMode;
         const saleDate = date.replace(/[^0-9]/g,'');
         console.log(pkg,date,number,price);
         if(!pkg){
@@ -274,6 +296,10 @@ class PackageSale extends React.Component {
             message.warning('请输入价格');
             return;
         }
+        if(!verifyMode){
+            message.warning('请选择验证方式');
+            return;
+        }
         const packageAndNumber = pkg + number + '份';
         /*const saleList = JSON.parse(window.localStorage.getItem('saleList'));
         for(let item of saleList){
@@ -290,6 +316,7 @@ class PackageSale extends React.Component {
             productId: pkg,
             createUser: 1,
             saleDate: saleDate,
+            verifyType: this.state.verifyMode,
         });
         this.setState({
             packageAndNumber: '',
@@ -484,8 +511,8 @@ class PackageSale extends React.Component {
                         value={this.state.verifyMode}
                         onChange={(value)=>{this.setState({verifyMode:value})}}
                     >
-                        <Option key='1' value='1'>内部验证</Option>
-                        <Option key='0' value='0'>外部验证</Option>
+                        <Option key='0' value='0'>内部验证</Option>
+                        <Option key='1' value='1'>外部验证</Option>
                     </Select>
                 </FormItem>
             </Form>

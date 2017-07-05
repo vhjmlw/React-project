@@ -5,6 +5,7 @@ import Request from './util/Request';
 import $ from 'jquery';
 import CookieUtil from './util/CookieUtil';
 const FormItem = Form.Item;
+const roleArr = ['客服','运营','技师','仓管','客服主管','技师主管'];
 
 class LoginForm extends React.Component {
 
@@ -49,7 +50,6 @@ class LoginForm extends React.Component {
         e.preventDefault();
         this.props.form.validateFields((err, values) => {
             if (!err) {
-                console.log('Received values of form: ', values);
                 $.ajax({
                     type: 'POST',
                     data: {username: values.username,password: values.password},
@@ -60,13 +60,13 @@ class LoginForm extends React.Component {
                             const userData = response.data;
                             this.setCookie({
                                 name: userData.name,
-                                role: userData.role,
+                                role: roleArr[userData.role-1],
                                 id: userData.id,
                                 username: userData.username,
                                 password: userData.password,
                             });
 
-                            switch(userData.role){
+                            switch(roleArr[userData.role-1]){
                                 case '客服':
                                 case '客服主管':
                                     this.props.changeRoute(null,'App');

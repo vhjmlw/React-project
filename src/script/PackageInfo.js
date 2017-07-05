@@ -74,10 +74,6 @@ class PackageInfoForm extends React.Component {
                             throw err;
                         }
                     });
-                    /*let id = Request.synPost("product/create", values);
-                    if (id) {
-                        message.success("添加成功!", 1, ()=>this.props.changeRoute(null,'App/PackageList'));
-                    }*/
                 }
             }
         });

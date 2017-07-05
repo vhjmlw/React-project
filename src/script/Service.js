@@ -5,36 +5,6 @@ import $ from 'jquery';
 const FormItem = Form.Item;
 const Option = Select.Option;
 
-/*const dataSource = [{
- key: '1',
- name: '名称一',
- type: '类型一',
- fitting: '配件一',
- createDate: '时间一',
- price: '报价一',
- }, {
- key: '2',
- name: '名称二',
- type: '类型二',
- fitting: '配件二',
- createDate: '时间二',
- price: '报价二',
- }, {
- key: '3',
- name: '名称三',
- type: '类型三',
- fitting: '配件三',
- createDate: '时间三',
- price: '报价三',
- }];*/
-/*const popStandards = [{
-    value: '规格一',
-    label: '规格一',
-}, {
-    value: '规格二',
-    label: '规格二'
-}];*/
-
 class ModalCustom extends React.Component {
 
     state = {
@@ -788,16 +758,6 @@ class Service extends React.Component {
             modalVisible: true
         });
     }
-
-    /*//删除使用配件选项的逻辑
-     handleTagClose(removedTag) {
-     return ()=> {
-     console.log(removedTag);
-     const tags = this.state.tags.filter(tag => tag.tagStr !== removedTag.tagStr);
-     console.log(tags);
-     this.setState({tags});
-     }
-     }*/
 
     handleFatherState(obj){
         this.setState(obj);

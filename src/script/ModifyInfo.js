@@ -104,27 +104,6 @@ const filterBrands = [{
 
 const brandSelect = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', ];
 
-/*const totalInfo = {
- phoneNumber: '15226374837',
- name: '中德联信',
- plateNumber: '苏NYR808',
- captcha: '1234',
- product: ['到店维修'],
- cardChannel: ['超市赠送'],
- customComment: '客户信息的备注',
- brand: ['丰田'],
- cartype: ['A型车'],
- displacement: ['5.0L'],
- purchaseDate: moment("2017-03-29", "YYYY-MM-DD"),
- oilBrand: ["柴油","83#"],
- filterBrand: ["机滤品牌第二个"],
- carComment: '车辆信息的备注',
- address: ["高新区","马涧路"],
- detailAddress: '这里是详细的地址',
- serviceDate: moment("2017-03-29", "YYYY-MM-DD"),
- serviceComment: '服务信息的备注',
- };*/
-
 class ModifyInfoForm extends React.Component {
 
 	state = {
@@ -1095,17 +1074,6 @@ class ModifyInfoForm extends React.Component {
 						)}
 					</FormItem>
 					<h3>服务信息：</h3>
-					{/*<FormItem
-						{...formItemLayout}
-						label="服务区域"
-					>
-						{getFieldDecorator('area', {
-							rules: [{type: 'array', required: true, message: '请选择服务区域'}],
-							initialValue: this.state.serviceInfo.area,
-						})(
-							<Cascader options={area} size="large" style={{width:'110px'}} placeholder="请选择服务区域" />
-						)}
-					</FormItem>*/}
 					<FormItem
 						{...formItemLayout}
 						label="服务地址"

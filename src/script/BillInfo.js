@@ -333,14 +333,6 @@ class BillInfo extends React.Component {
         return dateFormate;
     }
 
-    /*handleTagClose(removedTag){
-        console.log(removedTag);
-        const tags = this.state.tags.filter((tag)=>{
-            return tag != removedTag;
-        });
-        this.setState({tags});
-    }*/
-
     //点击tag气泡确定按钮，删除当前tag的逻辑
     handleTagPopOk(){
         const saleLog = this.state.saleLog;
@@ -1008,12 +1000,6 @@ class BillInfo extends React.Component {
                         onCancel={()=>{this.cancelModal()}}
                     >
                         {
-                        /*
-                        part=={partStr:partStr,partCate:part.partCateName,partId:part.partId,partNum:part.num};
-                        let obj = {
-                            brandOptions:{value: '',label: ''},
-                            part
-                        }*/
                         this.state.brandOptionsArr.map((obj,index)=>{
                             let cateId;
                             for(let item of this.state.popTypes){

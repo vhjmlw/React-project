@@ -202,25 +202,6 @@ class PackageSale extends React.Component {
 
     handlePackageClick(record){
         return ()=>{
-            /*if(record.packageAndNumber){
-                this.setState({
-                    packageAndNumber: record.packageAndNumber,
-                    package: record.package,
-                    date: record.date,
-                    number: record.number,
-                    key: record.key,
-                    which: 'package',
-                });
-            } else {
-                this.setState({
-                    packageAndNumber: '',
-                    package: '',
-                    date: '',
-                    number: '',
-                    key: record.key,
-                    which: 'package',
-                });
-            }*/
             const productList = Request.synPost('/product/list');
             let productArr = [];
             if(productList && productList.length > 0){
@@ -301,14 +282,6 @@ class PackageSale extends React.Component {
             return;
         }
         const packageAndNumber = pkg + number + '份';
-        /*const saleList = JSON.parse(window.localStorage.getItem('saleList'));
-        for(let item of saleList){
-            if(item.key === this.state.key){
-                Object.assign(item,{packageAndNumber,package:pkg,date,number});
-                break;
-            }
-        }
-        window.localStorage.setItem('saleList',JSON.stringify(saleList));*/
         Request.synPost('/channel/addProduct',{
             num: number,
             price: price,

@@ -8,50 +8,6 @@ import CookieUtil from './util/CookieUtil';
 const FormItem = Form.Item;
 const {RangePicker} = DatePicker;
 
-/*const dataSource = [{
-    key: '1',
-    server: '尤玉溪',
-    plateNum: '苏NYR808',
-    phoneNum: '15236547854',
-    date: '2017-06-07',
-    address: '苏州市姑苏区人民路152号',
-    channel: '上门',
-    status: '待服务',
-},{
-    key: '2',
-    server: '尤玉溪',
-    plateNum: '苏NYR808',
-    phoneNum: '15236547854',
-    date: '2017-06-07',
-    address: '苏州市姑苏区人民路152号',
-    channel: '上门',
-    status: '待服务',
-},{
-    key: '3',
-    server: '尤玉溪',
-    plateNum: '苏NYR808',
-    phoneNum: '15236547854',
-    date: '2017-06-07',
-    address: '苏州市姑苏区人民路152号',
-    channel: '上门',
-    status: '待服务',
-},{
-    key: '4',
-    server: '尤玉溪',
-    plateNum: '苏NYR808',
-    phoneNum: '15236547854',
-    date: '2017-06-07',
-    address: '苏州市姑苏区人民路152号',
-    channel: '上门',
-    status: '待服务',
-}];*/
-/*const servers = [{
-    value: '尤玉溪',
-    label: '尤玉溪',
-},{
-    value: '贺师俊',
-    label: '贺师俊',
-}];*/
 const statuses = [{
     value: 0,
     label: '新建',
@@ -186,14 +142,6 @@ class BillList extends React.Component {
                         </span>
                     );
                 }
-                /*return (
-                    <span>
-                        {over}
-                        <span className="ant-divider"/>
-                        {/!*如果有技师，则显示重新分配；如果没有技师，则显示分配*!/}
-                        {/!*{record.server?afresh:allot}*!/}
-                    </span>
-                );*/
             }
         }],
         condition: {

@@ -90,28 +90,6 @@ class LoginForm extends React.Component {
                         throw err;
                     }
                 });
-
-
-                /*fetch(`/user/login?username=${values.username}&password=${values.password}`).then((response)=>{
-                    return response.json();
-                }).then((json)=>{
-                    if(json.code === '200' && json.data){
-                        Object.assign(json.data, values);
-                        this.setCookie(json.data);
-                        let role = json.data.role;
-                        if (role == "总监") {
-                            this.props.changeRoute(null, `App/TeamDistribution`);
-                        } else if (role == "团队长") {
-                            this.props.changeRoute(null, `App/SalesmanDistribution`);
-                        } else if (role == "业务员") {
-                            this.props.changeRoute(null, `App/SearchList`);
-                        }
-                    } else {
-                        message.warning('用户名或密码错误');
-                    }
-                }).catch((error)=>{
-                    throw error;
-                });*/
             }
         });
     }

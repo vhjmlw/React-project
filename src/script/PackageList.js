@@ -3,20 +3,6 @@ import React from "react";
 import Request from './util/Request';
 const FormItem = Form.Item;
 
-/*const packageList = [
-    {
-        packageName: '保养套餐1',
-        packagePrice: '666',
-        packageItem: '发动机清洗',
-        packagePart: '东风机滤一个',
-    },{
-        packageName: '保养套餐1',
-        packagePrice: '666',
-        packageItem: '发动机清洗',
-        packagePart: '东风机滤一个',
-    },
-];*/
-
 class PackageList extends React.Component{
     state = {
         columns: [{
@@ -147,15 +133,6 @@ class PackageList extends React.Component{
     }
 
     render(){
-        /*console.log(JSON.parse(window.localStorage.getItem("packageList")));
-        let packageList = JSON.parse(window.localStorage.getItem('packageList'));
-        if(packageList){
-            packageList = packageList.map((item)=>{
-                item.packageItem = item.packageItem.join(" - ");
-                item.packageAccessory = item.packageAccessory.join(" - ");
-                return item;
-            });
-        }*/
         const formItemLayout = {
             labelCol: {span: 8},
             wrapperCol: {span: 16}

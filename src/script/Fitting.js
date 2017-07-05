@@ -4,51 +4,6 @@ const FormItem = Form.Item;
 const Option = Select.Option;
 import Request from './util/Request';
 
-/*const types = [{
-    value: '类型一',
-    label: '类型一',
-}, {
-    value: '类型二',
-    label: '类型二',
-}, {
-    value: '类型三',
-    label: '类型三',
-}];
-
-const brands = [{
-    value: '品牌一',
-    label: '品牌一',
-}, {
-    value: '品牌二',
-    label: '品牌二',
-}, {
-    value: '品牌三',
-    label: '品牌三',
-}];
-
-const dataSource = [{
-    key: '1',
-    type: '类型一',
-    brand: '品牌一',
-    name: '名称一',
-    unit: '单位一',
-    standard: '规格一',
-}, {
-    key: '2',
-    type: '类型二',
-    brand: '品牌二',
-    name: '名称二',
-    unit: '单位二',
-    standard: '规格二',
-}, {
-    key: '3',
-    type: '类型三',
-    brand: '品牌三',
-    name: '名称三',
-    unit: '单位三',
-    standard: '规格三',
-}]*/
-
 class Fitting extends React.Component {
 
     state = {
@@ -131,26 +86,6 @@ class Fitting extends React.Component {
             types.push(obj);
         }
         this.setState({types});
-        /*fetch('/part/listPartBrand').then((response)=> {
-            return response.json();
-        }).then((json)=> {
-            if (json.code === '200') {
-                let types = [];
-                const typeArray = json.data;
-                for (let item of typeArray) {
-                    const obj = {
-                        value: item.id,
-                        label: item.name,
-                    };
-                    types.push(obj);
-                }
-                this.setState({types});
-            } else {
-                message.error(`请求异常：${json.message}`);
-            }
-        }).catch((err)=> {
-            throw err;
-        });*/
         //发送请求，获取品牌选项
         let brandArray = Request.synPost('part/listPartBrand');
         let brands = [];
@@ -162,24 +97,6 @@ class Fitting extends React.Component {
             brands.push(obj);
         }
         this.setState({brands});
-        /*fetch('part/listPartCate').then((response)=> {
-            return response.json();
-        }).then((json)=> {
-            if (json.code === '200') {
-                let brands = [];
-                const brandArray = json.data;
-                for (let item of brandArray) {
-                    const obj = {
-                        value: item.id,
-                        label: item.name,
-                    }
-                    brands.push(obj);
-                }
-                this.setState({brands});
-            } else {
-                message.error(`请求异常：${json.message}`);
-            }
-        });*/
         const condition = this.state.condition;
         const currentPageNum = this.state.currentPageNum;
         const pageSize = this.state.pageSize;

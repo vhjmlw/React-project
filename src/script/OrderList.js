@@ -135,11 +135,6 @@ class OrderList extends React.Component {
         for (let item of data) {
             item.serviceDate = item.serviceDate.substring(0, 4) + "-" + item.serviceDate.substring(4, 6) + "-" + item.serviceDate.substring(6, 8);
             item.key = item.workOrderId;
-            /*item.status = statuses.map((e)=>{
-                if (item.status == e.value) {
-                    return e.label;
-                }
-            })[0];*/
             for(let status of statuses){
                 if(item.status == status.value){
                     item.status = status.label;
@@ -333,26 +328,6 @@ class OrderList extends React.Component {
                     showDetailId={this.state.showDetailId}
                     back={
                         ()=> {
-                            {/*let condition = {};
-                             if (this.state.showDetailId === null) {
-                             condition = {
-                             createDateBegin: "",
-                             createDateEnd: "",
-                             serviceDateBegin: "",
-                             serviceDateEnd: "",
-                             plate: "",
-                             phone: "",
-                             status: "",
-                             serviceUserId: "",
-                             serviceRegionName: "",
-                             channelId: "",
-                             productId: "",
-                             pageSize: 10,
-                             currentPage: 1,
-                             }
-                             } else {
-                             condition = this.state.condition;
-                             }*/}
                             this.search(this.state.condition);
                         }
                     }

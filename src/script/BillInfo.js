@@ -223,7 +223,7 @@ class BillInfo extends React.Component {
     //技师销售pop确定按钮的逻辑
     handlePopOK(e) {
         e.preventDefault();
-        let { popTypes, popBrands, popType, popBrand, popName, popStandard, popAmount, popPrice, tags, unit, totalPrice } = this.state;
+        let { popTypes, popBrands, popType, popBrand, popName, popStandard, popAmount, popPrice, tags, unit } = this.state;
         if(popType.length===0){
            message.warning('请选择类型');
             return;
@@ -282,6 +282,7 @@ class BillInfo extends React.Component {
             message.warning('不能添加相同的两项');
             return;
         }
+        //技师销售添加成功之后，重新发送请求，请求所有的技师销售，代码更改立此flag
         Request.synPost('/technician/saleLog',{
             partId,
             technicianId: serverId,
@@ -290,10 +291,24 @@ class BillInfo extends React.Component {
             salePrice: price,
             createUser: CookieUtil.getCookie('id'),//获取技师主管的ID
         });
-        tags.push(tag);
-        totalPrice += popPrice;//计算出技师销售总价，在总价的基础之上再加上当前输入的价格popPrice
+        const parts = Request.synPost('/technician/getSaleDetailByOrderId',{
+            id: detailId
+        });
+        let partArr = [];
+        let saleLog = {};
+        let totalPrice = 0;
+        for(let item of parts){
+            let partStr = ``;
+            partStr += `${item.partCateName} ${item.partBrandName} ${item.partName} ${item.standard} ${item.num}${item.unit} 共${item.salePrice}元`;
+            partArr.push(partStr);
+            saleLog[item.saleLogId] = partStr;
+            totalPrice += Number(item.salePrice);
+        }
+
         this.setState({
-            tags,
+            tags:partArr,
+            saleLog,
+            totalPrice,
             popVisible: false,
             popType: [],
             popBrand: [],
@@ -304,7 +319,6 @@ class BillInfo extends React.Component {
             unit: '',
             nameDisabled: true,
             otherDisabled: true,
-            totalPrice,
             standardAndUnit:{}
         });
     }

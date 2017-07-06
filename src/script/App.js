@@ -1,4 +1,4 @@
-import {Layout, Menu, Icon} from 'antd';
+import {Layout, Menu, Icon, Button, Popconfirm} from 'antd';
 import {Link} from "react-router";
 import React from "react";
 import CookieUtil from './util/CookieUtil';
@@ -66,6 +66,13 @@ class App extends React.Component {
                 break;
             case '技师主管':
                 links = [
+                    functionLinks[5],
+                    functionLinks[6],
+                    functionLinks[7],
+                ];
+                break;
+            case '服务总监':
+                links = [
                     functionLinks[4],
                     functionLinks[5],
                     functionLinks[6],
@@ -74,6 +81,14 @@ class App extends React.Component {
                 break;
         }
         this.setState({links});
+    }
+
+    quitAccount(){
+        this.props.history.pushState('/');
+        CookieUtil.delCookie('name');
+        CookieUtil.delCookie('role');
+        CookieUtil.delCookie('id');
+        CookieUtil.delCookie('regionId');
     }
 
     render() {
@@ -181,7 +196,21 @@ class App extends React.Component {
                     </Menu>
                 </Sider>
                 <Layout>
-                    <Header style={{background: '#fff', padding: 0}}><h2 style={{marginLeft: "15px"}}>优典养车</h2></Header>
+                    <Header style={{background: '#fff', padding: 0, position:'relative'}}>
+                        <span style={{marginLeft: "15px",fontSize:'17px'}}>优典养车</span>
+                        <div style={{position:'absolute',right:'15px',top:'15px'}}>
+                            <span style={{fontSize:'13px'}}>{CookieUtil.getCookie('role')+'：'+CookieUtil.getCookie('name')}</span>
+                            <Popconfirm
+                                title="确认退出 ？"
+                                okText="确定"
+                                cancelText="取消"
+                                onConfirm={()=>{this.quitAccount()}}
+                                onCancel={()=>{console.log('cancel')}}
+                            >
+                                <Button style={{marginLeft:'20px'}} type="primary">退出</Button>
+                            </Popconfirm>
+                        </div>
+                    </Header>
                     <div className="ant-layout-content">
                         {this.props.children}
                     </div>

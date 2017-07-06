@@ -139,8 +139,13 @@ class RunningStock extends React.Component {
     }
 
     componentDidMount() {
+        const role = CookieUtil.getCookie('role');
+        let regionId = '';
+        if(role === '技师主管'){
+            regionId = CookieUtil.getCookie('regionId') || '';
+        }
         const serverData = Request.synPost('technician/findByRegionIdAndLeaderId',{
-            regionId: CookieUtil.getCookie('regionId') || '',
+            regionId: regionId,
             // leaderId: CookieUtil.getCookie('id') || '',
         });
         let serverArr = [];
@@ -239,7 +244,12 @@ class RunningStock extends React.Component {
         const partId = condition.part[0];
         const serialNumber = condition.serialNumber;
         const isNotFull = condition.supplyOrNot;
-        const regionId = CookieUtil.getCookie('regionId') || '';
+
+        let regionId = '';
+        const role = CookieUtil.getCookie('role');
+        if(role === '技师主管'){
+            regionId = CookieUtil.getCookie('regionId') || '';
+        }
         const backData = Request.synPost('technicianInventory/listCommonStorage',{
             technicianId,
             partCateId,

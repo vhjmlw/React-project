@@ -134,8 +134,13 @@ class TodayStock extends React.Component {
     }
 
     componentDidMount() {
+        const role = CookieUtil.getCookie('role');
+        let regionId = '';
+        if(role === '技师主管'){
+            regionId = CookieUtil.getCookie('regionId') || '';
+        }
         const serverData = Request.synPost('technician/findByRegionIdAndLeaderId',{
-            regionId: CookieUtil.getCookie('regionId') || '',
+            regionId: regionId,
             // leaderId: CookieUtil.getCookie('id') || '',
         });
         let serverArr = [];
@@ -233,7 +238,12 @@ class TodayStock extends React.Component {
         const partBrandId = condition.brand[0];
         const partId = condition.part[0];
         const serialNumber = condition.serialNumber;
-        const regionId = CookieUtil.getCookie('regionId') || '';
+
+        let regionId = '';
+        const role = CookieUtil.getCookie('role');
+        if(role === '技师主管'){
+            regionId = CookieUtil.getCookie('regionId') || '';
+        }
         const backData = Request.synPost('technicianInventory/listTodayStorage',{
             technicianId,
             partCateId,

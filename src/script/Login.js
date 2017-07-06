@@ -5,7 +5,7 @@ import Request from './util/Request';
 import $ from 'jquery';
 import CookieUtil from './util/CookieUtil';
 const FormItem = Form.Item;
-const roleArr = ['客服','运营','技师','仓管','客服主管','技师主管'];
+const roleArr = ['客服','运营','技师','仓管','客服主管','技师主管','服务总监'];
 
 class LoginForm extends React.Component {
 
@@ -83,6 +83,9 @@ class LoginForm extends React.Component {
                                     break;
                                 case '仓管':
                                     this.props.changeRoute(null,'App/Fitting');
+                                    break;
+                                case '服务总监':
+                                    this.props.changeRoute(null,'App/Service');
                                     break;
                             }
                         } else {

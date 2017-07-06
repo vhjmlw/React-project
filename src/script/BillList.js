@@ -221,6 +221,17 @@ class BillList extends React.Component {
                     servers.push(obj);
                 }
             }
+        } else if(role === '服务总监') {
+            const serverArray = Request.synPost('/technician/findByRegionIdAndLeaderId');
+            if (serverArray && serverArray.length > 0) {
+                for (let item of serverArray) {
+                    let obj = {
+                        value: item.userId,
+                        label: item.name,
+                    }
+                    servers.push(obj);
+                }
+            }
         }
 
         this.setState({

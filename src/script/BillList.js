@@ -210,7 +210,7 @@ class BillList extends React.Component {
         } else if(role === '技师主管'){
             const serverArray = Request.synPost('/technician/findByRegionIdAndLeaderId', {
                 regionId: CookieUtil.getCookie('regionId') || '',
-                leaderId: CookieUtil.getCookie('id') || '',
+                // leaderId: CookieUtil.getCookie('id') || '',
             });
             if (serverArray && serverArray.length > 0) {
                 for (let item of serverArray) {

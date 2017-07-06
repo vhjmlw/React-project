@@ -163,7 +163,7 @@ class OrderInfoForm extends React.Component {
                 });
                 if(currentValue === value){
                     if (addressesObj.message === "ok") {
-                        matchedAddresses = addressesObj.result;
+                        matchedAddresses = addressesObj.result.slice(1);//移除第一个返回的结果，第一个没有意义
                     }
                 }
             }

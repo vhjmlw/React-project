@@ -2,6 +2,7 @@ import React from 'react';
 import {Button, Form, Popconfirm, Tag, Cascader, InputNumber, message, Modal, Row, Col} from 'antd';
 import Request from './util/Request';
 import $ from 'jquery';
+import CookieUtil from './util/CookieUtil';
 const FormItem = Form.Item;
 
 class BillInfo extends React.Component {
@@ -287,7 +288,7 @@ class BillInfo extends React.Component {
             num: amount,
             orderId: detailId,
             salePrice: price,
-            createUser: 1,
+            createUser: CookieUtil.getCookie('id'),//获取技师主管的ID
         });
         tags.push(tag);
         totalPrice += popPrice;//计算出技师销售总价，在总价的基础之上再加上当前输入的价格popPrice
@@ -582,7 +583,7 @@ class BillInfo extends React.Component {
                 nowPartId:value[0],
                 num:partNum,
                 orderId:this.props.detailId,
-                createUser: 1,
+                createUser: CookieUtil.getCookie('id'),//获取技师主管的ID
                 technicianId: this.state.dataObj.serviceUser,
             });
         }

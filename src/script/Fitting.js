@@ -3,6 +3,7 @@ import {Table, Input, InputNumber, Button, Form, Popconfirm, Row, Col, Cascader,
 const FormItem = Form.Item;
 const Option = Select.Option;
 import Request from './util/Request';
+import CookieUtil from './util/CookieUtil';
 
 class Fitting extends React.Component {
 
@@ -231,7 +232,7 @@ class Fitting extends React.Component {
             brandId: this.state.newbrand[0],
             unit: this.state.unitInput,
             standard: this.state.standardInput,
-            createUser: 1,
+            createUser: CookieUtil.getCookie('id'),//获取仓管人员的ID;
             price: this.state.priceInput,
             serialNumber: this.state.seriesNumberInput,
         });
@@ -277,7 +278,7 @@ class Fitting extends React.Component {
             return;
         }
         Request.synPost('/part/addCate',{
-            createUser: 1,
+            createUser: CookieUtil.getCookie('id'),//获取仓管人员的ID;
             CateName: this.state.newtypeName
         });
         message.success('新增成功',1.5);
@@ -304,7 +305,7 @@ class Fitting extends React.Component {
             return;
         }
         Request.synPost('/part/addBrand',{
-            createUser: 1,
+            createUser: CookieUtil.getCookie('id'),//获取仓管人员的ID;
             brandName: this.state.newbrandName
         });
         message.success('新增成功',1.5);

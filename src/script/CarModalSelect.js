@@ -128,10 +128,10 @@ class CarModalSelect extends React.Component {
             });
         }
         for (let key in yearMap) {
-            years.push(key);
+            years.push(yearMap[key]);//之前是years.push(key)，写法有误，key为null的话会自动转换为'null'
         }
         for (let key in displacementMap) {
-            displacements.push(key);
+            displacements.push(displacementMap[key]);
         }
         return {
             factories: factories,
@@ -398,7 +398,7 @@ class CarModalSelect extends React.Component {
                                                     <a onClick={()=>{
                                                             this.selectFactory(item.id, item.name);
                                                         }}
-                                                       className={item.id === this.state.selectedFactoryId ? 'navList' : ''}
+                                                       className={item.id == this.state.selectedFactoryId ? 'navList' : ''}
                                                     >{item.name}</a>
                                                 </li>
                                             );
@@ -448,6 +448,7 @@ class CarModalSelect extends React.Component {
                                                         onClick={()=>{
                                                             this.selectModal(item.id, item.modalName);
                                                         }}
+                                                        style={{display:item.modalName?'inline':'none'}}//如果modalName没有值，则不显示当前button
                                                         className={
                                                             item.id == this.state.selectedModalId ? "ant-btn ant-btn-primary" : "ant-btn"
                                                         }

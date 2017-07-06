@@ -2,6 +2,7 @@ import { Tabs, Form, Input, Button, Select, Tag, Popconfirm, message, InputNumbe
 import React from 'react';
 import Request from "./util/Request";
 import $ from 'jquery';
+import CookieUtil from './util/CookieUtil';
 
 const TabPane = Tabs.TabPane;
 const FormItem = Form.Item;
@@ -53,7 +54,7 @@ class PackageInfoForm extends React.Component {
                         serviceArr.push(obj);
                     }
                     values.serviceLists = serviceArr;
-                    values.createUser = 1;
+                    values.createUser = CookieUtil.getCookie('id');//获取运营人员的ID;
                     values.cate = values.price;//接口文档中没有price，cate应该就是price？
                     $.ajax({
                         url: '/product/create',

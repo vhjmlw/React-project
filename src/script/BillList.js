@@ -24,13 +24,6 @@ const statuses = [{
     value: 9,
     label: '删除',
 }];
-/*const channels = [{
-    value: '上门',
-    label: '上门',
-},{
-    value: '自取',
-    label: '自取',
-}];*/
 
 class BillList extends React.Component {
 
@@ -207,18 +200,26 @@ class BillList extends React.Component {
             }
         }
 
-        const serverArray = Request.synPost('/technician/findByRegionIdAndLeaderId', {
-            regionId: 2,
-            leaderId: 1,
-        });
+        const role = CookieUtil.getCookie('role');
         let servers = [];
-        if (serverArray && serverArray.length > 0) {
-            for (let item of serverArray) {
-                let obj = {
-                    value: item.userId,
-                    label: item.name,
+        if(role === '技师'){
+            servers = [{
+                value: CookieUtil.getCookie('id'),
+                label: CookieUtil.getCookie('name'),
+            }];
+        } else if(role === '技师主管'){
+            const serverArray = Request.synPost('/technician/findByRegionIdAndLeaderId', {
+                regionId: CookieUtil.getCookie('regionId') || '',
+                leaderId: CookieUtil.getCookie('id') || '',
+            });
+            if (serverArray && serverArray.length > 0) {
+                for (let item of serverArray) {
+                    let obj = {
+                        value: item.userId,
+                        label: item.name,
+                    }
+                    servers.push(obj);
                 }
-                servers.push(obj);
             }
         }
 
@@ -261,19 +262,19 @@ class BillList extends React.Component {
     }
 
     //后台请求回来的字段转换为相对应的前端的字段
-    backToFront(backArray,statusDescribtion){
-        const desArr = statusDescribtion.split('，');
-        const desObj = {};
-        for(let item of desArr){
-            const arr = item.split(":");
-            desObj[arr[0]] = arr[1];
-        }
+    backToFront(backArray){
         let frontArray = [];
         for(let item of backArray){
             let date = '';
             const serviceDate = item.serviceDate;
             if(serviceDate){
                 date += serviceDate.substr(0,4)+'-'+serviceDate.substr(4,2)+'-'+serviceDate.substr(6,2);
+            }
+            let status = '';
+            for(let i of statuses){
+                if(i.value === item.status){
+                    status = i.label;
+                }
             }
             let obj = {
                 key: item.workOrderId,
@@ -284,11 +285,11 @@ class BillList extends React.Component {
                 date: date,
                 address: item.address,
                 channel: item.channelName,
-                status: desObj[item.status]
+                status: status
             }
             frontArray.push(obj);
         }
-        this.setState({statusObj:desObj});
+        // this.setState({statusObj:desObj});
         return frontArray;
     }
 
@@ -296,9 +297,14 @@ class BillList extends React.Component {
     handleSearch(condition, currentPageNum, pageSize){
         const role = CookieUtil.getCookie('role');
         const id = CookieUtil.getCookie('id');
-        let serverId = '';
+        const regionId = CookieUtil.getCookie('regionId');
+        let createUserId = '';
         if(role === '技师'){
-            serverId = id;
+            createUserId = id;
+        }
+        let serviceRegionName = '';
+        if(role === '技师主管'){
+            serviceRegionName = regionId;
         }
         //先占个位置，稍后完善
         const serviceUserId = condition.server[0];
@@ -312,7 +318,7 @@ class BillList extends React.Component {
         let serviceDateEnd = condition.endDate;
         serviceDateEnd = serviceDateEnd.replace(/[^0-9]/g,'');
 
-        const dataObj = Request.synPost('workOrder/list',{
+        const dataObj = Request.synPost('workOrder/listForTechnician',{
             serviceUserId,
             status,
             serviceDateBegin,
@@ -321,11 +327,12 @@ class BillList extends React.Component {
             phone,
             channelId,
             currentPage,
-            pageSize
+            pageSize,
+            createUserId,
+            serviceRegionName
         });
-        const statusDescribtion = dataObj.statusDescribtion;
         const dataArray = dataObj.data;
-        const dataSource = this.backToFront(dataArray,statusDescribtion);
+        const dataSource = this.backToFront(dataArray);
         this.setState({
             dataSource,
             totalNum: dataObj.totalNum,
@@ -401,7 +408,8 @@ class BillList extends React.Component {
                 <Row type="flex" align="middle">
                     <Col span={18}>
                         <Row>
-                            <Col span={8}>
+                            {/*如果是技师，则不显示技师选项*/}
+                            <Col span={8} style={{display:CookieUtil.getCookie('role')==='技师'?'none':'inline-block'}}>
                                 <FormItem
                                     label="技师"
                                     {...formItemLayout}

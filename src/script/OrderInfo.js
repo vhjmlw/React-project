@@ -3,6 +3,7 @@ import React from 'react';
 import Request from "./util/Request";
 import CarModalSelect from "./CarModalSelect";
 import moment from 'moment';
+import CookieUtil from './util/CookieUtil';
 
 const FormItem = Form.Item;
 const Option = Select.Option;
@@ -46,11 +47,6 @@ class OrderInfoForm extends React.Component {
     };
 
     componentDidMount() {
-        /*let serviceRegions = Request.synPost("serviceRegion/list");
-        for (let serviceRegion of serviceRegions) {
-            serviceRegion.value = serviceRegion.id;
-            serviceRegion.label = serviceRegion.name;
-        }*/
         let channels = Request.synPost("channel/listByNameAndCode");
         let products = Request.synPost("product/list");
         this.setState({
@@ -191,7 +187,7 @@ class OrderInfoForm extends React.Component {
                 values.channelId = values.channelId[0];
                 values.productId = values.productId[0];
                 values.serviceRegion = values.serviceRegion[0];
-                values.createUser = 1;
+                values.createUser = CookieUtil.getCookie('id') || '';//获取客户人员的ID
                 values.remark = values.comment;
                 values.addressCode = values.address;
                 values.address = this.state.detailAddress;

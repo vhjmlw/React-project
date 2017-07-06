@@ -2,6 +2,7 @@ import React from 'react';
 import { Button, Table, Modal, Form, Input, InputNumber, Select, Tag, Popconfirm, Row, Col, Cascader, message } from 'antd';
 import Request from './util/Request';
 import $ from 'jquery';
+import CookieUtil from './util/CookieUtil';
 const FormItem = Form.Item;
 const Option = Select.Option;
 
@@ -242,7 +243,7 @@ class ModalCustom extends React.Component {
             name: this.state.modalName,
             price: this.state.modalPrice,
             cate: this.state.modalType,
-            createUser: 1,
+            createUser: CookieUtil.getCookie('id'),//获取技师主管的ID;
             partRelModels: dataArray
         };
         let frontArray;

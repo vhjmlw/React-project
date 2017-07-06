@@ -3,6 +3,7 @@ import React from 'react';
 import moment from 'moment';
 import Request from "./util/Request";
 import $ from 'jquery';
+import CookieUtil from './util/CookieUtil';
 const FormItem = Form.Item;
 const Option = Select.Option;
 
@@ -287,7 +288,7 @@ class PackageSale extends React.Component {
             price: price,
             channeId: this.state.key,
             productId: pkg,
-            createUser: 1,
+            createUser: CookieUtil.getCookie('id'),//获取运营人员的ID
             saleDate: saleDate,
             verifyType: this.state.verifyMode,
         });
@@ -330,7 +331,7 @@ class PackageSale extends React.Component {
             Request.synPost('/channel/add',{
                 name: this.state.name,
                 code: this.state.channel,
-                userId: 1,
+                userId: CookieUtil.getCookie('id') || '',//获取运营人员的ID
             });
             message.success('添加成功',1);
             this.search();
@@ -364,7 +365,7 @@ class PackageSale extends React.Component {
             Request.synPost('/channel/modify',{
                 name,
                 code: channel,
-                modifyUser: 1,
+                modifyUser: CookieUtil.getCookie('id'),//获取运营人员的ID
                 id: channelId,
             });
             this.search();

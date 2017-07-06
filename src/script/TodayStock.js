@@ -2,6 +2,7 @@ import React from 'react';
 import { Row, Col, Form, Input, Button, Cascader, Table, Select, Popconfirm, InputNumber, message } from 'antd';
 import Request from './util/Request';
 import $ from 'jquery';
+import CookieUtil from './util/CookieUtil';
 const FormItem = Form.Item;
 const Option = Select.Option;
 
@@ -134,8 +135,8 @@ class TodayStock extends React.Component {
 
     componentDidMount() {
         const serverData = Request.synPost('technician/findByRegionIdAndLeaderId',{
-            regionId: 2,
-            leaderId: 1,
+            regionId: CookieUtil.getCookie('regionId') || '',
+            // leaderId: CookieUtil.getCookie('id') || '',
         });
         let serverArr = [];
         if(serverData && serverData.length > 0){
@@ -188,7 +189,7 @@ class TodayStock extends React.Component {
             partId,
             technicianId,
             num: addStockNum,
-            userId: 1,
+            userId: CookieUtil.getCookie('id'),//获取技师主管的ID
         });
         this.setState({addStockNum:0});
         this.handleSearch(this.state.condition, this.state.currentPageNum, this.state.pageSize);
@@ -207,7 +208,7 @@ class TodayStock extends React.Component {
             partId,
             technicianId,
             num: delStockNum,
-            userId: 1,
+            userId: CookieUtil.getCookie('id'),//获取技师主管的ID
         });
         this.setState({delStockNum:0});
         this.handleSearch(this.state.condition, this.state.currentPageNum, this.state.pageSize);
@@ -232,7 +233,7 @@ class TodayStock extends React.Component {
         const partBrandId = condition.brand[0];
         const partId = condition.part[0];
         const serialNumber = condition.serialNumber;
-        const regionId = 2;
+        const regionId = CookieUtil.getCookie('regionId') || '';
         const backData = Request.synPost('technicianInventory/listTodayStorage',{
             technicianId,
             partCateId,
@@ -415,7 +416,7 @@ class TodayStock extends React.Component {
                 partId,
                 technicianId,
                 num,
-                userId:1
+                userId:CookieUtil.getCookie('id'),//获取技师主管的ID
             },
             dataType: 'json',
             success: (response)=>{

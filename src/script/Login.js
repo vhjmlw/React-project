@@ -75,7 +75,10 @@ class LoginForm extends React.Component {
                                     this.props.changeRoute(null,'App/PackageList');
                                     break;
                                 case '技师':
+                                    this.props.changeRoute(null,'App/BillList');
+                                    break;
                                 case '技师主管':
+                                    document.cookie = `regionId=${encodeURIComponent(userData.regionId)};max-age=${7*24*60*60}`;
                                     this.props.changeRoute(null,'App/BillList');
                                     break;
                                 case '仓管':

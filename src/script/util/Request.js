@@ -10,7 +10,7 @@ class Request {
         $.ajax({
             type: 'POST',
             async: false,
-            url: url,
+            url: "cus/" + url,
             data: data,
             success: function (json) {
                 if (json.code === "200") {

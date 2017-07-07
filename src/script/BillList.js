@@ -309,16 +309,16 @@ class BillList extends React.Component {
         const role = CookieUtil.getCookie('role');
         const id = CookieUtil.getCookie('id');
         const regionId = CookieUtil.getCookie('regionId');
-        let createUserId = '';
+        let serviceUserId = '';
         if(role === '技师'){
-            createUserId = id;
+            serviceUserId = id;
         }
         let serviceRegionName = '';
         if(role === '技师主管'){
             serviceRegionName = regionId;
+            serviceUserId = condition.server[0];
         }
         //先占个位置，稍后完善
-        const serviceUserId = condition.server[0];
         const status = condition.status[0];
         const plate = condition.plateNum;
         const phone = condition.phoneNum;
@@ -339,7 +339,6 @@ class BillList extends React.Component {
             channelId,
             currentPage,
             pageSize,
-            createUserId,
             serviceRegionName
         });
         const dataArray = dataObj.data;

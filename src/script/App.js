@@ -149,8 +149,8 @@ class App extends React.Component {
                 >
                     <div className="logo"/>
                     <Menu theme="dark" mode={this.state.mode} defaultSelectedKeys={[key]}>
-                        {/*{items}*/}
-                        <Menu.Item key="1">
+                        {items}
+                        {/*<Menu.Item key="1">
                             <Link to="/App">
                                 <Icon type="user"/>
                                 <span className="nav-text">服务工单</span>
@@ -203,7 +203,7 @@ class App extends React.Component {
                                 <Icon type="setting" />
                                 <span className="nav-text">仓库配置</span>
                             </Link>
-                        </Menu.Item>
+                        </Menu.Item>*/}
                     </Menu>
                 </Sider>
                 <Layout>

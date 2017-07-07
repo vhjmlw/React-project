@@ -54,7 +54,7 @@ class LoginForm extends React.Component {
                     type: 'POST',
                     data: {username: values.username,password: values.password},
                     dataType: 'json',
-                    url: 'user/find',
+                    url: 'cus/user/find',
                     success: (response)=>{
                         if(response.code === '200' && response.data){
                             const userData = response.data;

@@ -429,7 +429,7 @@ class RunningStock extends React.Component {
             return;
         }
         $.ajax({
-            url: 'technicianInventory/addCommonStorage',
+            url: 'cus/technicianInventory/addCommonStorage',
             type: 'POST',
             data: {
                 partId,

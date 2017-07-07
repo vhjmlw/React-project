@@ -420,7 +420,7 @@ class TodayStock extends React.Component {
             return;
         }
         $.ajax({
-            url: 'technicianInventory/addTodayStorage',
+            url: 'cus/technicianInventory/addTodayStorage',
             type: 'POST',
             data: {
                 partId,

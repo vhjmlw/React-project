@@ -15,6 +15,7 @@ import BillInfo from './script/BillInfo';
 import Login from './script/Login';
 import RunningStock from './script/RunningStock';
 import TodayStock from './script/TodayStock';
+import FittingOption from './script/FittingOption';
 import './style/common.css';
 import './index.css';
 import "./style/App.css";
@@ -39,6 +40,7 @@ ReactDOM.render(
               <Route path="BillInfo" component={BillInfo}/>
               <Route path="RunningStock" component={RunningStock}/>
               <Route path="TodayStock" component={TodayStock}/>
+              <Route path="FittingOption" component={FittingOption}/>
           </Route>
       </Route>
   </Router>),

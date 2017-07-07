@@ -57,7 +57,7 @@ class PackageInfoForm extends React.Component {
                     values.createUser = CookieUtil.getCookie('id');//获取运营人员的ID;
                     values.cate = values.price;//接口文档中没有price，cate应该就是price？
                     $.ajax({
-                        url: '/product/create',
+                        url: 'cus/product/create',
                         type: 'POST',
                         data: JSON.stringify(values),
                         datatype: 'json',

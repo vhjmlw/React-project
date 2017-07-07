@@ -379,7 +379,7 @@ class BillList extends React.Component {
 
     downloadOrder(orderArr){
         $.ajax({
-            url: 'downLoad/saveToLocalServer',
+            url: 'cus/downLoad/saveToLocalServer',
             type: 'POST',
             data: JSON.stringify(orderArr),
             dataType: 'json',

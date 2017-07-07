@@ -611,7 +611,7 @@ class BillInfo extends React.Component {
         const upgradeParts = this.state.upgradeParts;
         console.log(upgradeParts);
         $.ajax({
-            url: 'upgradPart/addUpgradParts',
+            url: 'cus/upgradPart/addUpgradParts',
             data: JSON.stringify(upgradeParts),
             type: 'POST',
             dataType: 'json',
@@ -684,7 +684,7 @@ class BillInfo extends React.Component {
 
     delUpgrade(id){
         $.ajax({
-            url: 'upgradPart/deleteByPartdId',
+            url: 'cus/upgradPart/deleteByPartdId',
             type: 'POST',
             data: {upgraPartdId:id},
             dataType: 'json',

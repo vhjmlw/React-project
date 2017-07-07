@@ -251,10 +251,10 @@ class ModalCustom extends React.Component {
         let success;
         if(this.state.serviceId){
             params.id = this.state.serviceId;
-            url = '/service/modify';
+            url = 'cus/service/modify';
             success = '修改成功';
         } else {
-            url = '/service/create';
+            url = 'cus/service/create';
             success = '新增成功';
         }
         //使用jQuery中的Ajax模块发送数组的处理方法
@@ -318,7 +318,7 @@ class ModalCustom extends React.Component {
         const partId = tag.tagObj.partId;
         const serviceId = this.state.serviceId;
         $.ajax({
-            url: 'service/deletePartRel',
+            url: 'cus/service/deletePartRel',
             type: 'POST',
             dataType: 'json',
             data: {partId,serviceId},

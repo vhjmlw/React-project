@@ -33,6 +33,10 @@
 #root .ant-layout-has-sider{
   height: 100%;
 }
+.ant-layout-content {
+    border-radius: 10px;
+    background: #fff;
+}
 
 /*sider侧边栏样式*/
 .logo {
@@ -58,10 +62,8 @@
   float: right;
 }
 .ant-layout .ant-layout-content {
-  padding: 0 10px;
-}
-#root .ant-layout {
-  background-color: #fff;
+    margin: 10px 16px!important;
+    padding: 20px 24px 0 24px!important;
 }
 
 /*content中对话框的样式*/

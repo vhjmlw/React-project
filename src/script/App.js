@@ -198,7 +198,7 @@ class App extends React.Component {
                 <Layout>
                     <Header style={{background: '#fff', padding: 0, position:'relative'}}>
                         <span style={{marginLeft: "15px",fontSize:'17px'}}>优典养车</span>
-                        <div style={{position:'absolute',right:'15px',top:'15px'}}>
+                        <div style={{position:'absolute',right:'15px',top:0}}>
                             <span style={{fontSize:'13px'}}>{CookieUtil.getCookie('role')+'：'+CookieUtil.getCookie('name')}</span>
                             <Popconfirm
                                 title="确认退出 ？"
@@ -214,9 +214,6 @@ class App extends React.Component {
                     <div className="ant-layout-content">
                         {this.props.children}
                     </div>
-                    <Footer style={{textAlign: 'center'}}>
-                        苏州中德联信汽车服务股份有限公司
-                    </Footer>
                 </Layout>
             </Layout>
         );

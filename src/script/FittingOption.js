@@ -6,33 +6,79 @@ const FormItem = Form.Item;
 
 class FittingOption extends React.Component {
     state = {
-        popCateVisible: false,
         newFittingCate: '',
-        cateTypes: [],
-        brandTypes: [],
+        cateTags: [],
+        brandTags: [],
         cateKey: '',
         brandKey: '',
-        popBrandVisible: false,
         newFittingBrand: '',
     }
 
     componentDidMount() {
         let typeArray = Request.synPost('/part/listPartCate');
-        let cateTypes = [];
-        for (let item of typeArray) {
-            const obj = {
-                value: item.id,
-                label: item.name,
-            };
-            cateTypes.push(obj);
+        let cateTags = [];
+        if(typeArray && typeArray.length > 0){
+            for (let item of typeArray) {
+                const obj = {
+                    value: item.id,
+                    label: item.name,
+                };
+                cateTags.push(obj);
+            }
         }
+
+        let brandArray = Request.synPost('part/listPartBrand');
+        let brandTags = [];
+        if(brandArray && brandArray.length > 0){
+            for (let item of brandArray) {
+                const obj = {
+                    value: item.id,
+                    label: item.name,
+                }
+                brandTags.push(obj);
+            }
+        }
+
         this.setState({
-            cateTypes,
+            cateTags,
+            brandTags
         });
 
     }
 
-    popCateOK(){
+    handleCatePopOk(cateTag){
+        Request.synPost('part/deleteCate',{cateId:cateTag.value});
+        let typeArray = Request.synPost('/part/listPartCate');
+        let cateTags = [];
+        if(typeArray && typeArray.length > 0){
+            for (let item of typeArray) {
+                const obj = {
+                    value: item.id,
+                    label: item.name,
+                };
+                cateTags.push(obj);
+            }
+        }
+        this.setState({cateKey: '',cateTags});
+    }
+
+    handleBrandPopOk(brandTag){
+        Request.synPost('part/deleteBrand',{brandId:brandTag.value});
+        let brandArray = Request.synPost('/part/listPartBrand');
+        let brandTags = [];
+        if(brandArray && brandArray.length > 0){
+            for (let item of brandArray) {
+                const obj = {
+                    value: item.id,
+                    label: item.name,
+                }
+                brandTags.push(obj);
+            }
+        }
+        this.setState({brandKey: '',brandTags});
+    }
+
+    newPopCateOK(){
         if(!this.state.newFittingCate){
             message.warning('请输入配件类型');
             return;
@@ -41,31 +87,47 @@ class FittingOption extends React.Component {
             createUser: CookieUtil.getCookie('id'),//获取账号人员的ID;
             CateName: this.state.newFittingCate
         });
-        //先占个位置
         let typeArray = Request.synPost('/part/listPartCate');
-        let cateTypes = [];
-        for (let item of typeArray) {
-            const obj = {
-                value: item.id,
-                label: item.name,
-            };
-            cateTypes.push(obj);
+        let cateTags = [];
+        if(typeArray && typeArray.length > 0){
+            for (let item of typeArray) {
+                const obj = {
+                    value: item.id,
+                    label: item.name,
+                };
+                cateTags.push(obj);
+            }
         }
         this.setState({
-            cateTypes,
+            cateTags,
+            newFittingCate:''
         });
     }
 
-    handleCatePopOk(cateType){
-        this.setState({cateKey: ''})
-    }
-
-    handleBrandPopOk(brandType){
-        this.setState({brandKey: ''});
-    }
-
-    popBrandOK(){
-
+    newPopBrandOK(){
+        if(!this.state.newFittingBrand){
+            message.warning('请输入配件品牌');
+            return;
+        }
+        Request.synPost('/part/addBrand',{
+            createUser: CookieUtil.getCookie('id'),//获取账号人员的ID;
+            brandName: this.state.newFittingBrand
+        });
+        let brandArray = Request.synPost('/part/listPartBrand');
+        let brandTags = [];
+        if(brandArray && brandArray.length > 0){
+            for (let item of brandArray) {
+                const obj = {
+                    value: item.id,
+                    label: item.name,
+                }
+                brandTags.push(obj);
+            }
+        }
+        this.setState({
+            brandTags,
+            newFittingBrand: '',
+        });
     }
 
     render(){
@@ -109,42 +171,41 @@ class FittingOption extends React.Component {
                     {...formItemLayout}
                 >
                     <div>
-                        {this.state.cateTypes.map((cateType)=>{
+                        {this.state.cateTags.map((cateTag)=>{
                             return (
                                 <Popconfirm
                                     title={<h3>确定删除 ?</h3>}
                                     okText="确定"
                                     cancelText="取消"
                                     placement="right"
-                                    visible={this.state.cateKey === cateType.value}
-                                    onConfirm={()=>{this.handleCatePopOk(cateType)}}
+                                    visible={this.state.cateKey === cateTag.value}
+                                    onConfirm={()=>{this.handleCatePopOk(cateTag)}}
                                     onCancel={()=> {
                                         this.setState({cateKey: ''})
                                     }}
                                 >
                                     <Tag
-                                        key={cateType.value}
+                                        key={cateTag.value}
                                         closable={true}
                                         onClose={(e)=> {
                                             e.preventDefault();
-                                            this.setState({cateKey: cateType.value});
+                                            this.setState({cateKey: cateTag.value});
                                         }}
                                     >
-                                        {cateType.name}
+                                        {cateTag.name}
                                     </Tag>
                                 </Popconfirm>
                             );
                         })}
                         <Popconfirm
                             placement="bottom"
-                            onConfirm={this.popCateOK.bind(this)}
+                            onConfirm={this.newPopCateOK.bind(this)}
                             onCancel={()=>{this.setState({newFittingCate:''})}}
                             title={fittingPop}
                             okText="确定"
                             cancelText="取消"
                         >
-                            <Button type="primary" size="small"
-                                    onClick={()=>{this.setState({popCateVisible:true})}}>+</Button>
+                            <Button type="primary" size="small">+</Button>
                         </Popconfirm>
                     </div>
                 </FormItem>
@@ -153,42 +214,41 @@ class FittingOption extends React.Component {
                     {...formItemLayout}
                 >
                     <div>
-                        {this.state.brandTypes.map((brandType)=>{
+                        {this.state.brandTags.map((brandTag)=>{
                             return (
                                 <Popconfirm
                                     title={<h3>确定删除 ?</h3>}
                                     okText="确定"
                                     cancelText="取消"
                                     placement="right"
-                                    visible={this.state.brandKey === brandType.value}
-                                    onConfirm={()=>{this.handleBrandPopOk(brandType)}}
+                                    visible={this.state.brandKey === brandTag.value}
+                                    onConfirm={()=>{this.handleBrandPopOk(brandTag)}}
                                     onCancel={()=> {
                                         this.setState({brandKey: ''})
                                     }}
                                 >
                                     <Tag
-                                        key={brandType.value}
+                                        key={brandTag.value}
                                         closable={true}
                                         onClose={(e)=> {
                                             e.preventDefault();
-                                            this.setState({brandKey: brandType.value});
+                                            this.setState({brandKey: brandTag.value});
                                         }}
                                     >
-                                        {brandType.name}
+                                        {brandTag.name}
                                     </Tag>
                                 </Popconfirm>
                             );
                         })}
                         <Popconfirm
                             placement="bottom"
-                            onConfirm={this.popBrandOK.bind(this)}
+                            onConfirm={this.newPopBrandOK.bind(this)}
                             onCancel={()=>{this.setState({newFittingBrand:''})}}
                             title={fittingBrand}
                             okText="确定"
                             cancelText="取消"
                         >
-                            <Button type="primary" size="small"
-                                    onClick={()=>{this.setState({popBrandVisible:true})}}>+</Button>
+                            <Button type="primary" size="small">+</Button>
                         </Popconfirm>
                     </div>
                 </FormItem>

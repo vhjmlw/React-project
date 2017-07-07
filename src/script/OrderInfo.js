@@ -321,8 +321,8 @@ class OrderInfoForm extends React.Component {
                     {...formItemLayout}
                     label="验证码"
                 >
-                    <Row gutter={8}>
-                        <Col span={12}>
+                    <Row gutter={8} style={{width:600}}>
+                        <Col span={10} style={{width:'30%'}}>
                             {getFieldDecorator('verifyCode', {
                                 rules: [
                                     {required: true, message: '请输入验证码'},
@@ -332,7 +332,7 @@ class OrderInfoForm extends React.Component {
                                 <Input size="large"/>
                             )}
                         </Col>
-                        <Col span={12}>
+                        <Col span={14} style={{width:'70%'}}>
                             {/*<Button size="default">校验</Button>*/}
                             <Button
                                 size="default"
@@ -343,7 +343,7 @@ class OrderInfoForm extends React.Component {
                             >验证成功</Button>
                             <Button
                                 size="default"
-                                style={{margin:0,float:'right'}}
+                                style={{margin:0,float:'left',marginLeft:'10px'}}
                                 type={this.state.verifyStatus === 9?'primary':''}
                                 /*className={this.state.verifyStatus === 9 ? 'ant-btn ant-btn-primary' : 'ant-btn'}*/
                                 onClick={()=>{this.setState({verifyStatus:9})}}

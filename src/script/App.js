@@ -14,6 +14,7 @@ const functionLinks = [
     {link:'/App/BillList',iconType:'bars',name:'收单列表'},
     {link:'/App/RunningStock',iconType:'car',name:'常备库'},
     {link:'/App/TodayStock',iconType:'shopping-cart',name:'今日库'},
+    {link:'/App/FittingOption',iconType:'setting',name:'仓库配置'},
 ];
 
 //content标签中的表格
@@ -57,6 +58,7 @@ class App extends React.Component {
             case '仓管':
                 links = [
                     functionLinks[3],
+                    functionLinks[8],
                 ];
                 break;
             case '客服主管':
@@ -122,6 +124,9 @@ class App extends React.Component {
                 break;
             case 'App/TodayStock':
                 key = '8';
+                break;
+            case 'App/FittingOption':
+                key = '9';
                 break;
         }
         let items = this.state.links.map((item,index)=>{

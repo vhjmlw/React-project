@@ -90,6 +90,7 @@ class OrderInfoForm extends React.Component {
                     matchedAddresses,
                     carId: workOrderInfo.carId,
                     customerId: workOrderInfo.customerId,
+                    channelProduct: workOrderInfo.channelProduct,//渠道产品关系ID
                 });
             }
         }
@@ -196,6 +197,7 @@ class OrderInfoForm extends React.Component {
                     values.workOrderId = this.props.showDetailId;
                     values.carId = this.state.carId;
                     values.customerId = this.state.customerId;
+                    values.channelProduct = this.state.channelProduct;
                     Request.synPost('workOrder/modify', values);
                     message.success('修改成功',1.5,()=>{this.props.commit()});
                 } else {

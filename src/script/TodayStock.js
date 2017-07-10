@@ -518,6 +518,7 @@ class TodayStock extends React.Component {
                         options={this.state.initPartArr}
                         value={this.state.initPart}
                         onChange={(value)=>{this.setState({initPart:value})}}
+                        showSearch={true}
                     />
                 </FormItem>
                 <FormItem
@@ -596,6 +597,7 @@ class TodayStock extends React.Component {
                                 options={this.state.partArr}
                                 value={this.state.condition.part}
                                 onChange={(value)=>{this.changeCondition({part:value})}}
+                                showSearch={true}
                             />
                         </FormItem>
                     </Col>

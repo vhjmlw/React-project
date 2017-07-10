@@ -325,7 +325,7 @@ class ModalCustom extends React.Component {
             success: (response)=>{
                 if(response.code === '200'){
                     let tags = [];
-                    const serviceData = Request.synPost('/service/detailByServiceId', {
+                    const serviceData = Request.synPost('service/detailByServiceId', {
                         id: serviceId
                     });
                     const partDtos = serviceData.partDtos;
@@ -527,6 +527,7 @@ class ModalCustom extends React.Component {
                         onChange={this.handlePopFittingChange.bind(this)}
                         placeholder=''
                         disabled={this.state.fittingDisabled}
+                        showSearch={true}
                     />
                 </FormItem>
                 <FormItem
@@ -559,7 +560,7 @@ class ModalCustom extends React.Component {
 
         return (
             <Modal
-                title="新增"
+                title={this.state.serviceId?"修改":"新增"}
                 okText="提交"
                 cancelText="取消"
                 onOk={this.handleModalOk.bind(this)}

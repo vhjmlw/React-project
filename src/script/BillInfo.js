@@ -771,6 +771,7 @@ class BillInfo extends React.Component {
                         placeholder=''
                         value={this.state.popName}
                         onChange={this.handleNameChange.bind(this)}
+                        showSearch={true}
                     />
                 </FormItem>
                 <FormItem
@@ -1047,6 +1048,7 @@ class BillInfo extends React.Component {
                                             onChange={(value)=> {
                                                 this.modalPartChange(value, cateId, index)
                                             }}
+                                            showSearch={true}
                                         />
                                     </Col>
                                     <Col span={4}>

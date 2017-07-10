@@ -380,12 +380,11 @@ class BillList extends React.Component {
         $.ajax({
             url: 'cus/downLoad/saveToLocalServer',
             type: 'POST',
-            data: JSON.stringify(orderArr),
+            data: {ids:orderArr.join(',')},
             dataType: 'json',
-            contentType: "application/json",
             success: (response)=>{
                 if(response.code === '200'){
-                    window.open('http://192.168.1.187:8080/downLoad/serviceExcel?timeTemp='+response.data,"_blank");
+                    window.open('http://192.168.1.187:8080/cus/downLoad/serviceExcel?timeTemp='+response.data,"_blank");
                 }
             },
             error: (err)=>{

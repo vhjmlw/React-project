@@ -192,7 +192,7 @@ class FittingOption extends React.Component {
                                             this.setState({cateKey: cateTag.value});
                                         }}
                                     >
-                                        {cateTag.name}
+                                        {cateTag.label}
                                     </Tag>
                                 </Popconfirm>
                             );
@@ -235,7 +235,7 @@ class FittingOption extends React.Component {
                                             this.setState({brandKey: brandTag.value});
                                         }}
                                     >
-                                        {brandTag.name}
+                                        {brandTag.label}
                                     </Tag>
                                 </Popconfirm>
                             );

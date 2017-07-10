@@ -81,7 +81,7 @@ class PackageSale extends React.Component {
     }
 
     downloadVerify(id){
-        window.open('http://192.168.1.187:8080/channel/downLoadVerify?id='+id,"_blank");
+        window.open('http://192.168.1.187:8080/cus/channel/downLoadVerify?id='+id,"_blank");
     }
 
     productSaleClick(id){

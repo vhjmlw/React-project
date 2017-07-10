@@ -377,20 +377,20 @@ class BillList extends React.Component {
     }
 
     downloadOrder(orderArr){
-        $.ajax({
-            url: 'cus/downLoad/saveToLocalServer',
-            type: 'POST',
-            data: {ids:orderArr.join(',')},
-            dataType: 'json',
-            success: (response)=>{
-                if(response.code === '200'){
-                    window.open('http://192.168.1.187:8080/cus/downLoad/serviceExcel?timeTemp='+response.data,"_blank");
-                }
-            },
-            error: (err)=>{
-                throw err;
-            }
-        });
+        // $.ajax({
+        //     url: 'cus/downLoad/saveToLocalServer',
+        //     type: 'POST',
+        //     data: {ids:orderArr.join(',')},
+        //     dataType: 'json',
+        //     success: (response)=>{
+        //         if(response.code === '200'){
+                    window.open('http://192.168.1.131:8080/cus/downLoad/serviceExcel?ids='+orderArr.join(','),"_blank");
+        //         }
+        //     },
+        //     error: (err)=>{
+        //         throw err;
+        //     }
+        // });
     }
 
     render() {

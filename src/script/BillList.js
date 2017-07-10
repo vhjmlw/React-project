@@ -377,6 +377,7 @@ class BillList extends React.Component {
     }
 
     downloadOrder(orderArr){
+        const userId = CookieUtil.getCookie('id');
         // $.ajax({
         //     url: 'cus/downLoad/saveToLocalServer',
         //     type: 'POST',
@@ -384,7 +385,7 @@ class BillList extends React.Component {
         //     dataType: 'json',
         //     success: (response)=>{
         //         if(response.code === '200'){
-                    window.open('http://192.168.1.131:8080/cus/downLoad/serviceExcel?ids='+orderArr.join(','),"_blank");
+                    window.open('http://192.168.1.187:8080/cus/downLoad/serviceExcel?ids='+orderArr.join(',')+'&userId='+userId,"_blank");
         //         }
         //     },
         //     error: (err)=>{

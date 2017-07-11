@@ -43,6 +43,7 @@ class OrderInfoForm extends React.Component {
         selectedProduct: "",
         modalVisible: false,
         detailAddress: '',
+        uid: '',
         verifyStatus: 0,
     };
 
@@ -87,6 +88,7 @@ class OrderInfoForm extends React.Component {
                     modalId:workOrderInfo.modalId,
                     verifyStatus:workOrderInfo.verifyStatus,
                     detailAddress: workOrderInfo.address,
+                    uid: workOrderInfo.addressCode,
                     matchedAddresses,
                     carId: workOrderInfo.carId,
                     customerId: workOrderInfo.customerId,
@@ -144,6 +146,10 @@ class OrderInfoForm extends React.Component {
         currentValue = value;
 
         const fake = ()=> {
+            this.setState({
+                detailAddress: value,//在Select选择器中输入内容的时候，将输入的内容设为address、addressCode
+                uid: value,
+            });
             let matchedAddresses = [];
             if (value) {
                 const serviceRegion = this.props.form.getFieldValue('serviceRegion') || [];
@@ -181,7 +187,7 @@ class OrderInfoForm extends React.Component {
         this.props.form.validateFieldsAndScroll((err, values) => {
             if (!err) {
                 console.log('接收到提交的表单数据',values);
-                values.modalId = this.state.modalId;//先占个位置，稍后处理
+                values.modalId = this.state.modalId;
                 values.sex = values.sex;
                 values.serviceDate = values.serviceDate.format('YYYYMMDD');
                 values.status = 0;
@@ -190,7 +196,7 @@ class OrderInfoForm extends React.Component {
                 values.serviceRegion = values.serviceRegion[0];
                 values.createUser = CookieUtil.getCookie('id') || '';//获取客户人员的ID
                 values.remark = values.comment;
-                values.addressCode = values.address;
+                values.addressCode = this.state.uid;//更改服务地址的uid
                 values.address = this.state.detailAddress;
                 values.verifyStatus = this.state.verifyStatus;
                 if(this.props.showDetailId){
@@ -225,19 +231,30 @@ class OrderInfoForm extends React.Component {
     }
 
     detailAddress(value,option){
-        const addressObj = Request.synPost('address/getDetail',{uid:value});
-        if(addressObj && addressObj.message === 'ok') {
-            const detailAddress = addressObj.result.name + addressObj.result.address;
-            console.log(detailAddress,option);
-            // const option = (<Option key={item.uid} value={item.uid}>{item.district + item.name}</Option>);
-            const matchedAddresses = [{
-                uid: addressObj.result.uid,
-                district: addressObj.result.name || '',
-                name: addressObj.result.address || ''
-            }];
-            this.setState({matchedAddresses,detailAddress});
-            // this.props.form.setFieldsValue({address:option.props.children});
+        //如果Select的value是字母和数字的随机组合（如：b9e5d0b8efe410bc81a12ec5）
+        //则value为服务地址的uid，此时搜索服务地址的详细地址
+        //如果value为中文字符串，则就是手动输入的详细地址
+        const regexp = /^[a-zA-z0-9]+$/g;
+        if(regexp.test(value)){
+            const addressObj = Request.synPost('address/getDetail',{uid:value});
+            if(addressObj && addressObj.message === 'ok') {
+                const detailAddress = addressObj.result.address + addressObj.result.name;
+                console.log(detailAddress,option);
+                // const option = (<Option key={item.uid} value={item.uid}>{item.district + item.name}</Option>);
+                const matchedAddresses = [{
+                    uid: addressObj.result.uid,
+                    district: addressObj.result.address || '',
+                    name: addressObj.result.name || ''
+                }];
+                this.setState({
+                    matchedAddresses,
+                    detailAddress,
+                    uid: addressObj.result.uid,
+                });
+                // this.props.form.setFieldsValue({address:option.props.children});
+            }
         }
+
     }
 
     render() {

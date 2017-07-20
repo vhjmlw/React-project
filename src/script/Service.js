@@ -226,10 +226,10 @@ class ModalCustom extends React.Component {
             message.warning('服务类型不能超过5个字符');
             return;
         }
-        if(!tags.length){
+        /*if(!tags.length){
             message.warning('请选择配件');
             return;
-        }
+        }*/
         if(!modalPrice){
             message.warning('请输入价格');
             return;

@@ -237,7 +237,9 @@ class Fitting extends React.Component {
             serialNumber: this.state.seriesNumberInput,
         });
         console.log(`配件ID${data}`);
-        message.success('新增成功',1.5);
+        if(data != null){
+            message.success('新增成功',1.5);
+        }
         this.setState({
             newVisible: false,
             newtype: [],

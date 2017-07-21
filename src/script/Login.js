@@ -52,7 +52,7 @@ class LoginForm extends React.Component {
             if (!err) {
                 $.ajax({
                     type: 'POST',
-                    data: {username: values.username,password: values.password},
+                    data: {username: values.username.toUpperCase().trim(),password: values.password},
                     dataType: 'json',
                     url: 'cus/user/find',
                     success: (response)=>{

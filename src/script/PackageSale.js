@@ -467,7 +467,7 @@ class PackageSale extends React.Component {
                 </FormItem>
                 <FormItem
                     {...formItemLayout}
-                    label="价格"
+                    label="单价"
                 >
                     <InputNumber
                         min={0}
